@@ -1950,6 +1950,21 @@ if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
 
     ImGui::Separator();
 
+    ImGui::BeginChild("ViewportToolRail", ImVec2(112.0f, 0.0f), true);
+    drawRailTool("viewport_select", "SELECT", "Select object (Q)", selectedTool, 0);
+    drawRailTool("viewport_move", "MOVE", "Move object (W)", selectedTool, 1);
+    drawRailTool("viewport_rotate", "ROTATE", "Rotate object (E)", selectedTool, 2);
+    drawRailTool("viewport_scale", "SCALE", "Scale object (R)", selectedTool, 3);
+    ImGui::Separator();
+    drawRailAction("viewport_vehicle", "VEHICLE", "Add Vehicle");
+    drawRailAction("viewport_evidence", "EVIDENCE", "Add Evidence");
+    drawRailAction("viewport_measure", "MEASURE", "Measure Scene");
+    ImGui::Separator();
+    drawDisplayToggle("viewport_grid", "GRID", "Toggle Grid", showGrid, true);
+    drawDisplayToggle("viewport_axes", "AXES", "Toggle Axes", showAxes, false);
+    ImGui::EndChild();
+    ImGui::SameLine(0.0f, 6.0f);
+
     ImVec2 available =
         ImGui::GetContentRegionAvail();
 
