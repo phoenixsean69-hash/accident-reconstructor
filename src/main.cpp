@@ -144,32 +144,95 @@ static void applySovereignTheme()
     c[ImGuiCol_DockingPreview] = ImVec4(0.95f, 0.68f, 0.12f, 0.70f);
 }
 
-static void drawToolButton(const char* label, const char* shortcut, int& tool, int value)
+struct SidebarState
 {
-    bool active = tool == value;
+    int selectedTool = 0;
+    bool showGrid = true;
+    bool showAxes = true;
+    bool compact = false;
+};
+
+struct SidebarTool
+{
+    const char* icon;
+    const char* label;
+    const char* shortcut;
+    int value;
+};
+
+static bool drawSidebarTool(const SidebarTool& item, SidebarState& state)
+{
+    const bool active = state.selectedTool == item.value;
+    const ImVec2 rowSize(-1.0f, 38.0f);
+    const ImVec2 rowStart = ImGui::GetCursorScreenPos();
+
+    ImGui::PushID(item.label);
+    if (active)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.30f, 0.22f, 0.08f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.38f, 0.28f, 0.09f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.98f, 0.78f, 0.28f, 1.0f));
+    }
+    else
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.08f, 0.085f, 0.08f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.18f, 0.16f, 0.11f, 1.0f));
+    }
+
+    const bool clicked = ImGui::Button("##tool", rowSize);
+    const bool hovered = ImGui::IsItemHovered();
+    const ImVec2 rowEnd(rowStart.x + ImGui::GetItemRectSize().x, rowStart.y + ImGui::GetItemRectSize().y);
+
+    ImGui::PopStyleColor(active ? 3 : 2);
 
     if (active)
     {
-        ImGui::PushStyleColor(
-            ImGuiCol_Button,
-            ImVec4(0.68f, 0.48f, 0.10f, 1.0f)
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            rowStart,
+            ImVec2(rowStart.x + 3.0f, rowEnd.y),
+            IM_COL32(238, 174, 38, 255)
         );
     }
 
-    if (ImGui::Button(label, ImVec2(-1.0f, 34.0f)))
-        tool = value;
+    const ImVec4 iconColor = active
+        ? ImVec4(0.96f, 0.70f, 0.18f, 1.0f)
+        : (hovered ? ImVec4(0.90f, 0.88f, 0.80f, 1.0f) : ImVec4(0.62f, 0.62f, 0.57f, 1.0f));
+    ImGui::GetWindowDrawList()->AddText(
+        ImVec2(rowStart.x + 13.0f, rowStart.y + 10.0f),
+        ImGui::ColorConvertFloat4ToU32(iconColor),
+        item.icon
+    );
 
-    if (active)
-        ImGui::PopStyleColor();
-
+    ImGui::SameLine(0.0f, 0.0f);
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 39.0f);
+    ImGui::TextUnformatted(item.label);
     ImGui::SameLine();
-    ImGui::TextDisabled("%s", shortcut);
-    ImGui::NewLine();
+    ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 31.0f);
+    ImGui::TextDisabled("%s", item.shortcut);
+
+    if (clicked)
+        state.selectedTool = item.value;
+
+    if (hovered)
+    {
+        ImGui::SetTooltip("%s  [%s]", item.label, item.shortcut);
+    }
+
+    ImGui::PopID();
+    return clicked;
+}
+
+static void drawSidebarSectionLabel(const char* label)
+{
+    ImGui::Spacing();
+    ImGui::TextDisabled("%s", label);
+    ImGui::Separator();
+    ImGui::Spacing();
 }
 
 static void drawInterface()
 {
-    static int selectedTool = 0;
+    static SidebarState sidebar;
     static int currentFrame = 1;
 
     ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -220,7 +283,7 @@ static void drawInterface()
         ImGui::DockBuilderSplitNode(
             center,
             ImGuiDir_Left,
-            0.075f,
+            0.19f,
             &left,
             &center
         );
@@ -317,43 +380,48 @@ static void drawInterface()
     // Left tool shelf
     ImGui::Begin("Tools");
 
-    ImGui::Text("TOOLS");
-    ImGui::Separator();
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.055f, 0.057f, 0.060f, 1.0f));
+    ImGui::BeginChild("SidebarContent", ImVec2(0.0f, 0.0f), false, ImGuiWindowFlags_AlwaysUseWindowPadding);
 
-    drawToolButton("Select", "Q", selectedTool, 0);
-    drawToolButton("Move", "W", selectedTool, 1);
-    drawToolButton("Rotate", "E", selectedTool, 2);
-    drawToolButton("Scale", "R", selectedTool, 3);
+    ImGui::TextColored(ImVec4(0.95f, 0.68f, 0.15f, 1.0f), "SOVEREIGN");
+    ImGui::SameLine();
+    ImGui::TextDisabled("/ TOOLS");
+    ImGui::TextDisabled("ACCIDENT RECONSTRUCTOR");
+
+    ImGui::Spacing();
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.10f, 0.095f, 0.075f, 1.0f));
+    ImGui::BeginChild("SidebarContext", ImVec2(0.0f, 42.0f), true);
+    ImGui::Text("CASE  /  UNTITLED");
+    ImGui::TextDisabled("EDITOR FOUNDATION");
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
+
+    drawSidebarSectionLabel("TRANSFORM");
+    const SidebarTool transformTools[] = {
+        {"+", "Select", "Q", 0},
+        {"↔", "Move", "W", 1},
+        {"⟳", "Rotate", "E", 2},
+        {"□", "Scale", "R", 3},
+    };
+    for (const SidebarTool& item : transformTools)
+        drawSidebarTool(item, sidebar);
+
+    drawSidebarSectionLabel("SCENE ACTIONS");
+    if (ImGui::Button("+   Add Vehicle", ImVec2(-1.0f, 36.0f))) {}
+    if (ImGui::Button("+   Add Evidence", ImVec2(-1.0f, 36.0f))) {}
+    if (ImGui::Button("⌖   Measure", ImVec2(-1.0f, 36.0f))) {}
+
+    drawSidebarSectionLabel("DISPLAY");
+    ImGui::Checkbox("Grid", &sidebar.showGrid);
+    ImGui::Checkbox("Axes", &sidebar.showAxes);
 
     ImGui::Spacing();
     ImGui::Separator();
-    ImGui::Spacing();
+    ImGui::TextDisabled("SHORTCUTS  Q / W / E / R");
+    ImGui::TextDisabled("READY  •  NO OBJECT SELECTED");
 
-    ImGui::Text("SCENE");
-
-    if (ImGui::Button("Add Vehicle", ImVec2(-1.0f, 32.0f)))
-    {
-    }
-
-    if (ImGui::Button("Add Evidence", ImVec2(-1.0f, 32.0f)))
-    {
-    }
-
-    if (ImGui::Button("Measure", ImVec2(-1.0f, 32.0f)))
-    {
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    ImGui::Text("DISPLAY");
-
-    static bool showGrid = true;
-    static bool showAxes = true;
-
-    ImGui::Checkbox("Grid", &showGrid);
-    ImGui::Checkbox("Axes", &showAxes);
+    ImGui::EndChild();
+    ImGui::PopStyleColor();
 
     ImGui::End();
 
@@ -391,7 +459,7 @@ static void drawInterface()
         IM_COL32(18, 20, 22, 255)
     );
 
-    if (showGrid)
+    if (sidebar.showGrid)
     {
         const float gridSize = 32.0f;
 
@@ -425,7 +493,7 @@ static void drawInterface()
         IM_COL32(238, 174, 38, 255)
     );
 
-    if (showAxes)
+    if (sidebar.showAxes)
     {
         drawList->AddLine(
             centerPoint,
