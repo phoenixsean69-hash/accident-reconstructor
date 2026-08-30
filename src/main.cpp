@@ -460,7 +460,7 @@ static void drawInterface()
     ImGui::Begin("Tools");
 
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.055f, 0.057f, 0.060f, 1.0f));
-    ImGui::BeginChild("SidebarContent", ImVec2(0.0f, 0.0f), false, ImGuiWindowFlags_AlwaysUseWindowPadding);
+    ImGui::BeginChild("SidebarContent", ImVec2(0.0f, 0.0f), ImGuiChildFlags_AlwaysUseWindowPadding, 0);
 
     ImGui::TextColored(ImVec4(0.95f, 0.68f, 0.15f, 1.0f), "SOVEREIGN");
     ImGui::SameLine();
