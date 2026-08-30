@@ -345,12 +345,12 @@ static void applySovereignTheme()
         );
 
     c[ImGuiCol_Separator] =
-    ImVec4(
-        0.180f,
-        0.185f,
-        0.195f,
-        1.0f
-    );
+        ImVec4(
+            0.30f,
+            0.27f,
+            0.18f,
+            1.0f
+        );
 
     c[ImGuiCol_FrameBg] =
         ImVec4(
@@ -377,20 +377,20 @@ static void applySovereignTheme()
         );
 
     c[ImGuiCol_TitleBg] =
-    ImVec4(
-        0.045f,
-        0.047f,
-        0.050f,
-        1.0f
-    );
+        ImVec4(
+            0.045f,
+            0.047f,
+            0.050f,
+            1.0f
+        );
 
     c[ImGuiCol_TitleBgActive] =
-    ImVec4(
-        0.105f,
-        0.110f,
-        0.118f,
-        1.0f
-    );
+        ImVec4(
+            0.25f,
+            0.19f,
+            0.08f,
+            1.0f
+        );
 
     c[ImGuiCol_MenuBarBg] =
         ImVec4(
@@ -423,27 +423,30 @@ static void applySovereignTheme()
             0.13f,
             1.0f
         );
+
     c[ImGuiCol_Header] =
-    ImVec4(
-        0.075f,
-        0.078f,
-        0.082f,
-        1.0f
-    );
+        ImVec4(
+            0.22f,
+            0.17f,
+            0.08f,
+            1.0f
+        );
+
     c[ImGuiCol_HeaderHovered] =
-    ImVec4(
-        0.135f,
-        0.140f,
-        0.148f,
-        1.0f
-    );
+        ImVec4(
+            0.45f,
+            0.32f,
+            0.10f,
+            1.0f
+        );
+
     c[ImGuiCol_HeaderActive] =
-    ImVec4(
-        0.105f,
-        0.110f,
-        0.118f,
-        1.0f
-    );
+        ImVec4(
+            0.70f,
+            0.50f,
+            0.12f,
+            1.0f
+        );
 
     c[ImGuiCol_CheckMark] =
         ImVec4(
@@ -468,66 +471,38 @@ static void applySovereignTheme()
             0.16f,
             1.0f
         );
-    // ========================================================
-    // DARK SOVEREIGN TAB PALETTE
-    // ========================================================
-    //
-    // Tabs use neutral charcoal instead of the old muddy gold.
-    // Gold remains an accent color for selections/controls.
-    //
 
-    // Normal tab
     c[ImGuiCol_Tab] =
-    ImVec4(
-        0.075f,
-        0.078f,
-        0.082f,
-        1.0f
-    );
+        ImVec4(
+            0.10f,
+            0.10f,
+            0.085f,
+            1.0f
+        );
 
-    // Hovered tab
     c[ImGuiCol_TabHovered] =
-    ImVec4(
-        0.135f,
-        0.140f,
-        0.148f,
-        1.0f
-    );
+        ImVec4(
+            0.50f,
+            0.36f,
+            0.10f,
+            1.0f
+        );
 
-    // Active tab
     c[ImGuiCol_TabActive] =
-    ImVec4(
-        0.105f,
-        0.110f,
-        0.118f,
-        1.0f
-    );
-
-    // Active tab when its dock is unfocused
-    c[ImGuiCol_TabUnfocused] =
         ImVec4(
-            0.050f,
-            0.053f,
-            0.058f,
-            1.0f
-        );
-    c[ImGuiCol_TabUnfocusedActive] =
-        ImVec4(
-            0.090f,
-            0.095f,
-            0.102f,
+            0.32f,
+            0.24f,
+            0.10f,
             1.0f
         );
 
-
-        // Docking preview keeps the Sovereign gold accent.
     c[ImGuiCol_DockingPreview] =
-    ImVec4(
-        0.180f,
-        0.190f,
-        0.205f,
-        0.60f
-    );
+        ImVec4(
+            0.95f,
+            0.68f,
+            0.12f,
+            0.70f
+        );
 }
 
 // ============================================================
@@ -553,16 +528,14 @@ static void drawRailTool(
             availableWidth - 2.0f
         );
 
-      const float iconSize =
-        std::min(
-            22.0f,
-            buttonWidth - 10.0f
-        );
+  const float iconSize =
+  std::min(
+  24.0f,
+  buttonWidth - 10.0f
+  );
 
-    // Consistent vertical tile size.
-    // The previous 48px rows were too tight for icon + label.
-    const float totalHeight =
-        58.0f;
+  const float totalHeight =
+  48.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -683,54 +656,12 @@ static void drawRailTool(
 
     if (gToolIcons[toolValue] != 0)
     {
-        // Draw icon without disturbing the row layout cursor.
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                pos.x + (buttonWidth - iconSize) * 0.5f,
-                pos.y + 5.0f
-            )
-        );
-
-        ImGui::Image(
-            static_cast<ImTextureID>(gToolIcons[toolValue]),
-            ImVec2(iconSize, iconSize)
-        );
-
-        // Label sits below the icon with a fixed gap.
-        ImVec2 labelSize =
-            ImGui::CalcTextSize(label);
-
-        drawList->AddText(
-            ImVec2(
-                pos.x + (buttonWidth - labelSize.x) * 0.5f,
-                pos.y + 34.0f
-            ),
-            active
-                ? IM_COL32(238, 174, 38, 255)
-                : IM_COL32(155, 158, 163, 255),
-            label
-        );
-
-        if (hovered)
-            ImGui::SetTooltip("%s", tooltip);
-
-        // IMPORTANT:
-        // Restore the layout cursor to the bottom of the
-        // complete tile so the next tool starts below it.
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                pos.x,
-                pos.y + totalHeight
-            )
-        );
-
-        ImGui::Dummy(
-            ImVec2(
-                buttonWidth,
-                4.0f
-            )
-        );
-
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y + 2.0f));
+        ImGui::Image(static_cast<ImTextureID>(gToolIcons[toolValue]), ImVec2(iconSize, iconSize));
+        ImVec2 labelSize = ImGui::CalcTextSize(label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + 29.0f), active ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        if (hovered) ImGui::SetTooltip("%s", tooltip);
+        ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
         ImGui::PopID();
         return;
     }
@@ -1019,16 +950,14 @@ static bool drawRailAction(
             availableWidth - 2.0f
         );
 
-      const float iconSize =
-        std::min(
-            22.0f,
-            buttonWidth - 10.0f
-        );
+  const float iconSize =
+  std::min(
+  24.0f,
+  buttonWidth - 10.0f
+  );
 
-    // Consistent vertical tile size.
-    // The previous 48px rows were too tight for icon + label.
-    const float totalHeight =
-        58.0f;
+  const float totalHeight =
+  48.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -1070,50 +999,12 @@ static bool drawRailAction(
 
     if (gToolIcons[iconIndex] != 0)
     {
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                pos.x + (buttonWidth - iconSize) * 0.5f,
-                pos.y + 5.0f
-            )
-        );
-
-        ImGui::Image(
-            static_cast<ImTextureID>(gToolIcons[iconIndex]),
-            ImVec2(iconSize, iconSize)
-        );
-
-        ImVec2 labelSize =
-            ImGui::CalcTextSize(label);
-
-        drawList->AddText(
-            ImVec2(
-                pos.x + (buttonWidth - labelSize.x) * 0.5f,
-                pos.y + 34.0f
-            ),
-            hovered
-                ? IM_COL32(238, 174, 38, 255)
-                : IM_COL32(155, 158, 163, 255),
-            label
-        );
-
-        if (hovered)
-            ImGui::SetTooltip("%s", tooltip);
-
-        // Restore cursor to the bottom of the tile.
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                pos.x,
-                pos.y + totalHeight
-            )
-        );
-
-        ImGui::Dummy(
-            ImVec2(
-                buttonWidth,
-                4.0f
-            )
-        );
-
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y + 2.0f));
+        ImGui::Image(static_cast<ImTextureID>(gToolIcons[iconIndex]), ImVec2(iconSize, iconSize));
+        ImVec2 labelSize = ImGui::CalcTextSize(label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + 29.0f), hovered ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        if (hovered) ImGui::SetTooltip("%s", tooltip);
+        ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
         ImGui::PopID();
         return clicked;
     }
@@ -1366,16 +1257,14 @@ static void drawDisplayToggle(
             availableWidth - 2.0f
         );
 
-      const float iconSize =
-        std::min(
-            22.0f,
-            buttonWidth - 10.0f
-        );
+  const float iconSize =
+  std::min(
+  24.0f,
+  buttonWidth - 10.0f
+  );
 
-    // Consistent vertical tile size.
-    // The previous 48px rows were too tight for icon + label.
-    const float totalHeight =
-        58.0f;
+  const float totalHeight =
+  48.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -1423,50 +1312,12 @@ static void drawDisplayToggle(
     int iconIndex = drawGridIcon ? 7 : 8;
     if (gToolIcons[iconIndex] != 0)
     {
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                pos.x + (buttonWidth - iconSize) * 0.5f,
-                pos.y + 5.0f
-            )
-        );
-
-        ImGui::Image(
-            static_cast<ImTextureID>(gToolIcons[iconIndex]),
-            ImVec2(iconSize, iconSize)
-        );
-
-        ImVec2 labelSize =
-            ImGui::CalcTextSize(label);
-
-        drawList->AddText(
-            ImVec2(
-                pos.x + (buttonWidth - labelSize.x) * 0.5f,
-                pos.y + 34.0f
-            ),
-            enabled
-                ? IM_COL32(238, 174, 38, 255)
-                : IM_COL32(155, 158, 163, 255),
-            label
-        );
-
-        if (hovered)
-            ImGui::SetTooltip("%s", tooltip);
-
-        // Restore cursor to the bottom of the tile.
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                pos.x,
-                pos.y + totalHeight
-            )
-        );
-
-        ImGui::Dummy(
-            ImVec2(
-                buttonWidth,
-                4.0f
-            )
-        );
-
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y + 2.0f));
+        ImGui::Image(static_cast<ImTextureID>(gToolIcons[iconIndex]), ImVec2(iconSize, iconSize));
+        ImVec2 labelSize = ImGui::CalcTextSize(label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + 29.0f), enabled ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        if (hovered) ImGui::SetTooltip("%s", tooltip);
+        ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
         ImGui::PopID();
         return;
     }
@@ -1833,21 +1684,6 @@ static void drawInterface()
         );
 
         ImGui::DockBuilderDockWindow(
-            "Case View",
-            center
-        );
-
-        ImGui::DockBuilderDockWindow(
-            "Evidence",
-            center
-        );
-
-        ImGui::DockBuilderDockWindow(
-            "Analysis",
-            center
-        );
-
-        ImGui::DockBuilderDockWindow(
             "Timeline",
             bottom
         );
@@ -2174,87 +2010,27 @@ static void drawInterface()
     // VIEWPORT
     // ========================================================
 
-        // ========================================================
-    // CASE VIEW TAB
-    // ========================================================
-
     ImGui::Begin(
-        "Case View"
-    );
-
-    ImGui::Text("CASE VIEW");
-    ImGui::Separator();
-
-    ImGui::TextDisabled(
-        "Case reconstruction workspace"
-    );
-
-    ImGui::Spacing();
-
-    ImGui::Text(
-        "Case overview and reconstruction data."
-    );
-
-    ImGui::Text(
-        "Use the scene viewport to construct the case."
-    );
-
-    ImGui::End();
-
-    // ========================================================
-    // EVIDENCE TAB
-    // ========================================================
-
-    ImGui::Begin(
-        "Evidence"
-    );
-
-    ImGui::Text("EVIDENCE");
-    ImGui::Separator();
-
-    ImGui::TextDisabled(
-        "Evidence workspace"
-    );
-
-    ImGui::Spacing();
-
-    ImGui::BulletText("Skid marks");
-    ImGui::BulletText("Debris fields");
-    ImGui::BulletText("Scene markers");
-    ImGui::BulletText("Photographic evidence");
-
-    ImGui::End();
-
-    // ========================================================
-    // ANALYSIS TAB
-    // ========================================================
-
-    ImGui::Begin(
-        "Analysis"
-    );
-
-    ImGui::Text("ANALYSIS");
-    ImGui::Separator();
-
-    ImGui::TextDisabled(
-        "Accident analysis workspace"
-    );
-
-    ImGui::Spacing();
-
-    ImGui::BulletText("Skid analysis");
-    ImGui::BulletText("Momentum analysis");
-    ImGui::BulletText("Speed analysis");
-    ImGui::BulletText("Reconstruction results");
-
-    ImGui::End();
-
-ImGui::Begin(
         "Viewport"
     );
 
-        // Central workspace navigation is provided by
-    // the real ImGui dock tab bar.
+    ImGui::Text(
+        "PERSPECTIVE"
+    );
+
+    ImGui::SameLine();
+
+    ImGui::TextDisabled(
+        "|"
+    );
+
+    ImGui::SameLine();
+
+    ImGui::TextDisabled(
+        "CASE VIEW"
+    );
+
+    ImGui::Separator();
 
     ImGui::BeginChild("ViewportToolRail", ImVec2(112.0f, 0.0f), true);
     drawRailTool("viewport_select", "SELECT", "Select object (Q)", selectedTool, 0);
@@ -3159,8 +2935,3 @@ io.IniFilename = nullptr;
 
     return 0;
 }
-
-
-
-
-

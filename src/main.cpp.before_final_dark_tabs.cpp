@@ -345,12 +345,12 @@ static void applySovereignTheme()
         );
 
     c[ImGuiCol_Separator] =
-    ImVec4(
-        0.180f,
-        0.185f,
-        0.195f,
-        1.0f
-    );
+        ImVec4(
+            0.30f,
+            0.27f,
+            0.18f,
+            1.0f
+        );
 
     c[ImGuiCol_FrameBg] =
         ImVec4(
@@ -377,20 +377,20 @@ static void applySovereignTheme()
         );
 
     c[ImGuiCol_TitleBg] =
-    ImVec4(
-        0.045f,
-        0.047f,
-        0.050f,
-        1.0f
-    );
+        ImVec4(
+            0.045f,
+            0.047f,
+            0.050f,
+            1.0f
+        );
 
     c[ImGuiCol_TitleBgActive] =
-    ImVec4(
-        0.105f,
-        0.110f,
-        0.118f,
-        1.0f
-    );
+        ImVec4(
+            0.25f,
+            0.19f,
+            0.08f,
+            1.0f
+        );
 
     c[ImGuiCol_MenuBarBg] =
         ImVec4(
@@ -424,26 +424,26 @@ static void applySovereignTheme()
             1.0f
         );
     c[ImGuiCol_Header] =
-    ImVec4(
-        0.075f,
-        0.078f,
-        0.082f,
-        1.0f
-    );
+        ImVec4(
+            0.075f,
+            0.078f,
+            0.082f,
+            1.0f
+        );
     c[ImGuiCol_HeaderHovered] =
-    ImVec4(
-        0.135f,
-        0.140f,
-        0.148f,
-        1.0f
-    );
+        ImVec4(
+            0.145f,
+            0.150f,
+            0.158f,
+            1.0f
+        );
     c[ImGuiCol_HeaderActive] =
-    ImVec4(
-        0.105f,
-        0.110f,
-        0.118f,
-        1.0f
-    );
+        ImVec4(
+            0.115f,
+            0.120f,
+            0.128f,
+            1.0f
+        );
 
     c[ImGuiCol_CheckMark] =
         ImVec4(
@@ -478,30 +478,30 @@ static void applySovereignTheme()
 
     // Normal tab
     c[ImGuiCol_Tab] =
-    ImVec4(
-        0.075f,
-        0.078f,
-        0.082f,
-        1.0f
-    );
+        ImVec4(
+            0.075f,
+            0.078f,
+            0.082f,
+            1.0f
+        );
 
     // Hovered tab
     c[ImGuiCol_TabHovered] =
-    ImVec4(
-        0.135f,
-        0.140f,
-        0.148f,
-        1.0f
-    );
+        ImVec4(
+            0.145f,
+            0.150f,
+            0.158f,
+            1.0f
+        );
 
     // Active tab
     c[ImGuiCol_TabActive] =
-    ImVec4(
-        0.105f,
-        0.110f,
-        0.118f,
-        1.0f
-    );
+        ImVec4(
+            0.115f,
+            0.120f,
+            0.128f,
+            1.0f
+        );
 
     // Active tab when its dock is unfocused
     c[ImGuiCol_TabUnfocused] =
@@ -522,12 +522,12 @@ static void applySovereignTheme()
 
         // Docking preview keeps the Sovereign gold accent.
     c[ImGuiCol_DockingPreview] =
-    ImVec4(
-        0.180f,
-        0.190f,
-        0.205f,
-        0.60f
-    );
+        ImVec4(
+            0.80f,
+            0.58f,
+            0.16f,
+            0.55f
+        );
 }
 
 // ============================================================
@@ -3159,7 +3159,6 @@ io.IniFilename = nullptr;
 
     return 0;
 }
-
 
 
 

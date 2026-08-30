@@ -1,9 +1,9 @@
 $ErrorActionPreference = "Stop"
 
 Write-Host ""
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host " SOVEREIGN - TOOLS SIDEBAR FIX" -ForegroundColor Cyan
-Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host " SOVEREIGN - FINAL DARK TAB COLOR FIX" -ForegroundColor Cyan
+Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
 
 $source = Join-Path (Get-Location) "src\main.cpp"
@@ -15,15 +15,21 @@ if (!(Test-Path $source)) {
 
 $text = Get-Content $source -Raw
 
-Write-Host "Using:" -ForegroundColor Gray
-Write-Host $source
-Write-Host ""
+if ($text -notmatch "applySovereignTheme") {
+    Write-Host "ERROR: Sovereign theme not found." -ForegroundColor Red
+    exit 1
+}
 
-# ---------------------------------------------------------
+if ($text -notmatch "ImGuiCol_Tab") {
+    Write-Host "ERROR: ImGui tab colors not found." -ForegroundColor Red
+    exit 1
+}
+
+# ============================================================
 # BACKUP
-# ---------------------------------------------------------
+# ============================================================
 
-$backup = "$source.before_tools_fix.cpp"
+$backup = "$source.before_final_dark_tabs.cpp"
 
 if (!(Test-Path $backup)) {
     Copy-Item $source $backup
@@ -34,199 +40,154 @@ else {
     Write-Host "[OK] Existing backup preserved." -ForegroundColor Yellow
 }
 
-# ---------------------------------------------------------
-# FIND LEFT DOCK SPLIT
-# ---------------------------------------------------------
+# ============================================================
+# HELPER
+# ============================================================
 
-$leftPattern = '(?s)(ImGuiDir_Left\s*,\s*)([0-9]+(?:\.[0-9]+)?f)(\s*,\s*&left\s*,\s*&center\s*\))'
-
-$leftMatch = [regex]::Match($text, $leftPattern)
-
-if (!$leftMatch.Success) {
-
-    Write-Host ""
-    Write-Host "ERROR: I cannot find the LEFT DockBuilder split in YOUR local main.cpp." -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Here are the DockBuilder lines I can see:" -ForegroundColor Yellow
-    Write-Host ""
-
-    Select-String `
-        -Path $source `
-        -Pattern "DockBuilder|ImGuiDir_Left|ImGuiDir_Right|ImGuiDir_Down|Tools" |
-        Select-Object -First 40 |
-        ForEach-Object {
-            Write-Host ("{0}: {1}" -f $_.LineNumber, $_.Line.Trim())
-        }
-
-    Write-Host ""
-    Write-Host "NOTHING WAS CHANGED." -ForegroundColor Red
-    exit 1
-}
-
-$oldRatio = $leftMatch.Groups[2].Value
-
-Write-Host "[FOUND] Left dock split uses: $oldRatio" -ForegroundColor Green
-
-# ---------------------------------------------------------
-# INSERT TOOLS WIDTH CALCULATION
-# ---------------------------------------------------------
-
-if ($text -notmatch 'constexpr\s+float\s+TOOLS_WIDTH') {
-
-    $anchor = '(ImGuiID\s+rightTop\s*=\s*0\s*;\s*)'
-
-    if ($text -notmatch $anchor) {
-        Write-Host ""
-        Write-Host "ERROR: Could not find rightTop declaration." -ForegroundColor Red
-        Write-Host "Nothing was changed."
-        exit 1
-    }
-
-    $insert = @'
-$1
-        // Fixed-width Tools rail.
-        constexpr float TOOLS_WIDTH = 280.0f;
-        const float toolsRatio =
-            ImClamp(
-                TOOLS_WIDTH / viewport->WorkSize.x,
-                0.12f,
-                0.22f
-            );
-
-'@
-
-    $text = [regex]::Replace(
-        $text,
-        $anchor,
-        $insert,
-        1
+function Replace-ImGuiColor {
+    param(
+        [string]$ColorName,
+        [string]$R,
+        [string]$G,
+        [string]$B,
+        [string]$A = "1.0f"
     )
 
-    Write-Host "[OK] Added 280px Tools width calculation." -ForegroundColor Green
-}
-else {
-    Write-Host "[OK] Tools width calculation already exists." -ForegroundColor Yellow
-}
+    $pattern =
+        '(?s)c\[' +
+        [regex]::Escape($ColorName) +
+        '\]\s*=\s*ImVec4\s*\([^;]*\);'
 
-# ---------------------------------------------------------
-# RE-FIND LEFT SPLIT AFTER INSERTION
-# ---------------------------------------------------------
+    $replacement = @"
+c[$ColorName] =
+    ImVec4(
+        $R,
+        $G,
+        $B,
+        $A
+    );
+"@
 
-$leftMatch = [regex]::Match($text, $leftPattern)
+    $matches = [regex]::Matches($script:text, $pattern)
 
-if (!$leftMatch.Success) {
-    Write-Host ""
-    Write-Host "ERROR: Left split disappeared unexpectedly." -ForegroundColor Red
-    exit 1
-}
+    if ($matches.Count -eq 0) {
+        Write-Host "[SKIP] $ColorName not found." -ForegroundColor DarkYellow
+        return
+    }
 
-# Replace whatever numeric ratio is there with toolsRatio
-$text = [regex]::Replace(
-    $text,
-    $leftPattern,
-    '${1}toolsRatio${3}',
-    1
-)
-
-Write-Host "[OK] Left dock now uses toolsRatio." -ForegroundColor Green
-
-# ---------------------------------------------------------
-# FIND TOOLS DOCK WINDOW
-# ---------------------------------------------------------
-
-$toolsPattern = 'ImGui::DockBuilderDockWindow\s*\(\s*"Tools"\s*,\s*left\s*\)'
-
-if ($text -notmatch $toolsPattern) {
-
-    Write-Host ""
-    Write-Host "ERROR: Could not find Tools DockBuilder window." -ForegroundColor Red
-    Write-Host ""
-    Write-Host "Searching your LOCAL source for Tools references:" -ForegroundColor Yellow
-    Write-Host ""
-
-    Select-String `
-        -Path $source `
-        -Pattern "Tools" |
-        Select-Object -First 40 |
-        ForEach-Object {
-            Write-Host ("{0}: {1}" -f $_.LineNumber, $_.Line.Trim())
-        }
-
-    Write-Host ""
-    Write-Host "NOTHING WAS WRITTEN." -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "[FOUND] Tools dock window." -ForegroundColor Green
-
-# ---------------------------------------------------------
-# ADD NORESIZEX
-# ---------------------------------------------------------
-
-if ($text -notmatch 'ImGuiDockNodeFlags_NoResizeX') {
-
-    $replacement = @'
-ImGui::DockBuilderDockWindow("Tools", left);
-
-// Prevent the Tools rail from being dragged horizontally.
-if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
-{
-    toolsNode->LocalFlags |= ImGuiDockNodeFlags_NoResizeX;
-}
-'@
-
-    $text = [regex]::Replace(
-        $text,
-        $toolsPattern,
+    $script:text = [regex]::Replace(
+        $script:text,
+        $pattern,
         $replacement,
         1
     )
 
-    Write-Host "[OK] Tools horizontal resizing disabled." -ForegroundColor Green
-}
-else {
-    Write-Host "[OK] NoResizeX already present." -ForegroundColor Yellow
+    Write-Host "[OK] $ColorName" -ForegroundColor Green
 }
 
-# ---------------------------------------------------------
-# DISABLE SAVED IMGUI LAYOUT
-# ---------------------------------------------------------
+# ============================================================
+# TAB STRIP
+# ============================================================
 
-if ($text -notmatch 'io\.IniFilename\s*=\s*nullptr') {
+Replace-ImGuiColor `
+    "ImGuiCol_Tab" `
+    "0.075f" `
+    "0.078f" `
+    "0.082f"
 
-    $ioPattern = 'ImGuiIO\s*&\s*io\s*=\s*ImGui::GetIO\s*\(\s*\)\s*;'
+Replace-ImGuiColor `
+    "ImGuiCol_TabHovered" `
+    "0.135f" `
+    "0.140f" `
+    "0.148f"
 
-    if ($text -notmatch $ioPattern) {
-        Write-Host ""
-        Write-Host "ERROR: Could not find ImGuiIO initialization." -ForegroundColor Red
-        Write-Host "Nothing was written."
-        exit 1
-    }
+Replace-ImGuiColor `
+    "ImGuiCol_TabActive" `
+    "0.105f" `
+    "0.110f" `
+    "0.118f"
 
-    $ioReplacement = @'
-ImGuiIO& io = ImGui::GetIO();
+# ============================================================
+# ACTIVE DOCK / WINDOW CHROME
+# ============================================================
 
-// Application owns the dock layout.
-// Do not restore a previously dragged ImGui layout.
-io.IniFilename = nullptr;
-'@
+Replace-ImGuiColor `
+    "ImGuiCol_TitleBg" `
+    "0.045f" `
+    "0.047f" `
+    "0.050f"
 
-    $text = [regex]::Replace(
-        $text,
-        $ioPattern,
-        $ioReplacement,
-        1
-    )
+Replace-ImGuiColor `
+    "ImGuiCol_TitleBgActive" `
+    "0.105f" `
+    "0.110f" `
+    "0.118f"
 
-    Write-Host "[OK] Disabled saved ImGui docking layout." -ForegroundColor Green
-}
-else {
-    Write-Host "[OK] ImGui saved layout already disabled." -ForegroundColor Yellow
-}
+# ============================================================
+# HEADER STATES
+# These can also affect docking-related active visuals.
+# ============================================================
 
-# ---------------------------------------------------------
+Replace-ImGuiColor `
+    "ImGuiCol_Header" `
+    "0.075f" `
+    "0.078f" `
+    "0.082f"
+
+Replace-ImGuiColor `
+    "ImGuiCol_HeaderHovered" `
+    "0.135f" `
+    "0.140f" `
+    "0.148f"
+
+Replace-ImGuiColor `
+    "ImGuiCol_HeaderActive" `
+    "0.105f" `
+    "0.110f" `
+    "0.118f"
+
+# ============================================================
+# DOCKING BACKGROUND
+# ============================================================
+#
+# Older/newer Dear ImGui docking builds use this for empty
+# docking areas. Neutralize it as well.
+# ============================================================
+
+Replace-ImGuiColor `
+    "ImGuiCol_DockingEmptyBg" `
+    "0.035f" `
+    "0.037f" `
+    "0.040f"
+
+# ============================================================
+# DOCKING PREVIEW
+# Keep it subtle and neutral instead of gold.
+# ============================================================
+
+Replace-ImGuiColor `
+    "ImGuiCol_DockingPreview" `
+    "0.180f" `
+    "0.190f" `
+    "0.205f" `
+    "0.60f"
+
+# ============================================================
+# SEPARATOR
+#
+# This prevents the gold line surrounding the tab strip from
+# becoming visually dominant.
+# ============================================================
+
+Replace-ImGuiColor `
+    "ImGuiCol_Separator" `
+    "0.180f" `
+    "0.185f" `
+    "0.195f"
+
+# ============================================================
 # WRITE
-# ---------------------------------------------------------
+# ============================================================
 
 Set-Content `
     -Path $source `
@@ -234,16 +195,26 @@ Set-Content `
     -Encoding UTF8
 
 Write-Host ""
-Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host " FIX APPLIED SUCCESSFULLY" -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "============================================" -ForegroundColor Cyan
+Write-Host " FINAL DARK TAB PALETTE APPLIED" -ForegroundColor Green
+Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Tools width : ~280px"
-Write-Host "Dragging    : DISABLED"
-Write-Host "Old layout  : DISABLED"
+Write-Host "Normal       : charcoal"
+Write-Host "Hovered      : slightly lighter charcoal"
+Write-Host "Active       : charcoal"
+Write-Host "Title active : charcoal"
+Write-Host "Docking bg   : near-black"
+Write-Host "Dock preview : neutral gray"
+Write-Host "Separator    : neutral gray"
+Write-Host ""
+Write-Host "Gold is now reserved for actual application accents."
 Write-Host ""
 Write-Host "Backup:"
 Write-Host "  $backup"
 Write-Host ""
-Write-Host "Now rebuild the application." -ForegroundColor Cyan
+Write-Host "Rebuild:"
+Write-Host "  Ctrl+Shift+B"
+Write-Host ""
+Write-Host "Run:"
+Write-Host "  F5"
 Write-Host ""
