@@ -152,13 +152,85 @@ struct SidebarState
     bool compact = false;
 };
 
+enum class SidebarIcon
+{
+    Select,
+    Move,
+    Rotate,
+    Scale,
+    Vehicle,
+    Evidence,
+    Measure,
+};
+
 struct SidebarTool
 {
-    const char* icon;
+    SidebarIcon icon;
     const char* label;
     const char* shortcut;
     int value;
 };
+
+static void drawSidebarIcon(ImDrawList* drawList, SidebarIcon icon, ImVec2 center, ImU32 color)
+{
+    const float s = 7.0f;
+    const float stroke = 1.8f;
+
+    switch (icon)
+    {
+        case SidebarIcon::Select:
+            drawList->AddTriangleFilled(
+                ImVec2(center.x - s, center.y - s),
+                ImVec2(center.x - s, center.y + s),
+                ImVec2(center.x + s * 0.55f, center.y + s * 2.0f),
+                color
+            );
+            drawList->AddLine(
+                ImVec2(center.x - s * 0.1f, center.y + s * 0.4f),
+                ImVec2(center.x + s * 0.9f, center.y + s * 2.0f),
+                color,
+                stroke
+            );
+            break;
+        case SidebarIcon::Move:
+            drawList->AddLine(ImVec2(center.x - s, center.y), ImVec2(center.x + s, center.y), color, stroke);
+            drawList->AddLine(ImVec2(center.x, center.y - s), ImVec2(center.x, center.y + s), color, stroke);
+            drawList->AddTriangleFilled(ImVec2(center.x - s, center.y), ImVec2(center.x - s * 0.35f, center.y - 3.0f), ImVec2(center.x - s * 0.35f, center.y + 3.0f), color);
+            drawList->AddTriangleFilled(ImVec2(center.x + s, center.y), ImVec2(center.x + s * 0.35f, center.y - 3.0f), ImVec2(center.x + s * 0.35f, center.y + 3.0f), color);
+            drawList->AddTriangleFilled(ImVec2(center.x, center.y - s), ImVec2(center.x - 3.0f, center.y - s * 0.35f), ImVec2(center.x + 3.0f, center.y - s * 0.35f), color);
+            drawList->AddTriangleFilled(ImVec2(center.x, center.y + s), ImVec2(center.x - 3.0f, center.y + s * 0.35f), ImVec2(center.x + 3.0f, center.y + s * 0.35f), color);
+            break;
+        case SidebarIcon::Rotate:
+            drawList->AddCircle(center, s, color, 20, stroke);
+            drawList->AddTriangleFilled(ImVec2(center.x + s, center.y - 2.0f), ImVec2(center.x + s + 5.0f, center.y - 2.0f), ImVec2(center.x + s + 2.0f, center.y + 4.0f), color);
+            break;
+        case SidebarIcon::Scale:
+            drawList->AddRect(ImVec2(center.x - s, center.y - s), ImVec2(center.x + s, center.y + s), color, 0.0f, 0, stroke);
+            drawList->AddLine(ImVec2(center.x - s - 3.0f, center.y - s - 3.0f), ImVec2(center.x - s - 7.0f, center.y - s - 3.0f), color, stroke);
+            drawList->AddLine(ImVec2(center.x - s - 3.0f, center.y - s - 3.0f), ImVec2(center.x - s - 3.0f, center.y - s - 7.0f), color, stroke);
+            drawList->AddLine(ImVec2(center.x + s + 3.0f, center.y + s + 3.0f), ImVec2(center.x + s + 7.0f, center.y + s + 3.0f), color, stroke);
+            drawList->AddLine(ImVec2(center.x + s + 3.0f, center.y + s + 3.0f), ImVec2(center.x + s + 3.0f, center.y + s + 7.0f), color, stroke);
+            break;
+        case SidebarIcon::Vehicle:
+            drawList->AddRect(ImVec2(center.x - 9.0f, center.y - 4.0f), ImVec2(center.x + 9.0f, center.y + 4.0f), color, 2.0f, 0, stroke);
+            drawList->AddCircleFilled(ImVec2(center.x - 6.0f, center.y + 5.0f), 2.0f, color);
+            drawList->AddCircleFilled(ImVec2(center.x + 6.0f, center.y + 5.0f), 2.0f, color);
+            break;
+        case SidebarIcon::Evidence:
+            drawList->AddRect(ImVec2(center.x - 7.0f, center.y - 8.0f), ImVec2(center.x + 7.0f, center.y + 8.0f), color, 1.0f, 0, stroke);
+            drawList->AddLine(ImVec2(center.x - 3.0f, center.y - 3.0f), ImVec2(center.x + 3.0f, center.y - 3.0f), color, stroke);
+            drawList->AddLine(ImVec2(center.x - 3.0f, center.y + 2.0f), ImVec2(center.x + 3.0f, center.y + 2.0f), color, stroke);
+            break;
+        case SidebarIcon::Measure:
+            drawList->AddLine(ImVec2(center.x - 9.0f, center.y + 6.0f), ImVec2(center.x + 9.0f, center.y - 6.0f), color, stroke);
+            for (int i = -1; i <= 1; ++i)
+            {
+                const float x = center.x + i * 6.0f;
+                drawList->AddLine(ImVec2(x, center.y + 5.0f - i * 2.0f), ImVec2(x + 2.0f, center.y + 1.0f - i * 2.0f), color, stroke);
+            }
+            break;
+    }
+}
 
 static bool drawSidebarTool(const SidebarTool& item, SidebarState& state)
 {
@@ -197,10 +269,11 @@ static bool drawSidebarTool(const SidebarTool& item, SidebarState& state)
     const ImVec4 iconColor = active
         ? ImVec4(0.96f, 0.70f, 0.18f, 1.0f)
         : (hovered ? ImVec4(0.90f, 0.88f, 0.80f, 1.0f) : ImVec4(0.62f, 0.62f, 0.57f, 1.0f));
-    ImGui::GetWindowDrawList()->AddText(
-        ImVec2(rowStart.x + 13.0f, rowStart.y + 10.0f),
-        ImGui::ColorConvertFloat4ToU32(iconColor),
-        item.icon
+    drawSidebarIcon(
+        ImGui::GetWindowDrawList(),
+        item.icon,
+        ImVec2(rowStart.x + 22.0f, rowStart.y + rowSize.y * 0.5f),
+        ImGui::ColorConvertFloat4ToU32(iconColor)
     );
 
     ImGui::SameLine(0.0f, 0.0f);
@@ -397,18 +470,28 @@ static void drawInterface()
 
     drawSidebarSectionLabel("TRANSFORM");
     const SidebarTool transformTools[] = {
-        {"+", "Select", "Q", 0},
-        {"M", "Move", "W", 1},
-        {"O", "Rotate", "E", 2},
-        {"S", "Scale", "R", 3},
+        {SidebarIcon::Select, "Select", "Q", 0},
+        {SidebarIcon::Move, "Move", "W", 1},
+        {SidebarIcon::Rotate, "Rotate", "E", 2},
+        {SidebarIcon::Scale, "Scale", "R", 3},
     };
     for (const SidebarTool& item : transformTools)
         drawSidebarTool(item, sidebar);
 
     drawSidebarSectionLabel("SCENE ACTIONS");
-    if (ImGui::Button("+   Add Vehicle", ImVec2(-1.0f, 32.0f))) {}
-    if (ImGui::Button("+   Add Evidence", ImVec2(-1.0f, 32.0f))) {}
-    if (ImGui::Button("M   Measure", ImVec2(-1.0f, 32.0f))) {}
+    auto drawActionButton = [](const char* label, SidebarIcon icon)
+    {
+        ImGui::Button("  ", ImVec2(-1.0f, 32.0f));
+        const ImVec2 min = ImGui::GetItemRectMin();
+        const ImVec2 max = ImGui::GetItemRectMax();
+        drawSidebarIcon(ImGui::GetWindowDrawList(), icon, ImVec2(min.x + 22.0f, (min.y + max.y) * 0.5f), IM_COL32(180, 178, 166, 255));
+        ImGui::SameLine(0.0f, 0.0f);
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 39.0f);
+        ImGui::TextUnformatted(label);
+    };
+    drawActionButton("Add Vehicle", SidebarIcon::Vehicle);
+    drawActionButton("Add Evidence", SidebarIcon::Evidence);
+    drawActionButton("Measure", SidebarIcon::Measure);
 
     drawSidebarSectionLabel("DISPLAY");
     ImGui::Checkbox("Grid", &sidebar.showGrid);
