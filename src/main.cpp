@@ -406,7 +406,10 @@ static void drawInterface()
     if (sideSplit != 0)
     {
         if (ImGuiDockNode* sideSplitNode = ImGui::DockBuilderGetNode(sideSplit))
+        {
             sideSplitNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
+            sideSplitNode->SizeRef.x = viewport->WorkSize.x * 0.755f;
+        }
     }
 
     ImGui::End();
@@ -629,7 +632,8 @@ static void drawInterface()
     ImGui::EndChild();
     ImGui::End();
 
-    // Right outliner
+    // Right outliner: keep the right dock compact even when an old ImGui layout is restored.
+    ImGui::SetNextWindowSizeConstraints(ImVec2(300.0f, 160.0f), ImVec2(480.0f, 10000.0f));
     ImGui::Begin("Outliner");
 
     ImGui::TextColored(ImVec4(0.95f, 0.68f, 0.15f, 1.0f), "SCENE OUTLINER");
@@ -682,7 +686,8 @@ static void drawInterface()
 
     ImGui::End();
 
-    // Right properties
+    // Keep the lower right inspector in the same bounded dock.
+    ImGui::SetNextWindowSizeConstraints(ImVec2(300.0f, 160.0f), ImVec2(480.0f, 10000.0f));
     ImGui::Begin("Properties");
 
     ImGui::TextColored(ImVec4(0.95f, 0.68f, 0.15f, 1.0f), "INSPECTOR");
