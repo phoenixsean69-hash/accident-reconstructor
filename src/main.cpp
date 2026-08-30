@@ -518,44 +518,13 @@ static void drawRailTool(
     }
     else if (hovered)
     {
-        drawList->AddRectFilled(
-            pos,
-            max,
-            IM_COL32(
-                43,
-                38,
-                27,
-                255
-            ),
-            4.0f
-        );
-
         drawList->AddRect(
             pos,
             max,
-            IM_COL32(
-                145,
-                113,
-                54,
-                175
-            ),
-            9.0f,
+            IM_COL32(145, 113, 54, 150),
+            4.0f,
             0,
             1.0f
-        );
-    }
-    else
-    {
-        drawList->AddRectFilled(
-            pos,
-            max,
-            IM_COL32(
-                20,
-                21,
-                23,
-                255
-            ),
-            4.0f
         );
     }
 
@@ -917,44 +886,13 @@ static bool drawRailAction(
 
     if (hovered)
     {
-        drawList->AddRectFilled(
-            pos,
-            max,
-            IM_COL32(
-                43,
-                38,
-                27,
-                255
-            ),
-            4.0f
-        );
-
         drawList->AddRect(
             pos,
             max,
-            IM_COL32(
-                145,
-                113,
-                54,
-                175
-            ),
-            9.0f,
+            IM_COL32(145, 113, 54, 150),
+            4.0f,
             0,
             1.0f
-        );
-    }
-    else
-    {
-        drawList->AddRectFilled(
-            pos,
-            max,
-            IM_COL32(
-                20,
-                21,
-                23,
-                255
-            ),
-            4.0f
         );
     }
 
@@ -1241,60 +1179,15 @@ static void drawDisplayToggle(
             max
         );
 
-    if (enabled)
+    if (hovered)
     {
-        drawList->AddRectFilled(
-            pos,
-            max,
-            IM_COL32(
-                55,
-                42,
-                16,
-                255
-            ),
-            4.0f
-        );
-
         drawList->AddRect(
             pos,
             max,
-            IM_COL32(
-                206,
-                151,
-                38,
-                120
-            ),
-            9.0f,
+            IM_COL32(145, 113, 54, 150),
+            4.0f,
             0,
             1.0f
-        );
-    }
-    else if (hovered)
-    {
-        drawList->AddRectFilled(
-            pos,
-            max,
-            IM_COL32(
-                43,
-                38,
-                27,
-                255
-            ),
-            4.0f
-        );
-    }
-    else
-    {
-        drawList->AddRectFilled(
-            pos,
-            max,
-            IM_COL32(
-                20,
-                21,
-                23,
-                255
-            ),
-            4.0f
         );
     }
 
@@ -1321,19 +1214,9 @@ static void drawDisplayToggle(
     );
 
     ImU32 color =
-        enabled || hovered
-        ? IM_COL32(
-            238,
-            174,
-            38,
-            255
-        )
-        : IM_COL32(
-            155,
-            158,
-            163,
-            255
-        );
+        enabled
+        ? IM_COL32(238, 174, 38, 255)
+        : IM_COL32(155, 158, 163, 255);
 
     if (drawGridIcon)
     {
