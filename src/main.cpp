@@ -1509,9 +1509,6 @@ static void drawInterface()
         ImGuiID center =
             dockspace;
 
-        ImGuiID left =
-            0;
-
         ImGuiID right =
             0;
 
@@ -1520,27 +1517,6 @@ static void drawInterface()
 
         ImGuiID rightTop =
             0;
-
-        
-        // Fixed-width Tools rail.
-        constexpr float TOOLS_WIDTH = 280.0f;
-        const float toolsRatio =
-            ImClamp(
-                TOOLS_WIDTH / viewport->WorkSize.x,
-                0.12f,
-                0.22f
-            );
-// ----------------------------------------------------
-        // LEFT RAIL
-        // ----------------------------------------------------
-
-        ImGui::DockBuilderSplitNode(
-            center,
-            ImGuiDir_Left,
-            toolsRatio,
-            &left,
-            &center
-        );
 
         // ----------------------------------------------------
         // RIGHT PANEL
@@ -1584,14 +1560,6 @@ static void drawInterface()
         // ----------------------------------------------------
         // DOCK WINDOWS
         // ----------------------------------------------------
-
-        ImGui::DockBuilderDockWindow("Tools", left);
-
-// Prevent the Tools rail from being dragged horizontally.
-if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
-{
-    toolsNode->LocalFlags |= ImGuiDockNodeFlags_NoResizeX;
-};
 
         ImGui::DockBuilderDockWindow(
             "Viewport",
@@ -1715,9 +1683,6 @@ if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
 
         if (ImGui::BeginMenu("View"))
         {
-            ImGui::MenuItem(
-                "Tools"
-            );
 
             ImGui::MenuItem(
                 "Outliner"
@@ -1780,16 +1745,15 @@ if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
         ImGui::EndMainMenuBar();
     }
 
-    // ========================================================
-    // LIT LEFT TOOL RAIL
-    // ========================================================
-
-    ImGui::Begin(
-        "Tools",
-        nullptr,
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoResize
-    );
+    // The former outer Tools dock is intentionally removed.
+    if (false)
+    {
+        ImGui::Begin(
+            "Tools",
+            nullptr,
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoResize
+        );
 
     ImGui::PushStyleVar(
         ImGuiStyleVar_WindowPadding,
@@ -1921,8 +1885,9 @@ if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
     }
 
     // The outer Tools dock is intentionally empty for now.
-    ImGui::PopStyleVar(2);
-    ImGui::End();
+        ImGui::PopStyleVar(2);
+        ImGui::End();
+    }
 
     // ========================================================
     // VIEWPORT
