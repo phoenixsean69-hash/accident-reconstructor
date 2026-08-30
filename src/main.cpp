@@ -1920,24 +1920,7 @@ if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
         );
     }
 
-    // The outer rail is now reserved for case-level commands.
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    drawRailAction("new_case", "NEW CASE", "Create a new case");
-    drawRailAction("open_case", "OPEN", "Open a case file");
-    drawRailAction("save_case", "SAVE", "Save the current case");
-    drawRailAction("undo", "UNDO", "Undo last change");
-    drawRailAction("redo", "REDO", "Redo last change");
-    drawRailAction("export", "EXPORT", "Export case report");
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-    ImGui::TextDisabled("CASE FILE");
-    ImGui::TextDisabled("UNTITLED");
-
+    // The outer Tools dock is intentionally empty for now.
     ImGui::PopStyleVar(2);
     ImGui::End();
 
@@ -1966,21 +1949,6 @@ if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
     );
 
     ImGui::Separator();
-
-    ImGui::BeginChild("ViewportToolRail", ImVec2(112.0f, 0.0f), true);
-    drawRailTool("viewport_select", "SELECT", "Select object (Q)", selectedTool, 0);
-    drawRailTool("viewport_move", "MOVE", "Move object (W)", selectedTool, 1);
-    drawRailTool("viewport_rotate", "ROTATE", "Rotate object (E)", selectedTool, 2);
-    drawRailTool("viewport_scale", "SCALE", "Scale object (R)", selectedTool, 3);
-    ImGui::Separator();
-    drawRailAction("viewport_vehicle", "VEHICLE", "Add Vehicle");
-    drawRailAction("viewport_evidence", "EVIDENCE", "Add Evidence");
-    drawRailAction("viewport_measure", "MEASURE", "Measure Scene");
-    ImGui::Separator();
-    drawDisplayToggle("viewport_grid", "GRID", "Toggle Grid", showGrid, true);
-    drawDisplayToggle("viewport_axes", "AXES", "Toggle Axes", showAxes, false);
-    ImGui::EndChild();
-    ImGui::SameLine(0.0f, 6.0f);
 
     ImVec2 available =
         ImGui::GetContentRegionAvail();
