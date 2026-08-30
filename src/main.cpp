@@ -640,79 +640,95 @@ static void drawInterface()
     // Right outliner
     ImGui::Begin("Outliner");
 
-    ImGui::Text("SCENE OUTLINER");
+    ImGui::TextColored(ImVec4(0.95f, 0.68f, 0.15f, 1.0f), "SCENE OUTLINER");
+    ImGui::SameLine();
+    ImGui::TextDisabled("/ 4 COLLECTIONS");
     ImGui::Separator();
+    ImGui::TextDisabled("CASE HIERARCHY");
+    ImGui::Spacing();
 
-    if (ImGui::TreeNodeEx(
-        "Environment",
-        ImGuiTreeNodeFlags_DefaultOpen
-    ))
+    auto drawOutlinerItem = [](const char* label, bool selected = false)
     {
-        ImGui::BulletText("Ground Plane");
-        ImGui::BulletText("Road Surface");
+        ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.18f, 0.14f, 0.07f, 1.0f));
+        ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.24f, 0.19f, 0.09f, 1.0f));
+        ImGui::Selectable(label, selected, ImGuiSelectableFlags_SpanAllColumns, ImVec2(0.0f, 25.0f));
+        ImGui::PopStyleColor(2);
+    };
+
+    if (ImGui::TreeNodeEx("ENVIRONMENT", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        drawOutlinerItem("  Ground Plane");
+        drawOutlinerItem("  Road Surface");
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNodeEx(
-        "Vehicles",
-        ImGuiTreeNodeFlags_DefaultOpen
-    ))
+    if (ImGui::TreeNodeEx("VEHICLES", ImGuiTreeNodeFlags_DefaultOpen))
     {
-        ImGui::Selectable("Vehicle A");
-        ImGui::Selectable("Vehicle B");
+        drawOutlinerItem("  Vehicle A", true);
+        drawOutlinerItem("  Vehicle B");
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("Evidence"))
+    if (ImGui::TreeNode("EVIDENCE"))
     {
-        ImGui::Selectable("Skid Mark 01");
-        ImGui::Selectable("Marker 01");
-        ImGui::Selectable("Debris Field 01");
+        drawOutlinerItem("  Skid Mark 01");
+        drawOutlinerItem("  Marker 01");
+        drawOutlinerItem("  Debris Field 01");
         ImGui::TreePop();
     }
 
-    if (ImGui::TreeNode("Measurements"))
+    if (ImGui::TreeNode("MEASUREMENTS"))
     {
-        ImGui::Selectable("Distance 01");
-        ImGui::Selectable("Angle 01");
+        drawOutlinerItem("  Distance 01");
+        drawOutlinerItem("  Angle 01");
         ImGui::TreePop();
     }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::TextDisabled("ACTIVE COLLECTION  /  CASE DATA");
 
     ImGui::End();
 
     // Right properties
     ImGui::Begin("Properties");
 
-    ImGui::Text("INSPECTOR");
+    ImGui::TextColored(ImVec4(0.95f, 0.68f, 0.15f, 1.0f), "INSPECTOR");
+    ImGui::SameLine();
+    ImGui::TextDisabled("/ PROPERTIES");
     ImGui::Separator();
 
-    ImGui::TextDisabled("Nothing selected");
-
+    ImGui::TextDisabled("SELECTION");
+    ImGui::Text("Nothing selected");
+    ImGui::TextDisabled("Select an object in the viewport or outliner.");
     ImGui::Spacing();
 
-    if (ImGui::CollapsingHeader(
-        "Transform",
-        ImGuiTreeNodeFlags_DefaultOpen
-    ))
+    if (ImGui::CollapsingHeader("TRANSFORM", ImGuiTreeNodeFlags_DefaultOpen))
     {
         static float position[3] = { 0.0f, 0.0f, 0.0f };
         static float rotation[3] = { 0.0f, 0.0f, 0.0f };
         static float scale[3] = { 1.0f, 1.0f, 1.0f };
 
-        ImGui::DragFloat3("Position", position, 0.1f);
-        ImGui::DragFloat3("Rotation", rotation, 1.0f);
-        ImGui::DragFloat3("Scale", scale, 0.01f);
+        ImGui::PushItemWidth(-1.0f);
+        ImGui::DragFloat3("Position", position, 0.1f, 0.0f, 0.0f, "%.3f");
+        ImGui::DragFloat3("Rotation", rotation, 1.0f, 0.0f, 0.0f, "%.1f deg");
+        ImGui::DragFloat3("Scale", scale, 0.01f, 0.0f, 0.0f, "%.3f");
+        ImGui::PopItemWidth();
     }
 
-    if (ImGui::CollapsingHeader("Metadata"))
+    if (ImGui::CollapsingHeader("METADATA"))
     {
         static char objectName[128] = "Untitled Object";
         ImGui::InputText("Name", objectName, sizeof(objectName));
-        ImGui::Text("Type: Scene Entity");
-        ImGui::Text("Units: meters");
+        ImGui::TextDisabled("Type");
+        ImGui::SameLine(110.0f);
+        ImGui::Text("Scene Entity");
+        ImGui::TextDisabled("Units");
+        ImGui::SameLine(110.0f);
+        ImGui::Text("meters");
     }
 
-    if (ImGui::CollapsingHeader("Analysis"))
+    if (ImGui::CollapsingHeader("ANALYSIS"))
     {
         ImGui::TextDisabled("No analysis data available.");
         ImGui::TextDisabled("Add evidence to begin.");
