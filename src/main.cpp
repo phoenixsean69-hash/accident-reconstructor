@@ -1684,6 +1684,68 @@ static void enforceRightPanelBounds(
 // INTERFACE
 // ============================================================
 
+static void drawCaseView()
+{
+    ImGui::Begin("Case View");
+
+    ImGui::Text("CASE OVERVIEW");
+    ImGui::SameLine();
+    ImGui::TextDisabled("/ CASE FILE");
+    ImGui::Separator();
+
+    ImGui::BeginChild("CaseOverviewContent", ImVec2(0.0f, 0.0f), false);
+    ImGui::Text("UNTITLED CASE");
+    ImGui::SameLine(ImGui::GetContentRegionAvail().x - 110.0f);
+    ImGui::TextColored(ImVec4(0.93f, 0.68f, 0.15f, 1.0f), "DRAFT");
+    ImGui::Separator();
+
+    ImGui::Columns(2, "CaseOverviewColumns", false);
+    ImGui::TextDisabled("CASE ID");
+    ImGui::Text("UNASSIGNED");
+    ImGui::NextColumn();
+    ImGui::TextDisabled("STATUS");
+    ImGui::Text("DRAFT");
+    ImGui::NextColumn();
+    ImGui::TextDisabled("INCIDENT DATE");
+    ImGui::Text("NOT SET");
+    ImGui::NextColumn();
+    ImGui::TextDisabled("LOCATION");
+    ImGui::Text("NOT SET");
+    ImGui::Columns(1);
+
+    ImGui::Spacing();
+    ImGui::Text("INCIDENT SUMMARY");
+    ImGui::Separator();
+    ImGui::TextWrapped("No incident summary has been entered. Add the essential case facts, scene location, and reconstruction notes here.");
+
+    ImGui::Spacing();
+    ImGui::Text("CASE CONTENT");
+    ImGui::Separator();
+    ImGui::BeginTable("CaseContentTable", 3, ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_RowBg);
+    ImGui::TableSetupColumn("CATEGORY");
+    ImGui::TableSetupColumn("COUNT");
+    ImGui::TableSetupColumn("STATUS");
+    ImGui::TableHeadersRow();
+    const char* rows[][3] = {{"VEHICLES", "2", "READY"}, {"EVIDENCE", "0", "EMPTY"}, {"MEASUREMENTS", "0", "EMPTY"}};
+    for (const auto& row : rows)
+    {
+        ImGui::TableNextRow();
+        for (int column = 0; column < 3; ++column)
+        {
+            ImGui::TableSetColumnIndex(column);
+            ImGui::TextUnformatted(row[column]);
+        }
+    }
+    ImGui::EndTable();
+
+    ImGui::Spacing();
+    ImGui::Text("INVOLVED PARTIES");
+    ImGui::Separator();
+    ImGui::TextDisabled("No parties have been added.");
+    ImGui::EndChild();
+    ImGui::End();
+}
+
 static void drawInterface()
 {
     static int selectedTool =
@@ -1826,6 +1888,11 @@ static void drawInterface()
         // ----------------------------------------------------
         // DOCK WINDOWS
         // ----------------------------------------------------
+
+        ImGui::DockBuilderDockWindow(
+            "Case View",
+            center
+        );
 
         ImGui::DockBuilderDockWindow(
             "Viewport",
@@ -2169,6 +2236,8 @@ static void drawInterface()
         ImGui::PopStyleVar(2);
         ImGui::End();
     }
+
+    drawCaseView();
 
     // ========================================================
     // VIEWPORT
