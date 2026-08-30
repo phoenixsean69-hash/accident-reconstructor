@@ -8,6 +8,17 @@
 
 #include <cstdio>
 #include <algorithm>
+#include <array>
+#include <fstream>
+#include <iterator>
+#include <string>
+#include <vector>
+#include <cstdint>
+
+#define NANOSVG_IMPLEMENTATION
+#include "../third_party/nanosvg/nanosvg.h"
+#define NANOSVGRAST_IMPLEMENTATION
+#include "../third_party/nanosvg/nanosvgrast.h"
 
 constexpr int WINDOW_WIDTH = 1600;
 constexpr int WINDOW_HEIGHT = 900;
@@ -18,6 +29,34 @@ constexpr int WINDOW_HEIGHT = 900;
 
 constexpr float RIGHT_PANEL_MIN_WIDTH = 260.0f;
 constexpr float RIGHT_PANEL_MAX_WIDTH = 430.0f;
+
+enum class ToolIcon { Select, Move, Rotate, Scale, Vehicle, Evidence, Measure, Grid, Axes };
+static std::array<GLuint, 9> gToolIcons{};
+
+static GLuint loadSvgTexture(const char* path)
+{
+    std::ifstream file(path);
+    if (!file) return 0;
+    const std::string source((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    NSVGimage* image = nsvgParse(const_cast<char*>(source.c_str()), "px", 96.0f);
+    if (!image) return 0;
+    NSVGrasterizer* rasterizer = nsvgCreateRasterizer();
+    if (!rasterizer) { nsvgDelete(image); return 0; }
+    const int width = std::max(1, static_cast<int>(image->width));
+    const int height = std::max(1, static_cast<int>(image->height));
+    std::vector<unsigned char> pixels(static_cast<size_t>(width * height * 4));
+    nsvgRasterize(rasterizer, image, 0, 0, 1.0f, pixels.data(), width, height, width * 4);
+    GLuint texture = 0;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+    nsvgDeleteRasterizer(rasterizer);
+    nsvgDelete(image);
+    return texture;
+}
 
 // ============================================================
 // SHADERS
@@ -575,6 +614,18 @@ static void drawRailTool(
     // ICON
     // --------------------------------------------------------
 
+    if (gToolIcons[toolValue] != 0)
+    {
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
+        ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(gToolIcons[toolValue])), ImVec2(iconSize, iconSize));
+        ImVec2 labelSize = ImGui::CalcTextSize(label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 1.0f), active ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        if (hovered) ImGui::SetTooltip("%s", tooltip);
+        ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
+        ImGui::PopID();
+        return;
+    }
+
     ImVec2 center(
         pos.x +
         buttonWidth * 0.5f,
@@ -905,6 +956,19 @@ static bool drawRailAction(
             )
         );
 
+    int iconIndex = id[0] == 'v' ? 4 : (id[0] == 'e' ? 5 : 6);
+    if (gToolIcons[iconIndex] != 0)
+    {
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
+        ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(gToolIcons[iconIndex])), ImVec2(iconSize, iconSize));
+        ImVec2 labelSize = ImGui::CalcTextSize(label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 1.0f), hovered ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        if (hovered) ImGui::SetTooltip("%s", tooltip);
+        ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
+        ImGui::PopID();
+        return clicked;
+    }
+
     ImVec2 center(
         pos.x +
         buttonWidth * 0.5f,
@@ -1203,6 +1267,19 @@ static void drawDisplayToggle(
     {
         enabled =
             !enabled;
+    }
+
+    int iconIndex = drawGridIcon ? 7 : 8;
+    if (gToolIcons[iconIndex] != 0)
+    {
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
+        ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(gToolIcons[iconIndex])), ImVec2(iconSize, iconSize));
+        ImVec2 labelSize = ImGui::CalcTextSize(label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 1.0f), enabled ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        if (hovered) ImGui::SetTooltip("%s", tooltip);
+        ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
+        ImGui::PopID();
+        return;
     }
 
     ImVec2 center(
@@ -2695,6 +2772,14 @@ io.IniFilename = nullptr;
     glBindVertexArray(
         0
     );
+
+    const char* iconPaths[] = {
+        "assets/icons/blender/select.svg", "assets/icons/blender/move.svg", "assets/icons/blender/rotate.svg",
+        "assets/icons/blender/scale.svg", "assets/icons/blender/vehicle.svg", "assets/icons/blender/evidence.svg",
+        "assets/icons/blender/measure.svg", "assets/icons/blender/grid.svg", "assets/icons/blender/axes.svg"
+    };
+    for (size_t i = 0; i < std::size(iconPaths); ++i)
+        gToolIcons[i] = loadSvgTexture(iconPaths[i]);
 
     // ========================================================
     // MAIN LOOP
