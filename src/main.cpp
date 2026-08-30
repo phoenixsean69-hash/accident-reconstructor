@@ -163,7 +163,7 @@ struct SidebarTool
 static bool drawSidebarTool(const SidebarTool& item, SidebarState& state)
 {
     const bool active = state.selectedTool == item.value;
-    const ImVec2 rowSize(-1.0f, 38.0f);
+    const ImVec2 rowSize(-1.0f, 32.0f);
     const ImVec2 rowStart = ImGui::GetCursorScreenPos();
 
     ImGui::PushID(item.label);
@@ -227,7 +227,6 @@ static void drawSidebarSectionLabel(const char* label)
     ImGui::Spacing();
     ImGui::TextDisabled("%s", label);
     ImGui::Separator();
-    ImGui::Spacing();
 }
 
 static void drawInterface()
@@ -283,7 +282,7 @@ static void drawInterface()
         ImGui::DockBuilderSplitNode(
             center,
             ImGuiDir_Left,
-            0.19f,
+            0.145f,
             &left,
             &center
         );
@@ -390,7 +389,7 @@ static void drawInterface()
 
     ImGui::Spacing();
     ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.10f, 0.095f, 0.075f, 1.0f));
-    ImGui::BeginChild("SidebarContext", ImVec2(0.0f, 42.0f), true);
+    ImGui::BeginChild("SidebarContext", ImVec2(0.0f, 52.0f), true);
     ImGui::Text("CASE  /  UNTITLED");
     ImGui::TextDisabled("EDITOR FOUNDATION");
     ImGui::EndChild();
@@ -399,17 +398,17 @@ static void drawInterface()
     drawSidebarSectionLabel("TRANSFORM");
     const SidebarTool transformTools[] = {
         {"+", "Select", "Q", 0},
-        {"↔", "Move", "W", 1},
-        {"⟳", "Rotate", "E", 2},
-        {"□", "Scale", "R", 3},
+        {"M", "Move", "W", 1},
+        {"O", "Rotate", "E", 2},
+        {"S", "Scale", "R", 3},
     };
     for (const SidebarTool& item : transformTools)
         drawSidebarTool(item, sidebar);
 
     drawSidebarSectionLabel("SCENE ACTIONS");
-    if (ImGui::Button("+   Add Vehicle", ImVec2(-1.0f, 36.0f))) {}
-    if (ImGui::Button("+   Add Evidence", ImVec2(-1.0f, 36.0f))) {}
-    if (ImGui::Button("⌖   Measure", ImVec2(-1.0f, 36.0f))) {}
+    if (ImGui::Button("+   Add Vehicle", ImVec2(-1.0f, 32.0f))) {}
+    if (ImGui::Button("+   Add Evidence", ImVec2(-1.0f, 32.0f))) {}
+    if (ImGui::Button("M   Measure", ImVec2(-1.0f, 32.0f))) {}
 
     drawSidebarSectionLabel("DISPLAY");
     ImGui::Checkbox("Grid", &sidebar.showGrid);
