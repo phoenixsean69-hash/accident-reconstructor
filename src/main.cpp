@@ -384,6 +384,12 @@ static void drawInterface()
             &right
         );
 
+        // Keep the outer shelves fixed; only the center viewport remains flexible.
+        if (ImGuiDockNode* leftNode = ImGui::DockBuilderGetNode(left))
+            leftNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
+        if (ImGuiDockNode* rightNode = ImGui::DockBuilderGetNode(right))
+            rightNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
+
         ImGui::DockBuilderDockWindow("Tools", left);
         ImGui::DockBuilderDockWindow("Viewport", center);
         ImGui::DockBuilderDockWindow("Timeline", bottom);
@@ -395,6 +401,23 @@ static void drawInterface()
     }
 
     ImGui::End();
+
+    // Reapply the constraints every frame so saved ImGui layouts cannot unlock the shelves.
+    if (ImGuiWindow* toolsWindow = ImGui::FindWindowByName("Tools"))
+    {
+        if (toolsWindow->DockNode)
+            toolsWindow->DockNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
+    }
+    if (ImGuiWindow* outlinerWindow = ImGui::FindWindowByName("Outliner"))
+    {
+        if (outlinerWindow->DockNode)
+            outlinerWindow->DockNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
+    }
+    if (ImGuiWindow* propertiesWindow = ImGui::FindWindowByName("Properties"))
+    {
+        if (propertiesWindow->DockNode)
+            propertiesWindow->DockNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
+    }
 
     if (ImGui::BeginMainMenuBar())
     {
