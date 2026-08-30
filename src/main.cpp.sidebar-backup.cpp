@@ -1,4 +1,4 @@
-﻿#include <glad/glad.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include "imgui.h"
@@ -1638,23 +1638,14 @@ static void drawInterface()
         ImGuiID rightTop =
             0;
 
-        
-        // Fixed-width Tools rail.
-        constexpr float TOOLS_WIDTH = 280.0f;
-        const float toolsRatio =
-            ImClamp(
-                TOOLS_WIDTH / viewport->WorkSize.x,
-                0.12f,
-                0.22f
-            );
-// ----------------------------------------------------
+        // ----------------------------------------------------
         // LEFT RAIL
         // ----------------------------------------------------
 
         ImGui::DockBuilderSplitNode(
             center,
             ImGuiDir_Left,
-            toolsRatio,
+            0.085f,
             &left,
             &center
         );
@@ -1702,13 +1693,10 @@ static void drawInterface()
         // DOCK WINDOWS
         // ----------------------------------------------------
 
-        ImGui::DockBuilderDockWindow("Tools", left);
-
-// Prevent the Tools rail from being dragged horizontally.
-if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
-{
-    toolsNode->LocalFlags |= ImGuiDockNodeFlags_NoResizeX;
-};
+        ImGui::DockBuilderDockWindow(
+            "Tools",
+            left
+        );
 
         ImGui::DockBuilderDockWindow(
             "Viewport",
@@ -2645,7 +2633,7 @@ if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
     ImGui::SameLine();
 
     ImGui::TextDisabled(
-        "Pre-impact  â†’  Impact  â†’  Rest"
+        "Pre-impact  →  Impact  →  Rest"
     );
 
     ImGui::Separator();
@@ -2711,7 +2699,7 @@ int main()
         glfwCreateWindow(
             WINDOW_WIDTH,
             WINDOW_HEIGHT,
-            "Sovereign Accident Reconstructor v0.1.0 â€” OpenGL 4.6",
+            "Sovereign Accident Reconstructor v0.1.0 — OpenGL 4.6",
             nullptr,
             nullptr
         );
@@ -2758,11 +2746,8 @@ int main()
 
     ImGui::CreateContext();
 
-    ImGuiIO& io = ImGui::GetIO();
-
-// Application owns the dock layout.
-// Do not restore a previously dragged ImGui layout.
-io.IniFilename = nullptr;
+    ImGuiIO& io =
+        ImGui::GetIO();
 
     io.ConfigFlags |=
         ImGuiConfigFlags_NavEnableKeyboard;
