@@ -14,6 +14,11 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <filesystem>
+
+#ifndef SFE_ASSET_DIR
+#define SFE_ASSET_DIR "assets"
+#endif
 
 #define NANOSVG_IMPLEMENTATION
 #include "../third_party/nanosvg/nanosvg.h"
@@ -35,7 +40,32 @@ static std::array<GLuint, 9> gToolIcons{};
 
 static GLuint loadSvgTexture(const char* path)
 {
-    std::ifstream file(path);
+    const std::filesystem::path relativePath(path);
+    const std::array<std::filesystem::path, 5> candidates = {
+        relativePath,
+        std::filesystem::path(SFE_ASSET_DIR).parent_path() / relativePath,
+        std::filesystem::path(SFE_ASSET_DIR) / relativePath.filename(),
+        std::filesystem::current_path() / ".." / relativePath,
+        std::filesystem::current_path() / ".." / ".." / relativePath
+    };
+
+    std::filesystem::path resolvedPath;
+    for (const auto& candidate : candidates)
+    {
+        if (std::filesystem::exists(candidate))
+        {
+            resolvedPath = candidate;
+            break;
+        }
+    }
+
+    if (resolvedPath.empty())
+    {
+        std::fprintf(stderr, "[icons] Missing SVG: %s\\n", path);
+        return 0;
+    }
+
+    std::ifstream file(resolvedPath);
     if (!file) return 0;
     const std::string source((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     NSVGimage* image = nsvgParse(const_cast<char*>(source.c_str()), "px", 96.0f);

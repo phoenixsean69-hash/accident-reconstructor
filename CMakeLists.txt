@@ -56,6 +56,10 @@ target_include_directories(sfe PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+target_compile_definitions(sfe PRIVATE
+    SFE_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"
+)
+
 # ── Link libraries ───────────────────────────
 target_link_libraries(sfe PRIVATE glfw)
 target_link_libraries(sfe PRIVATE imgui)
