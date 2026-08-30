@@ -1699,19 +1699,28 @@ static void drawCaseView()
     ImGui::TextColored(ImVec4(0.93f, 0.68f, 0.15f, 1.0f), "DRAFT");
     ImGui::Separator();
 
-    ImGui::Columns(2, "CaseOverviewColumns", false);
-    ImGui::TextDisabled("CASE ID");
-    ImGui::Text("UNASSIGNED");
-    ImGui::NextColumn();
-    ImGui::TextDisabled("STATUS");
-    ImGui::Text("DRAFT");
-    ImGui::NextColumn();
-    ImGui::TextDisabled("INCIDENT DATE");
-    ImGui::Text("NOT SET");
-    ImGui::NextColumn();
-    ImGui::TextDisabled("LOCATION");
-    ImGui::Text("NOT SET");
-    ImGui::Columns(1);
+    ImGui::TextDisabled("CASE WORKSPACE");
+    ImGui::TextWrapped("Build the reconstruction from one place. Record the incident context, add scene material, then review the analysis before exporting the case.");
+    ImGui::Spacing();
+
+    ImGui::BeginTable("CaseSummaryCards", 4, ImGuiTableFlags_SizingStretchSame);
+    const char* cardLabels[] = {"CASE ID", "INCIDENT DATE", "LOCATION", "LAST UPDATED"};
+    const char* cardValues[] = {"UNASSIGNED", "NOT SET", "NOT SET", "JUST NOW"};
+    for (int i = 0; i < 4; ++i)
+    {
+        ImGui::TableNextColumn();
+        ImGui::TextDisabled("%s", cardLabels[i]);
+        ImGui::Text("%s", cardValues[i]);
+    }
+    ImGui::EndTable();
+
+    ImGui::Spacing();
+    ImGui::Text("CASE PROGRESS");
+    ImGui::Separator();
+    ImGui::TextDisabled("SCENE SETUP"); ImGui::SameLine(170.0f); ImGui::Text("READY");
+    ImGui::TextDisabled("EVIDENCE REVIEW"); ImGui::SameLine(170.0f); ImGui::Text("NOT STARTED");
+    ImGui::TextDisabled("ANALYSIS"); ImGui::SameLine(170.0f); ImGui::Text("NOT STARTED");
+    ImGui::ProgressBar(0.18f, ImVec2(-1.0f, 8.0f), "18% COMPLETE");
 
     ImGui::Spacing();
     ImGui::Text("INCIDENT SUMMARY");
@@ -1721,7 +1730,7 @@ static void drawCaseView()
     ImGui::Spacing();
     ImGui::Text("CASE CONTENT");
     ImGui::Separator();
-    ImGui::BeginTable("CaseContentTable", 3, ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_RowBg);
+    ImGui::BeginTable("CaseContentTable", 3, ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp);
     ImGui::TableSetupColumn("CATEGORY");
     ImGui::TableSetupColumn("COUNT");
     ImGui::TableSetupColumn("STATUS");
@@ -1737,6 +1746,17 @@ static void drawCaseView()
         }
     }
     ImGui::EndTable();
+
+    ImGui::Spacing();
+    ImGui::Text("NEXT ACTIONS");
+    ImGui::Separator();
+    if (ImGui::Button("OPEN VIEWPORT")) {}
+    ImGui::SameLine();
+    if (ImGui::Button("ADD EVIDENCE")) {}
+    ImGui::SameLine();
+    if (ImGui::Button("START ANALYSIS")) {}
+    ImGui::SameLine();
+    if (ImGui::Button("EXPORT CASE")) {}
 
     ImGui::Spacing();
     ImGui::Text("INVOLVED PARTIES");
