@@ -332,6 +332,7 @@ static void drawInterface()
     );
 
     static bool layoutBuilt = false;
+    static ImGuiID sideSplit = 0;
 
     if (!layoutBuilt)
     {
@@ -362,7 +363,7 @@ static void drawInterface()
 
         // This node owns the left/right boundary. Lock the boundary itself,
         // rather than the child panel, so dragging cannot swallow the viewport.
-        ImGuiID sideSplit = center;
+        sideSplit = center;
         ImGui::DockBuilderSplitNode(
             sideSplit,
             ImGuiDir_Right,
@@ -370,8 +371,6 @@ static void drawInterface()
             &right,
             &center
         );
-        if (ImGuiDockNode* sideSplitNode = ImGui::DockBuilderGetNode(sideSplit))
-            sideSplitNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
 
         ImGui::DockBuilderSplitNode(
             center,
@@ -398,7 +397,16 @@ static void drawInterface()
         ImGui::DockBuilderDockWindow("Properties", right);
 
         ImGui::DockBuilderFinish(dockspace);
+        if (ImGuiDockNode* sideSplitNode = ImGui::DockBuilderGetNode(sideSplit))
+            sideSplitNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
         layoutBuilt = true;
+    }
+
+    // Enforce the lock after ImGui restores or updates the dock tree.
+    if (sideSplit != 0)
+    {
+        if (ImGuiDockNode* sideSplitNode = ImGui::DockBuilderGetNode(sideSplit))
+            sideSplitNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
     }
 
     ImGui::End();
@@ -693,11 +701,20 @@ static void drawInterface()
         static float rotation[3] = { 0.0f, 0.0f, 0.0f };
         static float scale[3] = { 1.0f, 1.0f, 1.0f };
 
-        ImGui::PushItemWidth(-1.0f);
-        ImGui::DragFloat3("Position", position, 0.1f, 0.0f, 0.0f, "%.3f");
-        ImGui::DragFloat3("Rotation", rotation, 1.0f, 0.0f, 0.0f, "%.1f deg");
-        ImGui::DragFloat3("Scale", scale, 0.01f, 0.0f, 0.0f, "%.3f");
-        ImGui::PopItemWidth();
+        auto drawTransformRow = [](const char* label, const char* id, float values[3], float speed, const char* format)
+        {
+            const float labelWidth = 70.0f;
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextUnformatted(label);
+            ImGui::SameLine(labelWidth);
+            ImGui::PushItemWidth(-1.0f);
+            ImGui::DragFloat3(id, values, speed, 0.0f, 0.0f, format);
+            ImGui::PopItemWidth();
+        };
+
+        drawTransformRow("Position", "##Position", position, 0.1f, "%.3f");
+        drawTransformRow("Rotation", "##Rotation", rotation, 1.0f, "%.1f deg");
+        drawTransformRow("Scale", "##Scale", scale, 0.01f, "%.3f");
     }
 
     if (ImGui::CollapsingHeader("METADATA"))
