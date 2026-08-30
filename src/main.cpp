@@ -449,14 +449,14 @@ static void drawRailTool(
             availableWidth - 2.0f
         );
 
-    const float iconSize =
-        std::min(
-            46.0f,
-            buttonWidth - 10.0f
-        );
+  const float iconSize =
+  std::min(
+  38.0f,
+  buttonWidth - 10.0f
+  );
 
-    const float totalHeight =
-        iconSize + 18.0f;
+  const float totalHeight =
+  iconSize + 14.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -497,11 +497,11 @@ static void drawRailTool(
                 238,
                 174,
                 38,
-                70
+                90
             ),
-            10.0f,
+            4.0f,
             0,
-            3.0f
+            1.0f
         );
 
         drawList->AddRectFilled(
@@ -513,7 +513,7 @@ static void drawRailTool(
                 17,
                 255
             ),
-            9.0f
+            4.0f
         );
     }
     else if (hovered)
@@ -527,7 +527,7 @@ static void drawRailTool(
                 27,
                 255
             ),
-            9.0f
+            4.0f
         );
 
         drawList->AddRect(
@@ -555,7 +555,7 @@ static void drawRailTool(
                 23,
                 255
             ),
-            9.0f
+            4.0f
         );
     }
 
@@ -889,14 +889,14 @@ static bool drawRailAction(
             availableWidth - 2.0f
         );
 
-    const float iconSize =
-        std::min(
-            46.0f,
-            buttonWidth - 10.0f
-        );
+  const float iconSize =
+  std::min(
+  38.0f,
+  buttonWidth - 10.0f
+  );
 
-    const float totalHeight =
-        iconSize + 18.0f;
+  const float totalHeight =
+  iconSize + 14.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -926,7 +926,7 @@ static bool drawRailAction(
                 27,
                 255
             ),
-            9.0f
+            4.0f
         );
 
         drawList->AddRect(
@@ -954,7 +954,7 @@ static bool drawRailAction(
                 23,
                 255
             ),
-            9.0f
+            4.0f
         );
     }
 
@@ -1215,14 +1215,14 @@ static void drawDisplayToggle(
             availableWidth - 2.0f
         );
 
-    const float iconSize =
-        std::min(
-            46.0f,
-            buttonWidth - 10.0f
-        );
+  const float iconSize =
+  std::min(
+  38.0f,
+  buttonWidth - 10.0f
+  );
 
-    const float totalHeight =
-        iconSize + 18.0f;
+  const float totalHeight =
+  iconSize + 14.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -1252,7 +1252,7 @@ static void drawDisplayToggle(
                 16,
                 255
             ),
-            9.0f
+            4.0f
         );
 
         drawList->AddRect(
@@ -1280,7 +1280,7 @@ static void drawDisplayToggle(
                 27,
                 255
             ),
-            9.0f
+            4.0f
         );
     }
     else
@@ -1294,7 +1294,7 @@ static void drawDisplayToggle(
                 23,
                 255
             ),
-            9.0f
+            4.0f
         );
     }
 
@@ -1958,8 +1958,8 @@ if (ImGuiDockNode* toolsNode = ImGui::DockBuilderGetNode(left))
                 11,
                 255
             ),
-            10.0f
-        );
+            4.0f
+            );
 
         drawList->AddRect(
             ImVec2(
