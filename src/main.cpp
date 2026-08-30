@@ -77,6 +77,15 @@ static GLuint loadSvgTexture(const char* path)
     const int height = std::max(1, static_cast<int>(image->height));
     std::vector<unsigned char> pixels(static_cast<size_t>(width * height * 4));
     nsvgRasterize(rasterizer, image, 0, 0, 1.0f, pixels.data(), width, height, width * 4);
+    for (size_t i = 0; i + 3 < pixels.size(); i += 4)
+    {
+        if (pixels[i + 3] > 0)
+        {
+            pixels[i] = 255;
+            pixels[i + 1] = 255;
+            pixels[i + 2] = 255;
+        }
+    }
     GLuint texture = 0;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -926,7 +935,8 @@ static void drawRailTool(
 static bool drawRailAction(
     const char* id,
     const char* label,
-    const char* tooltip
+    const char* tooltip,
+    int iconIndex
 )
 {
     ImGui::PushID(id);
@@ -987,7 +997,6 @@ static bool drawRailAction(
             )
         );
 
-    int iconIndex = id[0] == 'v' ? 4 : (id[0] == 'e' ? 5 : 6);
     if (gToolIcons[iconIndex] != 0)
     {
         ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
@@ -2029,9 +2038,9 @@ static void drawInterface()
     drawRailTool("viewport_rotate", "ROTATE", "Rotate object (E)", selectedTool, 2);
     drawRailTool("viewport_scale", "SCALE", "Scale object (R)", selectedTool, 3);
     ImGui::Separator();
-    drawRailAction("viewport_vehicle", "VEHICLE", "Add Vehicle");
-    drawRailAction("viewport_evidence", "EVIDENCE", "Add Evidence");
-    drawRailAction("viewport_measure", "MEASURE", "Measure Scene");
+    drawRailAction("viewport_vehicle", "VEHICLE", "Add Vehicle", 4);
+    drawRailAction("viewport_evidence", "EVIDENCE", "Add Evidence", 5);
+    drawRailAction("viewport_measure", "MEASURE", "Measure Scene", 6);
     ImGui::Separator();
     drawDisplayToggle("viewport_grid", "GRID", "Toggle Grid", showGrid, true);
     drawDisplayToggle("viewport_axes", "AXES", "Toggle Axes", showAxes, false);
