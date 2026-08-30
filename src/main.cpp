@@ -1,5 +1,6 @@
-﻿#include <glad/glad.h>
+﻿#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -647,7 +648,7 @@ static void drawRailTool(
     if (gToolIcons[toolValue] != 0)
     {
         ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
-        ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(gToolIcons[toolValue])), ImVec2(iconSize, iconSize));
+        ImGui::Image(static_cast<ImTextureID>(gToolIcons[toolValue]), ImVec2(iconSize, iconSize));
         ImVec2 labelSize = ImGui::CalcTextSize(label);
         drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 1.0f), active ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
         if (hovered) ImGui::SetTooltip("%s", tooltip);
@@ -990,7 +991,7 @@ static bool drawRailAction(
     if (gToolIcons[iconIndex] != 0)
     {
         ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
-        ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(gToolIcons[iconIndex])), ImVec2(iconSize, iconSize));
+        ImGui::Image(static_cast<ImTextureID>(gToolIcons[iconIndex]), ImVec2(iconSize, iconSize));
         ImVec2 labelSize = ImGui::CalcTextSize(label);
         drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 1.0f), hovered ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
         if (hovered) ImGui::SetTooltip("%s", tooltip);
@@ -1303,7 +1304,7 @@ static void drawDisplayToggle(
     if (gToolIcons[iconIndex] != 0)
     {
         ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
-        ImGui::Image(reinterpret_cast<ImTextureID>(static_cast<intptr_t>(gToolIcons[iconIndex])), ImVec2(iconSize, iconSize));
+        ImGui::Image(static_cast<ImTextureID>(gToolIcons[iconIndex]), ImVec2(iconSize, iconSize));
         ImVec2 labelSize = ImGui::CalcTextSize(label);
         drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 1.0f), enabled ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
         if (hovered) ImGui::SetTooltip("%s", tooltip);
