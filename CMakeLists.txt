@@ -6,6 +6,32 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# ── Dear ImGui ─────────────────────────────────
+# Use the docking branch because the application uses ImGuiConfigFlags_DockingEnable.
+include(FetchContent)
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG docking
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
+)
+FetchContent_MakeAvailable(imgui)
+
+add_library(imgui STATIC
+    ${imgui_SOURCE_DIR}/imgui.cpp
+    ${imgui_SOURCE_DIR}/imgui_demo.cpp
+    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+)
+target_include_directories(imgui PUBLIC
+    ${imgui_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+target_compile_definitions(imgui PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD)
+
 # ── GLFW ─────────────────────────────────────
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glfw/CMakeLists.txt)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -15,6 +41,9 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glfw/CMakeLists.txt)
 else()
     message(FATAL_ERROR "GLFW not found. Run: git clone https://github.com/glfw/glfw.git third_party/glfw")
 endif()
+
+# The ImGui GLFW backend needs GLFW's public headers while it is compiled.
+target_link_libraries(imgui PRIVATE glfw)
 
 # ── Source files ─────────────────────────────
 add_executable(sfe
@@ -29,6 +58,7 @@ target_include_directories(sfe PRIVATE
 
 # ── Link libraries ───────────────────────────
 target_link_libraries(sfe PRIVATE glfw)
+target_link_libraries(sfe PRIVATE imgui)
 
 # Windows: OpenGL + GDI32
 if(WIN32)

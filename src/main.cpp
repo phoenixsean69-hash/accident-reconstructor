@@ -1,57 +1,603 @@
-// Sovereign Accident Reconstructor — Phase 1
-// OpenGL 4.6 Core. Renders a colored triangle.
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include "imgui.h"
+#include "imgui_internal.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
 #include <cstdio>
 
-// Forensic dark background
-constexpr float BG_R = 0.08f;
-constexpr float BG_G = 0.08f;
-constexpr float BG_B = 0.09f;
+constexpr int WINDOW_WIDTH = 1600;
+constexpr int WINDOW_HEIGHT = 900;
 
-// Vertex shader: positions + colors
 const char* vertexShaderSource = R"(
 #version 460 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
+layout(location = 0) in vec3 aPos;
+layout(location = 1) in vec3 aColor;
+
 out vec3 vColor;
-void main() {
+
+void main()
+{
     gl_Position = vec4(aPos, 1.0);
     vColor = aColor;
 }
 )";
 
-// Fragment shader: interpolate colors
 const char* fragmentShaderSource = R"(
 #version 460 core
 in vec3 vColor;
 out vec4 FragColor;
-void main() {
+
+void main()
+{
     FragColor = vec4(vColor, 1.0);
 }
 )";
 
-// Helper: compile shader, print errors
-static GLuint compileShader(GLenum type, const char* source) {
+static GLuint compileShader(GLenum type, const char* source)
+{
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, nullptr);
     glCompileShader(shader);
 
-    GLint success;
+    GLint success = GL_FALSE;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        char infoLog[512];
-        glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-        printf("[ERROR] Shader compilation failed:\n%s\n", infoLog);
+
+    if (!success)
+    {
+        char log[512]{};
+        glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
+        std::printf("[ERROR] Shader compilation failed:\n%s\n", log);
     }
+
     return shader;
 }
 
-int main() {
-    // ── 1. Init GLFW ─────────────────────────
-    if (!glfwInit()) {
-        printf("[FATAL] Failed to initialize GLFW\n");
+static GLuint createShaderProgram()
+{
+    GLuint vertexShader =
+        compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+
+    GLuint fragmentShader =
+        compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+
+    GLuint program = glCreateProgram();
+
+    glAttachShader(program, vertexShader);
+    glAttachShader(program, fragmentShader);
+    glLinkProgram(program);
+
+    GLint success = GL_FALSE;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+
+    if (!success)
+    {
+        char log[512]{};
+        glGetProgramInfoLog(program, sizeof(log), nullptr, log);
+        std::printf("[ERROR] Shader linking failed:\n%s\n", log);
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return program;
+}
+
+static void applySovereignTheme()
+{
+    ImGui::StyleColorsDark();
+
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    style.WindowRounding = 2.0f;
+    style.ChildRounding = 2.0f;
+    style.FrameRounding = 2.0f;
+    style.PopupRounding = 2.0f;
+    style.ScrollbarRounding = 2.0f;
+    style.GrabRounding = 2.0f;
+    style.TabRounding = 2.0f;
+
+    style.WindowPadding = ImVec2(10.0f, 8.0f);
+    style.FramePadding = ImVec2(8.0f, 5.0f);
+    style.ItemSpacing = ImVec2(7.0f, 6.0f);
+    style.ItemInnerSpacing = ImVec2(6.0f, 4.0f);
+    style.ScrollbarSize = 13.0f;
+
+    ImVec4* c = style.Colors;
+
+    c[ImGuiCol_Text] = ImVec4(0.92f, 0.90f, 0.84f, 1.0f);
+    c[ImGuiCol_TextDisabled] = ImVec4(0.52f, 0.51f, 0.47f, 1.0f);
+
+    c[ImGuiCol_WindowBg] = ImVec4(0.025f, 0.027f, 0.030f, 1.0f);
+    c[ImGuiCol_ChildBg] = ImVec4(0.045f, 0.047f, 0.050f, 1.0f);
+    c[ImGuiCol_PopupBg] = ImVec4(0.075f, 0.075f, 0.070f, 1.0f);
+
+    c[ImGuiCol_Border] = ImVec4(0.25f, 0.23f, 0.17f, 1.0f);
+    c[ImGuiCol_Separator] = ImVec4(0.30f, 0.27f, 0.18f, 1.0f);
+
+    c[ImGuiCol_FrameBg] = ImVec4(0.105f, 0.105f, 0.095f, 1.0f);
+    c[ImGuiCol_FrameBgHovered] = ImVec4(0.27f, 0.22f, 0.11f, 1.0f);
+    c[ImGuiCol_FrameBgActive] = ImVec4(0.42f, 0.31f, 0.10f, 1.0f);
+
+    c[ImGuiCol_TitleBg] = ImVec4(0.045f, 0.047f, 0.050f, 1.0f);
+    c[ImGuiCol_TitleBgActive] = ImVec4(0.25f, 0.19f, 0.08f, 1.0f);
+    c[ImGuiCol_MenuBarBg] = ImVec4(0.075f, 0.075f, 0.070f, 1.0f);
+
+    c[ImGuiCol_Button] = ImVec4(0.13f, 0.12f, 0.09f, 1.0f);
+    c[ImGuiCol_ButtonHovered] = ImVec4(0.46f, 0.34f, 0.10f, 1.0f);
+    c[ImGuiCol_ButtonActive] = ImVec4(0.72f, 0.52f, 0.13f, 1.0f);
+
+    c[ImGuiCol_Header] = ImVec4(0.22f, 0.17f, 0.08f, 1.0f);
+    c[ImGuiCol_HeaderHovered] = ImVec4(0.45f, 0.32f, 0.10f, 1.0f);
+    c[ImGuiCol_HeaderActive] = ImVec4(0.70f, 0.50f, 0.12f, 1.0f);
+
+    c[ImGuiCol_CheckMark] = ImVec4(0.95f, 0.68f, 0.12f, 1.0f);
+    c[ImGuiCol_SliderGrab] = ImVec4(0.75f, 0.52f, 0.10f, 1.0f);
+    c[ImGuiCol_SliderGrabActive] = ImVec4(0.98f, 0.73f, 0.16f, 1.0f);
+
+    c[ImGuiCol_Tab] = ImVec4(0.10f, 0.10f, 0.085f, 1.0f);
+    c[ImGuiCol_TabHovered] = ImVec4(0.50f, 0.36f, 0.10f, 1.0f);
+    c[ImGuiCol_TabActive] = ImVec4(0.32f, 0.24f, 0.10f, 1.0f);
+
+    c[ImGuiCol_DockingPreview] = ImVec4(0.95f, 0.68f, 0.12f, 0.70f);
+}
+
+static void drawToolButton(const char* label, const char* shortcut, int& tool, int value)
+{
+    bool active = tool == value;
+
+    if (active)
+    {
+        ImGui::PushStyleColor(
+            ImGuiCol_Button,
+            ImVec4(0.68f, 0.48f, 0.10f, 1.0f)
+        );
+    }
+
+    if (ImGui::Button(label, ImVec2(-1.0f, 34.0f)))
+        tool = value;
+
+    if (active)
+        ImGui::PopStyleColor();
+
+    ImGui::SameLine();
+    ImGui::TextDisabled("%s", shortcut);
+    ImGui::NewLine();
+}
+
+static void drawInterface()
+{
+    static int selectedTool = 0;
+    static int currentFrame = 1;
+
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGuiWindowFlags hostFlags =
+        ImGuiWindowFlags_NoTitleBar |
+        ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove |
+        ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus |
+        ImGuiWindowFlags_NoBackground;
+
+    ImGui::Begin("Sovereign Workspace", nullptr, hostFlags);
+
+    ImGuiID dockspace = ImGui::GetID("SovereignDockspace");
+    ImGui::DockSpace(
+        dockspace,
+        ImVec2(0.0f, 0.0f),
+        ImGuiDockNodeFlags_PassthruCentralNode
+    );
+
+    static bool layoutBuilt = false;
+
+    if (!layoutBuilt)
+    {
+        ImGui::DockBuilderRemoveNode(dockspace);
+        ImGui::DockBuilderAddNode(
+            dockspace,
+            ImGuiDockNodeFlags_DockSpace
+        );
+
+        ImGui::DockBuilderSetNodeSize(
+            dockspace,
+            viewport->WorkSize
+        );
+
+        ImGuiID center = dockspace;
+        ImGuiID left = 0;
+        ImGuiID right = 0;
+        ImGuiID bottom = 0;
+        ImGuiID rightTop = 0;
+
+        ImGui::DockBuilderSplitNode(
+            center,
+            ImGuiDir_Left,
+            0.075f,
+            &left,
+            &center
+        );
+
+        ImGui::DockBuilderSplitNode(
+            center,
+            ImGuiDir_Right,
+            0.245f,
+            &right,
+            &center
+        );
+
+        ImGui::DockBuilderSplitNode(
+            center,
+            ImGuiDir_Down,
+            0.16f,
+            &bottom,
+            &center
+        );
+
+        ImGui::DockBuilderSplitNode(
+            right,
+            ImGuiDir_Up,
+            0.46f,
+            &rightTop,
+            &right
+        );
+
+        ImGui::DockBuilderDockWindow("Tools", left);
+        ImGui::DockBuilderDockWindow("Viewport", center);
+        ImGui::DockBuilderDockWindow("Timeline", bottom);
+        ImGui::DockBuilderDockWindow("Outliner", rightTop);
+        ImGui::DockBuilderDockWindow("Properties", right);
+
+        ImGui::DockBuilderFinish(dockspace);
+        layoutBuilt = true;
+    }
+
+    ImGui::End();
+
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            ImGui::MenuItem("New Case");
+            ImGui::MenuItem("Open Case");
+            ImGui::MenuItem("Save Case");
+            ImGui::Separator();
+            ImGui::MenuItem("Exit");
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Edit"))
+        {
+            ImGui::MenuItem("Undo");
+            ImGui::MenuItem("Redo");
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("View"))
+        {
+            ImGui::MenuItem("Tools");
+            ImGui::MenuItem("Outliner");
+            ImGui::MenuItem("Properties");
+            ImGui::MenuItem("Timeline");
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Scene"))
+        {
+            ImGui::MenuItem("Add Vehicle");
+            ImGui::MenuItem("Add Evidence");
+            ImGui::MenuItem("Add Measurement");
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Analysis"))
+        {
+            ImGui::MenuItem("Skid Analysis");
+            ImGui::MenuItem("Momentum Analysis");
+            ImGui::MenuItem("Speed Analysis");
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Help"))
+        {
+            ImGui::MenuItem("About Sovereign");
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMainMenuBar();
+    }
+
+    // Left tool shelf
+    ImGui::Begin("Tools");
+
+    ImGui::Text("TOOLS");
+    ImGui::Separator();
+
+    drawToolButton("Select", "Q", selectedTool, 0);
+    drawToolButton("Move", "W", selectedTool, 1);
+    drawToolButton("Rotate", "E", selectedTool, 2);
+    drawToolButton("Scale", "R", selectedTool, 3);
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    ImGui::Text("SCENE");
+
+    if (ImGui::Button("Add Vehicle", ImVec2(-1.0f, 32.0f)))
+    {
+    }
+
+    if (ImGui::Button("Add Evidence", ImVec2(-1.0f, 32.0f)))
+    {
+    }
+
+    if (ImGui::Button("Measure", ImVec2(-1.0f, 32.0f)))
+    {
+    }
+
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+
+    ImGui::Text("DISPLAY");
+
+    static bool showGrid = true;
+    static bool showAxes = true;
+
+    ImGui::Checkbox("Grid", &showGrid);
+    ImGui::Checkbox("Axes", &showAxes);
+
+    ImGui::End();
+
+    // Central viewport
+    ImGui::Begin("Viewport");
+
+    ImGui::Text("PERSPECTIVE");
+    ImGui::SameLine();
+    ImGui::TextDisabled("|");
+    ImGui::SameLine();
+    ImGui::TextDisabled("CASE VIEW");
+
+    ImGui::Separator();
+
+    ImVec2 available = ImGui::GetContentRegionAvail();
+
+    ImGui::BeginChild(
+        "SceneCanvas",
+        available,
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
+
+    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+    ImVec2 canvasSize = ImGui::GetContentRegionAvail();
+
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    drawList->AddRectFilled(
+        canvasPos,
+        ImVec2(
+            canvasPos.x + canvasSize.x,
+            canvasPos.y + canvasSize.y
+        ),
+        IM_COL32(18, 20, 22, 255)
+    );
+
+    if (showGrid)
+    {
+        const float gridSize = 32.0f;
+
+        for (float x = canvasPos.x; x < canvasPos.x + canvasSize.x; x += gridSize)
+        {
+            drawList->AddLine(
+                ImVec2(x, canvasPos.y),
+                ImVec2(x, canvasPos.y + canvasSize.y),
+                IM_COL32(48, 48, 43, 255)
+            );
+        }
+
+        for (float y = canvasPos.y; y < canvasPos.y + canvasSize.y; y += gridSize)
+        {
+            drawList->AddLine(
+                ImVec2(canvasPos.x, y),
+                ImVec2(canvasPos.x + canvasSize.x, y),
+                IM_COL32(48, 48, 43, 255)
+            );
+        }
+    }
+
+    ImVec2 centerPoint(
+        canvasPos.x + canvasSize.x * 0.50f,
+        canvasPos.y + canvasSize.y * 0.50f
+    );
+
+    drawList->AddCircleFilled(
+        centerPoint,
+        7.0f,
+        IM_COL32(238, 174, 38, 255)
+    );
+
+    if (showAxes)
+    {
+        drawList->AddLine(
+            centerPoint,
+            ImVec2(centerPoint.x + 100.0f, centerPoint.y),
+            IM_COL32(190, 65, 55, 255),
+            2.0f
+        );
+
+        drawList->AddLine(
+            centerPoint,
+            ImVec2(centerPoint.x, centerPoint.y - 100.0f),
+            IM_COL32(70, 145, 80, 255),
+            2.0f
+        );
+
+        drawList->AddText(
+            ImVec2(centerPoint.x + 105.0f, centerPoint.y - 10.0f),
+            IM_COL32(220, 90, 75, 255),
+            "X"
+        );
+
+        drawList->AddText(
+            ImVec2(centerPoint.x + 7.0f, centerPoint.y - 120.0f),
+            IM_COL32(100, 190, 110, 255),
+            "Y"
+        );
+    }
+
+    ImGui::SetCursorScreenPos(
+        ImVec2(canvasPos.x + 16.0f, canvasPos.y + 16.0f)
+    );
+
+    ImGui::Text("SCENE VIEWPORT");
+    ImGui::TextDisabled("No scene objects loaded");
+
+    ImGui::EndChild();
+    ImGui::End();
+
+    // Right outliner
+    ImGui::Begin("Outliner");
+
+    ImGui::Text("SCENE OUTLINER");
+    ImGui::Separator();
+
+    if (ImGui::TreeNodeEx(
+        "Environment",
+        ImGuiTreeNodeFlags_DefaultOpen
+    ))
+    {
+        ImGui::BulletText("Ground Plane");
+        ImGui::BulletText("Road Surface");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNodeEx(
+        "Vehicles",
+        ImGuiTreeNodeFlags_DefaultOpen
+    ))
+    {
+        ImGui::Selectable("Vehicle A");
+        ImGui::Selectable("Vehicle B");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Evidence"))
+    {
+        ImGui::Selectable("Skid Mark 01");
+        ImGui::Selectable("Marker 01");
+        ImGui::Selectable("Debris Field 01");
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Measurements"))
+    {
+        ImGui::Selectable("Distance 01");
+        ImGui::Selectable("Angle 01");
+        ImGui::TreePop();
+    }
+
+    ImGui::End();
+
+    // Right properties
+    ImGui::Begin("Properties");
+
+    ImGui::Text("INSPECTOR");
+    ImGui::Separator();
+
+    ImGui::TextDisabled("Nothing selected");
+
+    ImGui::Spacing();
+
+    if (ImGui::CollapsingHeader(
+        "Transform",
+        ImGuiTreeNodeFlags_DefaultOpen
+    ))
+    {
+        static float position[3] = { 0.0f, 0.0f, 0.0f };
+        static float rotation[3] = { 0.0f, 0.0f, 0.0f };
+        static float scale[3] = { 1.0f, 1.0f, 1.0f };
+
+        ImGui::DragFloat3("Position", position, 0.1f);
+        ImGui::DragFloat3("Rotation", rotation, 1.0f);
+        ImGui::DragFloat3("Scale", scale, 0.01f);
+    }
+
+    if (ImGui::CollapsingHeader("Metadata"))
+    {
+        static char objectName[128] = "Untitled Object";
+        ImGui::InputText("Name", objectName, sizeof(objectName));
+        ImGui::Text("Type: Scene Entity");
+        ImGui::Text("Units: meters");
+    }
+
+    if (ImGui::CollapsingHeader("Analysis"))
+    {
+        ImGui::TextDisabled("No analysis data available.");
+        ImGui::TextDisabled("Add evidence to begin.");
+    }
+
+    ImGui::End();
+
+    // Bottom timeline
+    ImGui::Begin("Timeline");
+
+    ImGui::Text("TIMELINE");
+    ImGui::SameLine();
+
+    if (ImGui::Button("|<"))
+        currentFrame = 1;
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Play"))
+    {
+    }
+
+    ImGui::SameLine();
+
+    if (ImGui::Button("Stop"))
+        currentFrame = 1;
+
+    ImGui::SameLine();
+
+    ImGui::Text("Frame");
+    ImGui::SameLine();
+
+    ImGui::SetNextItemWidth(100.0f);
+    ImGui::DragInt("##Frame", &currentFrame, 1.0f, 1, 1000);
+
+    ImGui::SameLine();
+    ImGui::TextDisabled("Pre-impact  →  Impact  →  Rest");
+
+    ImGui::Separator();
+
+    ImGui::SetNextItemWidth(-1.0f);
+    static float timelinePosition = 0.0f;
+    ImGui::SliderFloat(
+        "##TimelinePosition",
+        &timelinePosition,
+        0.0f,
+        100.0f,
+        "%.0f"
+    );
+
+    ImGui::End();
+}
+
+int main()
+{
+    if (!glfwInit())
+    {
+        std::printf("[FATAL] Failed to initialize GLFW.\n");
         return -1;
     }
 
@@ -61,103 +607,160 @@ int main() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
     GLFWwindow* window = glfwCreateWindow(
-        1600, 900,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
         "Sovereign Accident Reconstructor v0.1.0 — OpenGL 4.6",
-        nullptr, nullptr
+        nullptr,
+        nullptr
     );
 
-    if (!window) {
-        printf("[FATAL] Failed to create GLFW window\n");
+    if (!window)
+    {
         glfwTerminate();
         return -1;
     }
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);  // V-sync
+    glfwSwapInterval(1);
 
-    // ── 2. Load OpenGL via glad ──────────────
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        printf("[FATAL] Failed to initialize glad\n");
+    if (!gladLoadGLLoader(
+        reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
+    {
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;
     }
 
-    printf("[INFO] OpenGL %s\n", (const char*)glGetString(GL_VERSION));
-    printf("[INFO] Renderer: %s\n", (const char*)glGetString(GL_RENDERER));
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
 
-    // ── 3. Build shader program ──────────────
-    GLuint vs = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
-    GLuint fs = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
+    ImGuiIO& io = ImGui::GetIO();
 
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vs);
-    glAttachShader(program, fs);
-    glLinkProgram(program);
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    GLint linkSuccess;
-    glGetProgramiv(program, GL_LINK_STATUS, &linkSuccess);
-    if (!linkSuccess) {
-        char infoLog[512];
-        glGetProgramInfoLog(program, 512, nullptr, infoLog);
-        printf("[ERROR] Program link failed:\n%s\n", infoLog);
+    applySovereignTheme();
+
+    io.FontGlobalScale = 1.0f;
+
+    ImFont* rubik = io.Fonts->AddFontFromFileTTF(
+        "assets/fonts/Rubik-Regular.ttf",
+        18.0f
+    );
+
+    if (!rubik)
+    {
+        std::printf(
+            "[ERROR] Could not load assets/fonts/Rubik-Regular.ttf\n"
+        );
     }
 
-    glDeleteShader(vs);
-    glDeleteShader(fs);
+    if (!ImGui_ImplGlfw_InitForOpenGL(window, true))
+    {
+        ImGui::DestroyContext();
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return -1;
+    }
 
-    // ── 4. Upload geometry ───────────────────
-    // Triangle: 3 vertices, each with position (xyz) + color (rgb)
-    float vertices[] = {
-        // Position              // Color (orange — evidence marker color)
-         0.0f,  0.5f, 0.0f,     1.0f, 0.6f, 0.2f,   // Top
-        -0.5f, -0.5f, 0.0f,     0.2f, 0.6f, 1.0f,   // Bottom left (blue)
-         0.5f, -0.5f, 0.0f,     0.2f, 0.8f, 0.4f,   // Bottom right (green)
+    if (!ImGui_ImplOpenGL3_Init("#version 460"))
+    {
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return -1;
+    }
+
+    GLuint program = createShaderProgram();
+
+    float vertices[] =
+    {
+         0.0f,  0.5f, 0.0f, 1.0f, 0.6f, 0.2f,
+        -0.5f, -0.5f, 0.0f, 0.2f, 0.6f, 1.0f,
+         0.5f, -0.5f, 0.0f, 0.2f, 0.8f, 0.4f
     };
 
-    GLuint VAO, VBO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    GLuint vao = 0;
+    GLuint vbo = 0;
 
-    glBindVertexArray(VAO);
+    glGenVertexArrays(1, &vao);
+    glGenBuffers(1, &vbo);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBindVertexArray(vao);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-    // Position attribute (location = 0)
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(vertices),
+        vertices,
+        GL_STATIC_DRAW
+    );
+
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        nullptr
+    );
+
     glEnableVertexAttribArray(0);
 
-    // Color attribute (location = 1)
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        reinterpret_cast<void*>(3 * sizeof(float))
+    );
+
     glEnableVertexAttribArray(1);
+    glBindVertexArray(0);
 
-    // ── 5. Main loop ─────────────────────────
-    printf("[INFO] Engine running. Close window to exit.\n");
-
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(window))
+    {
         glfwPollEvents();
 
-        // Clear to forensic dark
-        glClearColor(BG_R, BG_G, BG_B, 1.0f);
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        if (rubik)
+            ImGui::PushFont(rubik);
+
+        drawInterface();
+
+        if (rubik)
+            ImGui::PopFont();
+
+        glClearColor(0.025f, 0.027f, 0.030f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Draw triangle
         glUseProgram(program);
-        glBindVertexArray(VAO);
+        glBindVertexArray(vao);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(
+            ImGui::GetDrawData()
+        );
 
         glfwSwapBuffers(window);
     }
 
-    // ── 6. Cleanup ───────────────────────────
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
     glDeleteProgram(program);
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwDestroyWindow(window);
     glfwTerminate();
 
-    printf("[INFO] Engine shutdown complete.\n");
     return 0;
 }
