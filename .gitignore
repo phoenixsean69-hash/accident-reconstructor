@@ -1,0 +1,36 @@
+# Build
+build/
+out/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+*.vcxproj*
+*.sln
+*.dir/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+
+# Cases (evidence data — never commit)
+cases/*
+!cases/.gitkeep
+
+# Assets (large binaries — manage separately)
+assets/vehicles/*.glb
+assets/vehicles/*.gltf
+assets/roads/*.glb
+assets/roads/*.gltf
+assets/props/*.glb
+assets/props/*.gltf
+assets/textures/
+assets/environment/*.hdr
+
+# Compiled shaders
+*.bin.h
+
+# OS
+.DS_Store
+Thumbs.db
