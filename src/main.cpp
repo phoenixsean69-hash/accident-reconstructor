@@ -530,12 +530,12 @@ static void drawRailTool(
 
   const float iconSize =
   std::min(
-  26.0f,
+  24.0f,
   buttonWidth - 10.0f
   );
 
   const float totalHeight =
-  iconSize + 10.0f;
+  48.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -656,10 +656,10 @@ static void drawRailTool(
 
     if (gToolIcons[toolValue] != 0)
     {
-        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y + 2.0f));
         ImGui::Image(static_cast<ImTextureID>(gToolIcons[toolValue]), ImVec2(iconSize, iconSize));
         ImVec2 labelSize = ImGui::CalcTextSize(label);
-        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 3.0f), active ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + 29.0f), active ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
         if (hovered) ImGui::SetTooltip("%s", tooltip);
         ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
         ImGui::PopID();
@@ -952,12 +952,12 @@ static bool drawRailAction(
 
   const float iconSize =
   std::min(
-  26.0f,
+  24.0f,
   buttonWidth - 10.0f
   );
 
   const float totalHeight =
-  iconSize + 10.0f;
+  48.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -999,10 +999,10 @@ static bool drawRailAction(
 
     if (gToolIcons[iconIndex] != 0)
     {
-        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y + 2.0f));
         ImGui::Image(static_cast<ImTextureID>(gToolIcons[iconIndex]), ImVec2(iconSize, iconSize));
         ImVec2 labelSize = ImGui::CalcTextSize(label);
-        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 3.0f), hovered ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + 29.0f), hovered ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
         if (hovered) ImGui::SetTooltip("%s", tooltip);
         ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
         ImGui::PopID();
@@ -1259,12 +1259,12 @@ static void drawDisplayToggle(
 
   const float iconSize =
   std::min(
-  26.0f,
+  24.0f,
   buttonWidth - 10.0f
   );
 
   const float totalHeight =
-  iconSize + 10.0f;
+  48.0f;
 
     ImVec2 pos =
         ImGui::GetCursorScreenPos();
@@ -1312,10 +1312,10 @@ static void drawDisplayToggle(
     int iconIndex = drawGridIcon ? 7 : 8;
     if (gToolIcons[iconIndex] != 0)
     {
-        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y));
+        ImGui::SetCursorScreenPos(ImVec2(pos.x + (buttonWidth - iconSize) * 0.5f, pos.y + 2.0f));
         ImGui::Image(static_cast<ImTextureID>(gToolIcons[iconIndex]), ImVec2(iconSize, iconSize));
         ImVec2 labelSize = ImGui::CalcTextSize(label);
-        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + iconSize + 3.0f), enabled ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
+        drawList->AddText(ImVec2(pos.x + (buttonWidth - labelSize.x) * 0.5f, pos.y + 29.0f), enabled ? IM_COL32(238, 174, 38, 255) : IM_COL32(155, 158, 163, 255), label);
         if (hovered) ImGui::SetTooltip("%s", tooltip);
         ImGui::Dummy(ImVec2(buttonWidth, 2.0f));
         ImGui::PopID();
