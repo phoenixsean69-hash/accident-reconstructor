@@ -335,34 +335,19 @@ static void drawStatus(const char* text, StatusTone tone)
     ImGui::TextColored(c,"%s",text);
 }
 
-static bool editorButton(
-    const char* label,
-    float width=0.0f,
-    bool primary=false,
-    bool enabled=true)
+static bool editorButton(const char* label, float width, bool primary=false)
 {
     ImGuiStyle& style = ImGui::GetStyle();
 
-    // Measure the visible label and guarantee enough horizontal room.
-    const float textW = ImGui::CalcTextSize(label, nullptr, true).x;
-    const float minW =
-        textW +
-        (style.FramePadding.x * 2.0f) +
-        18.0f;
-
-    const float finalW =
-        (width > 0.0f)
-            ? std::max(width, minW)
-            : minW;
-
-    if (!enabled)
-        ImGui::BeginDisabled();
+    const float textW = ImGui::CalcTextSize(label).x;
+    const float minW = textW + (style.FramePadding.x * 2.0f) + 18.0f;
+    const float finalW = (width > minW) ? width : minW;
 
     if (primary)
     {
         ImGui::PushStyleColor(ImGuiCol_Button, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorAccentMuted());
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorAccent());
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorAccent());
         ImGui::PushStyleColor(ImGuiCol_Text, colorAccent());
     }
     else
@@ -373,27 +358,13 @@ static bool editorButton(
         ImGui::PushStyleColor(ImGuiCol_Text, colorText());
     }
 
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FramePadding,
-        ImVec2(12.0f, 7.0f)
-    );
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(12.0f, 7.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
 
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FrameRounding,
-        4.0f
-    );
-
-    const bool pressed =
-        ImGui::Button(
-            label,
-            ImVec2(finalW, 0.0f)
-        );
+    const bool pressed = ImGui::Button(label, ImVec2(finalW, 0.0f));
 
     ImGui::PopStyleVar(2);
     ImGui::PopStyleColor(4);
-
-    if (!enabled)
-        ImGui::EndDisabled();
 
     return pressed;
 }
@@ -1136,7 +1107,6 @@ int main()
     glfwTerminate();
     return 0;
 }
-
 
 
 

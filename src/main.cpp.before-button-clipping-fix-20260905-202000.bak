@@ -335,67 +335,20 @@ static void drawStatus(const char* text, StatusTone tone)
     ImGui::TextColored(c,"%s",text);
 }
 
-static bool editorButton(
-    const char* label,
-    float width=0.0f,
-    bool primary=false,
-    bool enabled=true)
+static bool editorButton(const char* label, float width=0.0f, bool primary=false, bool enabled=true)
 {
-    ImGuiStyle& style = ImGui::GetStyle();
-
-    // Measure the visible label and guarantee enough horizontal room.
-    const float textW = ImGui::CalcTextSize(label, nullptr, true).x;
-    const float minW =
-        textW +
-        (style.FramePadding.x * 2.0f) +
-        18.0f;
-
-    const float finalW =
-        (width > 0.0f)
-            ? std::max(width, minW)
-            : minW;
-
-    if (!enabled)
-        ImGui::BeginDisabled();
-
+    if (!enabled) ImGui::BeginDisabled();
     if (primary)
     {
-        ImGui::PushStyleColor(ImGuiCol_Button, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_Text, colorAccent());
+        ImGui::PushStyleColor(ImGuiCol_Button,ImVec4(0.22f,0.15f,0.035f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4(0.31f,0.21f,0.045f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4(0.40f,0.27f,0.055f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text,colorAccent());
     }
-    else
-    {
-        ImGui::PushStyleColor(ImGuiCol_Button, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_Text, colorText());
-    }
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FramePadding,
-        ImVec2(12.0f, 7.0f)
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FrameRounding,
-        4.0f
-    );
-
-    const bool pressed =
-        ImGui::Button(
-            label,
-            ImVec2(finalW, 0.0f)
-        );
-
-    ImGui::PopStyleVar(2);
-    ImGui::PopStyleColor(4);
-
-    if (!enabled)
-        ImGui::EndDisabled();
-
-    return pressed;
+    const bool clicked=ImGui::Button(label,ImVec2(width>0.0f?width:0.0f,30.0f));
+    if (primary) ImGui::PopStyleColor(4);
+    if (!enabled) ImGui::EndDisabled();
+    return clicked;
 }
 
 static void drawMetricTile(const char* id, UiGlyph glyph, const char* label, const char* value, const char* note, float width, float height=76.0f, bool accentIcon=false)
@@ -1136,8 +1089,6 @@ int main()
     glfwTerminate();
     return 0;
 }
-
-
 
 
 

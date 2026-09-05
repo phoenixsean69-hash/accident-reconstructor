@@ -335,67 +335,20 @@ static void drawStatus(const char* text, StatusTone tone)
     ImGui::TextColored(c,"%s",text);
 }
 
-static bool editorButton(
-    const char* label,
-    float width=0.0f,
-    bool primary=false,
-    bool enabled=true)
+static bool editorButton(const char* label, float width=0.0f, bool primary=false, bool enabled=true)
 {
-    ImGuiStyle& style = ImGui::GetStyle();
-
-    // Measure the visible label and guarantee enough horizontal room.
-    const float textW = ImGui::CalcTextSize(label, nullptr, true).x;
-    const float minW =
-        textW +
-        (style.FramePadding.x * 2.0f) +
-        18.0f;
-
-    const float finalW =
-        (width > 0.0f)
-            ? std::max(width, minW)
-            : minW;
-
-    if (!enabled)
-        ImGui::BeginDisabled();
-
+    if (!enabled) ImGui::BeginDisabled();
     if (primary)
     {
-        ImGui::PushStyleColor(ImGuiCol_Button, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_Text, colorAccent());
+        ImGui::PushStyleColor(ImGuiCol_Button,ImVec4(0.22f,0.15f,0.035f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4(0.31f,0.21f,0.045f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4(0.40f,0.27f,0.055f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text,colorAccent());
     }
-    else
-    {
-        ImGui::PushStyleColor(ImGuiCol_Button, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_Text, colorText());
-    }
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FramePadding,
-        ImVec2(12.0f, 7.0f)
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FrameRounding,
-        4.0f
-    );
-
-    const bool pressed =
-        ImGui::Button(
-            label,
-            ImVec2(finalW, 0.0f)
-        );
-
-    ImGui::PopStyleVar(2);
-    ImGui::PopStyleColor(4);
-
-    if (!enabled)
-        ImGui::EndDisabled();
-
-    return pressed;
+    const bool clicked=ImGui::Button(label,ImVec2(width>0.0f?width:0.0f,30.0f));
+    if (primary) ImGui::PopStyleColor(4);
+    if (!enabled) ImGui::EndDisabled();
+    return clicked;
 }
 
 static void drawMetricTile(const char* id, UiGlyph glyph, const char* label, const char* value, const char* note, float width, float height=76.0f, bool accentIcon=false)
@@ -687,106 +640,354 @@ static void drawEvidenceView()
 {
     ImGui::Begin("Evidence");
 
-    beginSurface("EvidenceHeader",ImVec2(0.0f,70.0f),false,ImGuiWindowFlags_NoScrollbar);
-    const ImVec2 h=ImGui::GetCursorScreenPos();
-    drawIconBadge(UiGlyph::Image,h,40.0f,true);
+    // ========================================================
+    // HEADER
+    // ========================================================
 
-    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+1.0f));
-    ImGui::Text("EVIDENCE WORKSPACE");
-
-    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+24.0f));
-    ImGui::TextDisabled("Manage and review photographs, skid marks, debris, scene markers and measurements.");
-    const float importW=124.0f, addW=132.0f;
-    ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-importW-addW-24.0f,h.y+5.0f));
-    editorButton("ADD EVIDENCE",addW,true); ImGui::SameLine(); editorButton("IMPORT PHOTOS",importW);
-    endSurface();
-    ImGui::Spacing();
-
-    beginSurface("EvidenceFilters",ImVec2(0.0f,42.0f),false,ImGuiWindowFlags_NoScrollbar);
-    editorButton("ALL",70.0f,true); ImGui::SameLine(); editorButton("PHOTOS",82.0f); ImGui::SameLine(); editorButton("SKID MARKS",106.0f);
-    ImGui::SameLine(); editorButton("DEBRIS",82.0f); ImGui::SameLine(); editorButton("MEASUREMENTS",118.0f); ImGui::SameLine(); editorButton("MARKERS",88.0f);
-    const float searchW=220.0f, rightEdge=ImGui::GetWindowWidth()-searchW-14.0f;
-    if (rightEdge>ImGui::GetCursorPosX()+12.0f)
+    beginSurface("EvidenceHeader",ImVec2(0.0f,74.0f),false,ImGuiWindowFlags_NoScrollbar);
     {
-        ImGui::SameLine(); ImGui::SetCursorPosX(rightEdge);
-        static char search[128]="";
-        ImGui::SetNextItemWidth(searchW);
-        ImGui::InputTextWithHint("##EvidenceSearch","Search evidence...",search,sizeof(search));
+        const ImVec2 h=ImGui::GetCursorScreenPos();
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
+
+        drawIconBadge(UiGlyph::Image,h,40.0f,true);
+
+        ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+2.0f));
+        ImGui::Text("EVIDENCE WORKSPACE");
+
+        ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+27.0f));
+        ImGui::TextDisabled(
+            "Manage photographs, skid marks, debris, scene markers and measurements.");
+
+        const float addW=136.0f;
+        const float importW=142.0f;
+        const float gap=8.0f;
+        const float groupW=addW+gap+importW;
+
+        ImGui::SetCursorScreenPos(ImVec2(right-groupW-12.0f,h.y+13.0f));
+        editorButton("ADD EVIDENCE",addW,true);
+
+        ImGui::SameLine(0.0f,gap);
+        editorButton("IMPORT PHOTOS",importW);
     }
     endSurface();
+
     ImGui::Spacing();
 
-    const float w=ImGui::GetContentRegionAvail().x, gap=7.0f, mw=std::max(150.0f,(w-gap*3.0f)/4.0f);
-    drawMetricTile("EvidenceTotal",UiGlyph::Document,"TOTAL EVIDENCE","0 items","",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceReviewed",UiGlyph::Check,"REVIEWED","0 items","0%",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceLinked",UiGlyph::Link,"LINKED TO SCENE","0 items","0%",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceLast",UiGlyph::Clock,"LAST ADDED","NONE","No evidence yet",mw);
-    ImGui::Spacing();
+    // ========================================================
+    // FILTER / SEARCH TOOLBAR
+    // ========================================================
 
-    ImGui::Text("EVIDENCE LIBRARY");
-    ImGui::Separator();
-    beginSurface("EvidenceLibrary",ImVec2(0.0f,198.0f),false,ImGuiWindowFlags_NoScrollbar);
-    const ImVec2 wp=ImGui::GetWindowPos(), ws=ImGui::GetWindowSize(), center(wp.x+ws.x*.5f,wp.y+55.0f);
-    drawGlyph(ImGui::GetWindowDrawList(),UiGlyph::Image,center,54.0f,toU32(colorMuted()));
-    ImGui::SetCursorPosY(92.0f);
-    const char* title="No evidence added yet";
-    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-ImGui::CalcTextSize(title).x)*.5f)); ImGui::Text("%s",title);
-    const char* note="Add photos, skid marks, debris fields, markers or measurements to build the case evidence library.";
-    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-ImGui::CalcTextSize(note).x)*.5f)); ImGui::TextDisabled("%s",note);
-    const float groupW=132.0f+7.0f+124.0f;
-    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-groupW)*.5f)); editorButton("ADD EVIDENCE",132.0f,true); ImGui::SameLine(); editorButton("IMPORT PHOTOS",124.0f);
-    endSurface();
-    ImGui::Spacing();
-
-    ImGui::Text("EVIDENCE CATEGORIES");
-    ImGui::Separator();
-    const float cw=std::max(126.0f,(w-gap*4.0f)/5.0f);
-    struct Cat { const char* id; UiGlyph glyph; const char* name; const char* note; };
-    const Cat cats[]={
-        {"Photos",UiGlyph::Image,"Photographs","Scene photos and documentation"},
-        {"Skids",UiGlyph::Ruler,"Skid Marks","Tire marks and friction evidence"},
-        {"Debris",UiGlyph::Document,"Debris Fields","Vehicle debris and fragments"},
-        {"Markers",UiGlyph::Marker,"Scene Markers","Reference points and markers"},
-        {"Measures",UiGlyph::Ruler,"Measurements","Distances, angles and dimensions"}
-    };
-    for (int i=0;i<5;++i)
+    beginSurface("EvidenceToolbar",ImVec2(0.0f,52.0f),false,ImGuiWindowFlags_NoScrollbar);
     {
-        if (i) ImGui::SameLine(0.0f,gap);
-        beginSurface(cats[i].id,ImVec2(cw,102.0f),true,ImGuiWindowFlags_NoScrollbar);
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        drawIconBadge(cats[i].glyph,p,32.0f,true);
-        ImGui::SetCursorScreenPos(ImVec2(p.x+43.0f,p.y));
-        ImGui::Text("%s",cats[i].name);
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
+        const float searchW=230.0f;
+        const float filterGap=6.0f;
 
-        ImGui::SetCursorScreenPos(ImVec2(p.x+43.0f,p.y+22.0f));
+        editorButton("ALL",62.0f,true);
+        ImGui::SameLine(0.0f,filterGap);
+        editorButton("PHOTOS",76.0f);
+        ImGui::SameLine(0.0f,filterGap);
+        editorButton("SKID MARKS",106.0f);
+        ImGui::SameLine(0.0f,filterGap);
+        editorButton("DEBRIS",76.0f);
+        ImGui::SameLine(0.0f,filterGap);
+        editorButton("MEASUREMENTS",126.0f);
+        ImGui::SameLine(0.0f,filterGap);
+        editorButton("MARKERS",84.0f);
+
+        static char evidenceSearch[128]="";
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                right-searchW-12.0f,
+                ImGui::GetWindowPos().y+11.0f
+            )
+        );
+
+        ImGui::SetNextItemWidth(searchW);
+        ImGui::InputTextWithHint(
+            "##EvidenceSearch",
+            "Search evidence...",
+            evidenceSearch,
+            sizeof(evidenceSearch)
+        );
+    }
+    endSurface();
+
+    ImGui::Spacing();
+
+    // ========================================================
+    // SUMMARY METRICS
+    // ========================================================
+
+    const float contentW=ImGui::GetContentRegionAvail().x;
+    const float metricGap=8.0f;
+    const float metricW=std::max(
+        150.0f,
+        (contentW-(metricGap*3.0f))/4.0f
+    );
+
+    drawMetricTile(
+        "EvidenceTotal",
+        UiGlyph::Document,
+        "TOTAL EVIDENCE",
+        "0 items",
+        "No evidence collected",
+        metricW,
+        82.0f
+    );
+
+    ImGui::SameLine(0.0f,metricGap);
+
+    drawMetricTile(
+        "EvidenceReviewed",
+        UiGlyph::Check,
+        "REVIEWED",
+        "0 items",
+        "0% reviewed",
+        metricW,
+        82.0f
+    );
+
+    ImGui::SameLine(0.0f,metricGap);
+
+    drawMetricTile(
+        "EvidenceLinked",
+        UiGlyph::Link,
+        "LINKED TO SCENE",
+        "0 items",
+        "0% linked",
+        metricW,
+        82.0f
+    );
+
+    ImGui::SameLine(0.0f,metricGap);
+
+    drawMetricTile(
+        "EvidenceLastAdded",
+        UiGlyph::Clock,
+        "LAST ADDED",
+        "NONE",
+        "No evidence yet",
+        metricW,
+        82.0f
+    );
+
+    ImGui::Spacing();
+
+    // ========================================================
+    // EVIDENCE LIBRARY
+    // ========================================================
+
+    sectionLabel("EVIDENCE LIBRARY","Collected case material appears here.");
+    ImGui::Separator();
+
+    beginSurface("EvidenceLibrary",ImVec2(0.0f,210.0f),false,ImGuiWindowFlags_NoScrollbar);
+    {
+        const ImVec2 pos=ImGui::GetWindowPos();
+        const ImVec2 size=ImGui::GetWindowSize();
+
+        const ImVec2 iconCenter(
+            pos.x+size.x*0.5f,
+            pos.y+61.0f
+        );
+
+        drawGlyph(
+            ImGui::GetWindowDrawList(),
+            UiGlyph::Image,
+            iconCenter,
+            54.0f,
+            toU32(colorMuted())
+        );
+
+        const char* title="No evidence added yet";
+        const char* body=
+            "Add photographs, skid marks, debris, markers or measurements to begin building the evidence library.";
+
+        const float titleW=ImGui::CalcTextSize(title).x;
+        const float bodyW=ImGui::CalcTextSize(body).x;
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                pos.x+(size.x-titleW)*0.5f,
+                pos.y+101.0f
+            )
+        );
+        ImGui::Text("%s",title);
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                pos.x+std::max(18.0f,(size.x-bodyW)*0.5f),
+                pos.y+127.0f
+            )
+        );
+        ImGui::TextDisabled("%s",body);
+
+        const float addW=130.0f;
+        const float importW=140.0f;
+        const float gap=8.0f;
+        const float actionW=addW+gap+importW;
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                pos.x+(size.x-actionW)*0.5f,
+                pos.y+157.0f
+            )
+        );
+
+        editorButton("ADD EVIDENCE",addW,true);
+        ImGui::SameLine(0.0f,gap);
+        editorButton("IMPORT PHOTOS",importW);
+    }
+    endSurface();
+
+    ImGui::Spacing();
+
+    // ========================================================
+    // CATEGORIES
+    // 3 + 2 grid so titles/descriptions do not clip.
+    // ========================================================
+
+    sectionLabel("EVIDENCE CATEGORIES","Browse by evidence type.");
+    ImGui::Separator();
+
+    struct EvidenceCategory
+    {
+        const char* id;
+        UiGlyph glyph;
+        const char* title;
+        const char* note;
+    };
+
+    const EvidenceCategory categories[]={
+        {"EvidencePhotos",UiGlyph::Image,"Photographs","Scene photos and documentation"},
+        {"EvidenceSkids",UiGlyph::Ruler,"Skid Marks","Tire marks and friction evidence"},
+        {"EvidenceDebris",UiGlyph::Document,"Debris Fields","Vehicle debris and fragments"},
+        {"EvidenceMarkers",UiGlyph::Marker,"Scene Markers","Reference points and markers"},
+        {"EvidenceMeasurements",UiGlyph::Ruler,"Measurements","Distances, angles and dimensions"}
+    };
+
+    const float rowGap=8.0f;
+    const float threeW=std::max(
+        180.0f,
+        (contentW-(rowGap*2.0f))/3.0f
+    );
+
+    auto drawCategoryCard=[](
+        const EvidenceCategory& category,
+        float width
+    )
+    {
+        beginSurface(
+            category.id,
+            ImVec2(width,100.0f),
+            true,
+            ImGuiWindowFlags_NoScrollbar
+        );
+
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+
+        drawIconBadge(
+            category.glyph,
+            p,
+            34.0f,
+            true
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+46.0f,
+                p.y+1.0f
+            )
+        );
+        ImGui::Text("%s",category.title);
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+46.0f,
+                p.y+24.0f
+            )
+        );
         ImGui::TextDisabled("0 items");
 
-        ImGui::SetCursorPosY(67.0f);
-        ImGui::PushTextWrapPos(ImGui::GetCursorPosX()+cw-22.0f);
-        ImGui::TextDisabled("%s",cats[i].note);
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x,
+                p.y+59.0f
+            )
+        );
+
+        ImGui::PushTextWrapPos(p.x+width-18.0f);
+        ImGui::TextDisabled("%s",category.note);
         ImGui::PopTextWrapPos();
+
         endSurface();
-    }
+    };
+
+    drawCategoryCard(categories[0],threeW);
+    ImGui::SameLine(0.0f,rowGap);
+    drawCategoryCard(categories[1],threeW);
+    ImGui::SameLine(0.0f,rowGap);
+    drawCategoryCard(categories[2],threeW);
+
     ImGui::Spacing();
 
-    beginSurface("EvidenceInspector",ImVec2(0.0f,82.0f),false,ImGuiWindowFlags_NoScrollbar);
-    const ImVec2 p=ImGui::GetCursorScreenPos();
-    drawIconBadge(UiGlyph::Info,p,34.0f,false);
+    const float twoW=std::max(
+        240.0f,
+        (contentW-rowGap)/2.0f
+    );
 
-    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y));
-    ImGui::TextDisabled("EVIDENCE INSPECTOR");
+    drawCategoryCard(categories[3],twoW);
+    ImGui::SameLine(0.0f,rowGap);
+    drawCategoryCard(categories[4],twoW);
 
-    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+21.0f));
-    ImGui::Text("SELECT AN ITEM TO INSPECT");
+    ImGui::Spacing();
 
-    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+43.0f));
-    ImGui::TextDisabled("Choose an evidence item to view details, metadata and scene links.");
+    // ========================================================
+    // INSPECTOR FOOTER
+    // ========================================================
 
+    beginSurface("EvidenceInspector",ImVec2(0.0f,80.0f),false,ImGuiWindowFlags_NoScrollbar);
+    {
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+
+        drawIconBadge(
+            UiGlyph::Info,
+            p,
+            36.0f,
+            false
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+48.0f,
+                p.y+1.0f
+            )
+        );
+        ImGui::TextDisabled("EVIDENCE INSPECTOR");
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+48.0f,
+                p.y+23.0f
+            )
+        );
+        ImGui::Text("SELECT AN ITEM TO INSPECT");
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+48.0f,
+                p.y+46.0f
+            )
+        );
+        ImGui::TextDisabled(
+            "Select evidence to review metadata, links and analysis readiness."
+        );
+    }
     endSurface();
 
     ImGui::End();
 }
-
 static void drawAnalysisView()
 {
     ImGui::Begin("Analysis");
@@ -1136,9 +1337,6 @@ int main()
     glfwTerminate();
     return 0;
 }
-
-
-
 
 
 

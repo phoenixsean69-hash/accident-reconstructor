@@ -106,15 +106,15 @@ static GLuint loadSvgTexture(const char* path)
     return texture;
 }
 
-static ImVec4 colorWindow() { return ImVec4(0.070f, 0.073f, 0.079f, 1.0f); }
-static ImVec4 colorPanel() { return ImVec4(0.095f, 0.100f, 0.108f, 1.0f); }
-static ImVec4 colorPanelRaised() { return ImVec4(0.125f, 0.132f, 0.143f, 1.0f); }
-static ImVec4 colorBorder() { return ImVec4(0.245f, 0.260f, 0.285f, 1.0f); }
-static ImVec4 colorAccent() { return ImVec4(0.98f, 0.68f, 0.08f, 1.0f); }
-static ImVec4 colorAccentMuted() { return ImVec4(0.245f, 0.175f, 0.055f, 1.0f); }
-static ImVec4 colorText() { return ImVec4(0.965f, 0.972f, 0.982f, 1.0f); }
-static ImVec4 colorMuted() { return ImVec4(0.700f, 0.725f, 0.760f, 1.0f); }
-static ImVec4 colorSuccess() { return ImVec4(0.48f, 0.84f, 0.46f, 1.0f); }
+static ImVec4 colorWindow()      { return ImVec4(0.024f, 0.026f, 0.029f, 1.0f); }
+static ImVec4 colorPanel()       { return ImVec4(0.043f, 0.046f, 0.050f, 1.0f); }
+static ImVec4 colorPanelRaised() { return ImVec4(0.060f, 0.064f, 0.069f, 1.0f); }
+static ImVec4 colorBorder()      { return ImVec4(0.155f, 0.165f, 0.175f, 1.0f); }
+static ImVec4 colorAccent()      { return ImVec4(0.94f, 0.64f, 0.06f, 1.0f); }
+static ImVec4 colorAccentMuted() { return ImVec4(0.30f, 0.20f, 0.045f, 1.0f); }
+static ImVec4 colorText()        { return ImVec4(0.90f, 0.91f, 0.92f, 1.0f); }
+static ImVec4 colorMuted()       { return ImVec4(0.55f, 0.58f, 0.61f, 1.0f); }
+static ImVec4 colorSuccess()     { return ImVec4(0.47f, 0.78f, 0.38f, 1.0f); }
 
 static void applySovereignTheme()
 {
@@ -133,10 +133,10 @@ static void applySovereignTheme()
     style.FrameBorderSize = 1.0f;
     style.TabBorderSize = 0.0f;
     style.WindowPadding = ImVec2(10.0f, 8.0f);
-    style.FramePadding = ImVec2(9.0f, 6.0f);
-    style.ItemSpacing = ImVec2(8.0f, 7.0f);
+    style.FramePadding = ImVec2(8.0f, 5.0f);
+    style.ItemSpacing = ImVec2(7.0f, 6.0f);
     style.ItemInnerSpacing = ImVec2(6.0f, 4.0f);
-    style.CellPadding = ImVec2(9.0f, 6.0f);
+    style.CellPadding = ImVec2(8.0f, 5.0f);
     style.ScrollbarSize = 12.0f;
 
     ImVec4* c = style.Colors;
@@ -147,31 +147,31 @@ static void applySovereignTheme()
     c[ImGuiCol_PopupBg] = colorPanelRaised();
     c[ImGuiCol_Border] = colorBorder();
     c[ImGuiCol_BorderShadow] = ImVec4(0,0,0,0);
-    c[ImGuiCol_FrameBg] = ImVec4(0.145f, 0.152f, 0.165f, 1.0f);
-    c[ImGuiCol_FrameBgHovered] = ImVec4(0.190f, 0.200f, 0.218f, 1.0f);
-    c[ImGuiCol_FrameBgActive] = ImVec4(0.225f, 0.238f, 0.258f, 1.0f);
-    c[ImGuiCol_TitleBg] = ImVec4(0.090f, 0.095f, 0.103f, 1.0f);
-    c[ImGuiCol_TitleBgActive] = ImVec4(0.125f, 0.132f, 0.145f, 1.0f);
-    c[ImGuiCol_MenuBarBg] = ImVec4(0.090f, 0.095f, 0.104f, 1.0f);
-    c[ImGuiCol_Button] = ImVec4(0.145f, 0.152f, 0.165f, 1.0f);
-    c[ImGuiCol_ButtonHovered] = ImVec4(0.205f, 0.216f, 0.235f, 1.0f);
-    c[ImGuiCol_ButtonActive] = ImVec4(0.250f, 0.263f, 0.286f, 1.0f);
-    c[ImGuiCol_Header] = ImVec4(0.135f, 0.143f, 0.156f, 1.0f);
-    c[ImGuiCol_HeaderHovered] = ImVec4(0.190f, 0.202f, 0.220f, 1.0f);
-    c[ImGuiCol_HeaderActive] = ImVec4(0.220f, 0.234f, 0.255f, 1.0f);
-    c[ImGuiCol_Separator] = ImVec4(0.235f, 0.250f, 0.275f, 1.0f);
+    c[ImGuiCol_FrameBg] = ImVec4(0.075f,0.080f,0.085f,1.0f);
+    c[ImGuiCol_FrameBgHovered] = ImVec4(0.105f,0.112f,0.120f,1.0f);
+    c[ImGuiCol_FrameBgActive] = ImVec4(0.135f,0.142f,0.150f,1.0f);
+    c[ImGuiCol_TitleBg] = ImVec4(0.040f,0.043f,0.047f,1.0f);
+    c[ImGuiCol_TitleBgActive] = ImVec4(0.070f,0.074f,0.080f,1.0f);
+    c[ImGuiCol_MenuBarBg] = ImVec4(0.048f,0.051f,0.055f,1.0f);
+    c[ImGuiCol_Button] = ImVec4(0.085f,0.090f,0.096f,1.0f);
+    c[ImGuiCol_ButtonHovered] = ImVec4(0.120f,0.126f,0.134f,1.0f);
+    c[ImGuiCol_ButtonActive] = ImVec4(0.155f,0.162f,0.171f,1.0f);
+    c[ImGuiCol_Header] = ImVec4(0.080f,0.084f,0.090f,1.0f);
+    c[ImGuiCol_HeaderHovered] = ImVec4(0.115f,0.120f,0.128f,1.0f);
+    c[ImGuiCol_HeaderActive] = ImVec4(0.145f,0.151f,0.160f,1.0f);
+    c[ImGuiCol_Separator] = ImVec4(0.165f,0.175f,0.185f,1.0f);
     c[ImGuiCol_SeparatorHovered] = ImVec4(0.40f,0.42f,0.45f,1.0f);
     c[ImGuiCol_SeparatorActive] = colorAccent();
     c[ImGuiCol_CheckMark] = colorAccent();
     c[ImGuiCol_SliderGrab] = ImVec4(0.70f,0.48f,0.07f,1.0f);
     c[ImGuiCol_SliderGrabActive] = colorAccent();
-    c[ImGuiCol_Tab] = ImVec4(0.105f, 0.112f, 0.122f, 1.0f);
-    c[ImGuiCol_TabHovered] = ImVec4(0.195f, 0.205f, 0.224f, 1.0f);
-    c[ImGuiCol_TabActive] = ImVec4(0.158f, 0.168f, 0.184f, 1.0f);
-    c[ImGuiCol_TabUnfocused] = ImVec4(0.090f, 0.095f, 0.105f, 1.0f);
-    c[ImGuiCol_TabUnfocusedActive] = ImVec4(0.125f, 0.133f, 0.145f, 1.0f);
-    c[ImGuiCol_TableHeaderBg] = ImVec4(0.160f, 0.170f, 0.185f, 1.0f);
-    c[ImGuiCol_TableRowBgAlt] = ImVec4(0.090f, 0.095f, 0.105f, 1.0f);
+    c[ImGuiCol_Tab] = ImVec4(0.065f,0.069f,0.074f,1.0f);
+    c[ImGuiCol_TabHovered] = ImVec4(0.105f,0.111f,0.119f,1.0f);
+    c[ImGuiCol_TabActive] = ImVec4(0.095f,0.101f,0.108f,1.0f);
+    c[ImGuiCol_TabUnfocused] = ImVec4(0.050f,0.053f,0.057f,1.0f);
+    c[ImGuiCol_TabUnfocusedActive] = ImVec4(0.078f,0.082f,0.088f,1.0f);
+    c[ImGuiCol_TableHeaderBg] = ImVec4(0.090f,0.095f,0.102f,1.0f);
+    c[ImGuiCol_TableRowBgAlt] = ImVec4(0.035f,0.038f,0.042f,1.0f);
     c[ImGuiCol_DockingPreview] = ImVec4(0.94f,0.64f,0.06f,0.28f);
 }
 
@@ -335,67 +335,20 @@ static void drawStatus(const char* text, StatusTone tone)
     ImGui::TextColored(c,"%s",text);
 }
 
-static bool editorButton(
-    const char* label,
-    float width=0.0f,
-    bool primary=false,
-    bool enabled=true)
+static bool editorButton(const char* label, float width=0.0f, bool primary=false, bool enabled=true)
 {
-    ImGuiStyle& style = ImGui::GetStyle();
-
-    // Measure the visible label and guarantee enough horizontal room.
-    const float textW = ImGui::CalcTextSize(label, nullptr, true).x;
-    const float minW =
-        textW +
-        (style.FramePadding.x * 2.0f) +
-        18.0f;
-
-    const float finalW =
-        (width > 0.0f)
-            ? std::max(width, minW)
-            : minW;
-
-    if (!enabled)
-        ImGui::BeginDisabled();
-
+    if (!enabled) ImGui::BeginDisabled();
     if (primary)
     {
-        ImGui::PushStyleColor(ImGuiCol_Button, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorAccentMuted());
-        ImGui::PushStyleColor(ImGuiCol_Text, colorAccent());
+        ImGui::PushStyleColor(ImGuiCol_Button,ImVec4(0.22f,0.15f,0.035f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered,ImVec4(0.31f,0.21f,0.045f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive,ImVec4(0.40f,0.27f,0.055f,1.0f));
+        ImGui::PushStyleColor(ImGuiCol_Text,colorAccent());
     }
-    else
-    {
-        ImGui::PushStyleColor(ImGuiCol_Button, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorPanelRaised());
-        ImGui::PushStyleColor(ImGuiCol_Text, colorText());
-    }
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FramePadding,
-        ImVec2(12.0f, 7.0f)
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FrameRounding,
-        4.0f
-    );
-
-    const bool pressed =
-        ImGui::Button(
-            label,
-            ImVec2(finalW, 0.0f)
-        );
-
-    ImGui::PopStyleVar(2);
-    ImGui::PopStyleColor(4);
-
-    if (!enabled)
-        ImGui::EndDisabled();
-
-    return pressed;
+    const bool clicked=ImGui::Button(label,ImVec2(width>0.0f?width:0.0f,30.0f));
+    if (primary) ImGui::PopStyleColor(4);
+    if (!enabled) ImGui::EndDisabled();
+    return clicked;
 }
 
 static void drawMetricTile(const char* id, UiGlyph glyph, const char* label, const char* value, const char* note, float width, float height=76.0f, bool accentIcon=false)
@@ -491,198 +444,61 @@ static void drawCaseView()
     ImGui::SameLine(0.0f,gap); progressCard("OverallState",UiGlyph::Pie,"OVERALL PROGRESS","IN PROGRESS",StatusTone::Accent,0.18f,"18% complete",mw);
     ImGui::Spacing();
 
-    beginSurface("IncidentSummary",ImVec2(0.0f,82.0f),false,ImGuiWindowFlags_NoScrollbar);
-    {
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
+    beginSurface("IncidentSummary",ImVec2(0.0f,66.0f),false,ImGuiWindowFlags_NoScrollbar);
+    const ImVec2 s=ImGui::GetCursorScreenPos();
+    drawIconBadge(UiGlyph::Document,s,34.0f,false);
+    ImGui::SetCursorScreenPos(ImVec2(s.x+46.0f,s.y));
+    ImGui::Text("INCIDENT SUMMARY");
 
-        drawIconBadge(UiGlyph::Document,p,40.0f,false);
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+3.0f));
-        ImGui::Text("INCIDENT SUMMARY");
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+29.0f));
-        ImGui::TextDisabled(
-            "No incident summary has been entered. Add essential facts, scene location and reconstruction notes.");
-
-        const float editW=132.0f;
-        ImGui::SetCursorScreenPos(ImVec2(right-editW-12.0f,p.y+13.0f));
-        editorButton("EDIT SUMMARY",editW);
-    }
+    ImGui::SetCursorScreenPos(ImVec2(s.x+46.0f,s.y+22.0f));
+    ImGui::TextDisabled("No incident summary has been entered. Add essential facts, scene location and reconstruction notes.");
+    const float editW=126.0f;
+    ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-editW-12.0f,s.y+8.0f));
+    editorButton("EDIT SUMMARY",editW);
     endSurface();
     ImGui::Spacing();
 
-    beginSurface("CaseContent",ImVec2(0.0f,206.0f),false,ImGuiWindowFlags_NoScrollbar);
+    beginSurface("CaseContent",ImVec2(0.0f,142.0f),false,ImGuiWindowFlags_NoScrollbar);
+    ImGui::Text("CASE CONTENT");
+    ImGui::Separator();
+    if (ImGui::BeginTable("CaseTable",3,ImGuiTableFlags_RowBg|ImGuiTableFlags_BordersInnerH|ImGuiTableFlags_SizingStretchProp))
     {
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        ImDrawList* dl=ImGui::GetWindowDrawList();
-        const float left=p.x;
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-12.0f;
-
-        drawIconBadge(UiGlyph::Document,p,34.0f,false);
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+2.0f));
-        ImGui::Text("CASE CONTENT");
-
-        const float titleW=ImGui::CalcTextSize("CASE CONTENT").x;
-        const float dividerX=p.x+58.0f+titleW;
-        dl->AddLine(
-            ImVec2(dividerX,p.y+2.0f),
-            ImVec2(dividerX,p.y+24.0f),
-            toU32(colorBorder()),
-            1.0f);
-
-        ImGui::SetCursorScreenPos(ImVec2(dividerX+16.0f,p.y+3.0f));
-        ImGui::TextDisabled("Items included in this case.");
-
-        ImGui::SetCursorScreenPos(ImVec2(left,p.y+45.0f));
-
-        if (ImGui::BeginTable(
-            "CaseTablePremium",
-            4,
-            ImGuiTableFlags_RowBg |
-            ImGuiTableFlags_BordersInnerH |
-            ImGuiTableFlags_BordersInnerV |
-            ImGuiTableFlags_SizingStretchProp))
+        ImGui::TableSetupColumn("CATEGORY",ImGuiTableColumnFlags_WidthStretch,0.55f);
+        ImGui::TableSetupColumn("COUNT",ImGuiTableColumnFlags_WidthStretch,0.18f);
+        ImGui::TableSetupColumn("STATUS",ImGuiTableColumnFlags_WidthStretch,0.27f);
+        ImGui::TableHeadersRow();
+        struct Row { const char* a; const char* b; const char* c; StatusTone tone; };
+        const Row rows[]={{"Vehicles","2","READY",StatusTone::Success},{"Evidence","0","EMPTY",StatusTone::Neutral},{"Measurements","0","EMPTY",StatusTone::Neutral}};
+        for (const auto& row:rows)
         {
-            ImGui::TableSetupColumn("CATEGORY",ImGuiTableColumnFlags_WidthStretch,0.57f);
-            ImGui::TableSetupColumn("COUNT",ImGuiTableColumnFlags_WidthStretch,0.14f);
-            ImGui::TableSetupColumn("STATUS",ImGuiTableColumnFlags_WidthStretch,0.24f);
-            ImGui::TableSetupColumn("##OPEN",ImGuiTableColumnFlags_WidthFixed,34.0f);
-            ImGui::TableHeadersRow();
-
-            struct PremiumCaseRow
-            {
-                UiGlyph glyph;
-                const char* category;
-                const char* count;
-                const char* status;
-                StatusTone tone;
-            };
-
-            const PremiumCaseRow rows[]={
-                {UiGlyph::Cube,"Vehicles","2","READY",StatusTone::Success},
-                {UiGlyph::Document,"Evidence","0","EMPTY",StatusTone::Neutral},
-                {UiGlyph::Ruler,"Measurements","0","EMPTY",StatusTone::Neutral}
-            };
-
-            for (const PremiumCaseRow& row:rows)
-            {
-                ImGui::TableNextRow(ImGuiTableRowFlags_None,39.0f);
-
-                ImGui::TableSetColumnIndex(0);
-                {
-                    const ImVec2 rp=ImGui::GetCursorScreenPos();
-                    drawIconBadge(row.glyph,ImVec2(rp.x,rp.y+3.0f),28.0f,false);
-                    ImGui::SetCursorScreenPos(ImVec2(rp.x+40.0f,rp.y+8.0f));
-                    ImGui::Text("%s",row.category);
-                }
-
-                ImGui::TableSetColumnIndex(1);
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
-                ImGui::Text("%s",row.count);
-
-                ImGui::TableSetColumnIndex(2);
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
-                drawStatus(row.status,row.tone);
-
-                ImGui::TableSetColumnIndex(3);
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
-                ImGui::TextDisabled(">");
-            }
-
-            ImGui::EndTable();
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0); ImGui::Text("%s",row.a);
+            ImGui::TableSetColumnIndex(1); ImGui::Text("%s",row.b);
+            ImGui::TableSetColumnIndex(2); drawStatus(row.c,row.tone);
         }
+        ImGui::EndTable();
     }
     endSurface();
     ImGui::Spacing();
 
-    beginSurface("CaseActions",ImVec2(0.0f,78.0f),false,ImGuiWindowFlags_NoScrollbar);
-    {
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        ImDrawList* dl=ImGui::GetWindowDrawList();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
-
-        drawIconBadge(UiGlyph::Bars,p,38.0f,false);
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+2.0f));
-        ImGui::Text("NEXT ACTIONS");
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+28.0f));
-        ImGui::TextDisabled("Continue building the case with the available tools.");
-
-        const float dividerX=p.x+355.0f;
-        dl->AddLine(
-            ImVec2(dividerX,p.y+3.0f),
-            ImVec2(dividerX,p.y+43.0f),
-            toU32(colorBorder()),
-            1.0f);
-
-        const float openW=150.0f;
-        const float evidenceW=140.0f;
-        const float analysisW=150.0f;
-        const float exportW=132.0f;
-        const float buttonGap=7.0f;
-        const float groupW=openW+evidenceW+analysisW+exportW+(buttonGap*3.0f);
-
-        float groupX=right-groupW-12.0f;
-        groupX=std::max(groupX,dividerX+18.0f);
-
-        ImGui::SetCursorScreenPos(ImVec2(groupX,p.y+11.0f));
-        editorButton("OPEN VIEWPORT",openW,true);
-
-        ImGui::SameLine(0.0f,buttonGap);
-        editorButton("ADD EVIDENCE",evidenceW);
-
-        ImGui::SameLine(0.0f,buttonGap);
-        editorButton("START ANALYSIS",analysisW);
-
-        ImGui::SameLine(0.0f,buttonGap);
-        editorButton("EXPORT CASE",exportW);
-    }
+    beginSurface("CaseActions",ImVec2(0.0f,50.0f),false,ImGuiWindowFlags_NoScrollbar);
+    ImGui::Text("NEXT ACTIONS");
+    ImGui::SameLine(150.0f); editorButton("OPEN VIEWPORT",150.0f,true);
+    ImGui::SameLine(); editorButton("ADD EVIDENCE",140.0f);
+    ImGui::SameLine(); editorButton("START ANALYSIS",150.0f);
+    ImGui::SameLine(); editorButton("EXPORT CASE",132.0f);
     endSurface();
     ImGui::Spacing();
 
-    beginSurface("CaseParties",ImVec2(0.0f,72.0f),false,ImGuiWindowFlags_NoScrollbar);
-    {
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        ImDrawList* dl=ImGui::GetWindowDrawList();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
-
-        drawIconBadge(UiGlyph::Info,p,38.0f,false);
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+2.0f));
-        ImGui::Text("INVOLVED PARTIES");
-
-        const float dividerX=p.x+205.0f;
-        dl->AddLine(
-            ImVec2(dividerX,p.y+2.0f),
-            ImVec2(dividerX,p.y+40.0f),
-            toU32(colorBorder()),
-            1.0f);
-
-        ImGui::SetCursorScreenPos(ImVec2(dividerX+16.0f,p.y+12.0f));
-        ImGui::TextDisabled("No parties have been added.");
-
-        const float partyW=112.0f;
-        ImGui::SetCursorScreenPos(ImVec2(right-partyW-12.0f,p.y+9.0f));
-        editorButton("ADD PARTY",partyW);
-    }
+    beginSurface("CaseParties",ImVec2(0.0f,52.0f),false,ImGuiWindowFlags_NoScrollbar);
+    ImGui::Text("INVOLVED PARTIES"); ImGui::SameLine(190.0f); ImGui::TextDisabled("No parties have been added.");
+    const float partyW=110.0f;
+    ImGui::SetCursorPosX(ImGui::GetWindowWidth()-partyW-14.0f); ImGui::SetCursorPosY(10.0f); editorButton("ADD PARTY",partyW);
     endSurface();
 
     ImGui::End();
 }
 
-static void sectionLabel(const char* title, const char* subtitle=nullptr)
-{
-    ImGui::Text("%s", title);
-
-    if (subtitle && subtitle[0] != '\0')
-    {
-        ImGui::SameLine(0.0f, 10.0f);
-        ImGui::TextDisabled("%s", subtitle);
-    }
-}
 static void drawEvidenceView()
 {
     ImGui::Begin("Evidence");
@@ -1099,7 +915,7 @@ int main()
     applySovereignTheme();
 
     const std::filesystem::path rubikPath=assetPath("fonts/Rubik-Regular.ttf");
-    ImFont* rubik=io.Fonts->AddFontFromFileTTF(rubikPath.string().c_str(),17.5f);
+    ImFont* rubik=io.Fonts->AddFontFromFileTTF(rubikPath.string().c_str(),16.0f);
     if (!rubik) std::printf("[WARN] Could not load %s\n",rubikPath.string().c_str());
 
     if (!ImGui_ImplGlfw_InitForOpenGL(window,true)) { ImGui::DestroyContext(); glfwDestroyWindow(window); glfwTerminate(); return -1; }
@@ -1136,13 +952,5 @@ int main()
     glfwTerminate();
     return 0;
 }
-
-
-
-
-
-
-
-
 
 
