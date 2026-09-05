@@ -557,167 +557,67 @@ static void drawStatus(const char* text, StatusTone tone)
     ImGui::TextColored(c,"%s",text);
 }
 
-static void drawUnifiedButtonLabel(
-    ImDrawList* drawList,
-    const ImVec2& minPos,
-    const ImVec2& maxPos,
-    const char* label,
-    const ImVec4& textColor,
-    bool enabled);
 static bool editorButton(
     const char* label,
     float width=0.0f,
-    bool active=false,
+    bool primary=false,
     bool enabled=true)
 {
-    ImGuiWindow* window=
-        ImGui::GetCurrentWindow();
+    ImGuiStyle& style = ImGui::GetStyle();
 
-    if (window->SkipItems)
-        return false;
+    // Measure the visible label and guarantee enough horizontal room.
+    const float textW = ImGui::CalcTextSize(label, nullptr, true).x;
+    const float minW =
+        textW +
+        (style.FramePadding.x * 2.0f) +
+        18.0f;
 
-    const ImGuiStyle& style=
-        ImGui::GetStyle();
-
-    const ImVec2 textSize=
-        ImGui::CalcTextSize(label);
-
-    const float buttonHeight=
-        ImMax(
-            ImGui::GetFrameHeight()+2.0f,
-            textSize.y+style.FramePadding.y*2.0f+2.0f
-        );
-
-    ImVec2 size(
-        width>0.0f
-            ? width
-            : textSize.x+style.FramePadding.x*2.0f+18.0f,
-        buttonHeight
-    );
-
-    const ImVec2 pos=
-        ImGui::GetCursorScreenPos();
-
-    ImGui::PushID(
-        static_cast<int>(pos.x)
-    );
-    ImGui::PushID(
-        static_cast<int>(pos.y)
-    );
+    const float finalW =
+        (width > 0.0f)
+            ? std::max(width, minW)
+            : minW;
 
     if (!enabled)
         ImGui::BeginDisabled();
 
-    const bool pressed=
-        ImGui::InvisibleButton(
-            "##editorButton",
-            size
+    if (primary)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, colorAccentMuted());
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorAccentMuted());
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorAccentMuted());
+        ImGui::PushStyleColor(ImGuiCol_Text, colorAccent());
+    }
+    else
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, colorPanelRaised());
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorPanelRaised());
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorPanelRaised());
+        ImGui::PushStyleColor(ImGuiCol_Text, colorText());
+    }
+
+    ImGui::PushStyleVar(
+        ImGuiStyleVar_FramePadding,
+        ImVec2(12.0f, 7.0f)
+    );
+
+    ImGui::PushStyleVar(
+        ImGuiStyleVar_FrameRounding,
+        4.0f
+    );
+
+    const bool pressed =
+        ImGui::Button(
+            label,
+            ImVec2(finalW, 0.0f)
         );
 
-    const bool hovered=
-        ImGui::IsItemHovered();
-
-    const bool held=
-        ImGui::IsItemActive();
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor(4);
 
     if (!enabled)
         ImGui::EndDisabled();
 
-    ImGui::PopID();
-    ImGui::PopID();
-
-    ImDrawList* drawList=
-        ImGui::GetWindowDrawList();
-
-    ImVec4 bg=
-        active
-            ? ImVec4(0.12f,0.42f,0.78f,1.0f)
-            : ImVec4(0.19f,0.20f,0.22f,1.0f);
-
-    ImVec4 border=
-        active
-            ? ImVec4(0.34f,0.61f,0.95f,1.0f)
-            : ImVec4(0.35f,0.37f,0.41f,1.0f);
-
-    ImVec4 accent=
-        active
-            ? ImVec4(0.53f,0.76f,1.0f,1.0f)
-            : ImVec4(0.96f,0.82f,0.18f,0.95f);
-
-    ImVec4 textColor=
-        enabled
-            ? ImVec4(0.97f,0.98f,1.0f,1.0f)
-            : ImVec4(0.72f,0.74f,0.78f,1.0f);
-
-    if (!enabled)
-    {
-        bg=ImVec4(0.16f,0.17f,0.18f,1.0f);
-        border=ImVec4(0.26f,0.27f,0.29f,1.0f);
-        accent=ImVec4(0.32f,0.33f,0.35f,1.0f);
-    }
-    else if (held)
-    {
-        if (active)
-        {
-            bg=ImVec4(0.10f,0.36f,0.69f,1.0f);
-            border=ImVec4(0.29f,0.54f,0.88f,1.0f);
-        }
-        else
-        {
-            bg=ImVec4(0.15f,0.16f,0.18f,1.0f);
-            border=ImVec4(0.43f,0.46f,0.51f,1.0f);
-        }
-    }
-    else if (hovered)
-    {
-        if (active)
-        {
-            bg=ImVec4(0.15f,0.47f,0.84f,1.0f);
-            border=ImVec4(0.48f,0.73f,1.0f,1.0f);
-        }
-        else
-        {
-            bg=ImVec4(0.23f,0.24f,0.27f,1.0f);
-            border=ImVec4(0.50f,0.53f,0.58f,1.0f);
-        }
-    }
-
-    const float rounding=4.0f;
-
-    drawList->AddRectFilled(
-        pos,
-        ImVec2(pos.x+size.x,pos.y+size.y),
-        ImGui::ColorConvertFloat4ToU32(bg),
-        rounding
-    );
-
-    drawList->AddRect(
-        pos,
-        ImVec2(pos.x+size.x,pos.y+size.y),
-        ImGui::ColorConvertFloat4ToU32(border),
-        rounding,
-        0,
-        1.0f
-    );
-
-    drawList->AddRectFilled(
-        pos,
-        ImVec2(pos.x+size.x,pos.y+2.0f),
-        ImGui::ColorConvertFloat4ToU32(accent),
-        rounding,
-        ImDrawFlags_RoundCornersTop
-    );
-
-    drawUnifiedButtonLabel(
-        drawList,
-        pos,
-        ImVec2(pos.x+size.x,pos.y+size.y),
-        label,
-        textColor,
-        enabled
-    );
-
-    return enabled && pressed;
+    return pressed;
 }
 
 static void drawMetricTile(const char* id, UiGlyph glyph, const char* label, const char* value, const char* note, float width, float height=76.0f, bool accentIcon=false)
@@ -1627,60 +1527,6 @@ static void drawRailButton(const char* id, const char* label, int iconIndex, boo
     ImGui::PopID();
 }
 
-static void beginEditorContextHeader(
-    const char* id)
-{
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_WindowPadding,
-        ImVec2(10.0f,5.0f)
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_ItemSpacing,
-        ImVec2(7.0f,4.0f)
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_ChildBg,
-        ImVec4(0.086f,0.091f,0.099f,1.0f)
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_Border,
-        ImVec4(0.22f,0.235f,0.26f,1.0f)
-    );
-
-    ImGui::BeginChild(
-        id,
-        ImVec2(0.0f,34.0f),
-        true,
-        ImGuiWindowFlags_NoScrollbar |
-        ImGuiWindowFlags_NoScrollWithMouse
-    );
-}
-
-static void editorContextSeparator()
-{
-    ImGui::SameLine(0.0f,9.0f);
-
-    ImGui::TextColored(
-        ImVec4(0.31f,0.33f,0.37f,1.0f),
-        "|"
-    );
-
-    ImGui::SameLine(0.0f,9.0f);
-}
-
-static void endEditorContextHeader()
-{
-    ImGui::EndChild();
-    ImGui::PopStyleColor(2);
-    ImGui::PopStyleVar(2);
-    ImGui::Spacing();
-}
-static bool shellSnapEnabled();
-static float shellSnapValue();
-static const char* shellSelectedEntityName();
 static void drawViewportView()
 {
     static int viewportMode=0;    // 0 = 2D, 1 = 3D, 2 = AR
@@ -1720,78 +1566,6 @@ static void drawViewportView()
     static int selectedTool=0;
     static bool showGrid=true, showAxes=true;
     ImGui::Begin("Viewport");
-    beginEditorContextHeader(
-        "##ViewportContextHeader"
-    );
-
-    ImGui::TextDisabled("VIEWPORT");
-
-    editorContextSeparator();
-
-    ImGui::Text(
-        "%s",
-        viewportMode==0
-            ? "2D Plan"
-            : (viewportMode==1
-                ? "3D Scene"
-                : "AR Preview")
-    );
-
-    editorContextSeparator();
-
-    const char* contextToolNames[]={
-        "Select",
-        "Move",
-        "Rotate",
-        "Scale"
-    };
-
-    ImGui::TextDisabled("Tool");
-    ImGui::SameLine(0.0f,5.0f);
-
-    ImGui::Text(
-        "%s",
-        contextToolNames[
-            std::max(
-                0,
-                std::min(
-                    3,
-                    selectedTool
-                )
-            )
-        ]
-    );
-
-    editorContextSeparator();
-
-    ImGui::TextDisabled("Snap");
-    ImGui::SameLine(0.0f,5.0f);
-
-    if (shellSnapEnabled())
-    {
-        ImGui::Text(
-            "%.2f m",
-            shellSnapValue()
-        );
-    }
-    else
-    {
-        ImGui::TextDisabled("Off");
-    }
-
-    editorContextSeparator();
-
-    ImGui::TextDisabled("Selected");
-    ImGui::SameLine(0.0f,5.0f);
-
-    ImGui::Text(
-        "%s",
-        shellSelectedEntityName()[0]!=0
-            ? shellSelectedEntityName()
-            : "None"
-    );
-
-    endEditorContextHeader();
     // ========================================================
     // VIEWPORT KEYBOARD SHORTCUTS
     // ========================================================
@@ -1955,174 +1729,78 @@ static void drawViewportView()
     }
     ImGui::BeginChild(
         "ViewportModeStrip",
-        ImVec2(0.0f,52.0f),
+        ImVec2(0.0f,54.0f),
         true,
         ImGuiWindowFlags_NoScrollbar
     );
 
-    if (editorButton(
-        "2D PLAN",
-        96.0f,
-        viewportMode==0,
-        true))
+    auto viewportModeButton = [&](const char* label,int mode,float width)
     {
-        viewportMode=0;
-    }
+        const bool active=(viewportMode==mode);
 
+        if (active)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button,colorAccentMuted());
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered,colorAccentMuted());
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive,colorAccentMuted());
+            ImGui::PushStyleColor(ImGuiCol_Text,colorAccent());
+        }
+
+        const bool pressed=
+            ImGui::Button(
+                label,
+                ImVec2(width,31.0f)
+            );
+
+        if (active)
+            ImGui::PopStyleColor(4);
+
+        if (pressed)
+            viewportMode=mode;
+    };
+
+    viewportModeButton("2D PLAN",0,96.0f);
     ImGui::SameLine(0.0f,6.0f);
 
-    if (editorButton(
-        "3D SCENE",
-        104.0f,
-        viewportMode==1,
-        true))
-    {
-        viewportMode=1;
-    }
-
+    viewportModeButton("3D SCENE",1,102.0f);
     ImGui::SameLine(0.0f,6.0f);
 
-    if (editorButton(
-        "AR PREVIEW",
-        112.0f,
-        viewportMode==2,
-        true))
+    viewportModeButton("AR PREVIEW",2,112.0f);
+    ImGui::SameLine(0.0f,18.0f);
+
+    if (viewportMode==0)
     {
-        viewportMode=2;
-    }
+        const char* orthoViews[]={
+            "Top",
+            "Front",
+            "Right"
+        };
 
-    if (viewportMode==2)
-    {
-        ImGui::SameLine(0.0f,18.0f);
+        ImGui::TextDisabled("ORTHO");
+        ImGui::SameLine(0.0f,7.0f);
 
-        if (arEditorPreview)
-        {
-            ImGui::TextColored(
-                ImVec4(0.92f,0.69f,0.18f,1.0f),
-                "EDITOR PREVIEW"
-            );
-        }
-        else if (arDeviceConnected && arSessionRunning)
-        {
-            ImGui::TextColored(
-                ImVec4(0.48f,0.84f,0.46f,1.0f),
-                "LIVE"
-            );
-        }
-        else
-        {
-            ImGui::TextDisabled("OFFLINE");
-        }
-
-        ImGui::SameLine(0.0f,14.0f);
-
-        if (editorButton(
-            arEditorPreview
-                ? "EXIT PREVIEW"
-                : "EDITOR PREVIEW",
-            arEditorPreview
-                ? 110.0f
-                : 126.0f,
-            arEditorPreview,
-            true))
-        {
-            arEditorPreview=!arEditorPreview;
-
-            if (arEditorPreview)
-            {
-                arSessionRunning=false;
-                arRecording=false;
-            }
-            else
-            {
-                arRecording=false;
-            }
-        }
-
-        ImGui::SameLine(0.0f,6.0f);
-
-        if (editorButton(
-            "CONNECT DEVICE",
-            126.0f,
-            false,
-            true))
-        {
-            ImGui::OpenPopup(
-                "##CompactARDevicePopup"
-            );
-        }
-
-        if (ImGui::BeginPopup(
-            "##CompactARDevicePopup"))
-        {
-            ImGui::Text("AR DEVICE");
-            ImGui::Separator();
-
-            ImGui::TextDisabled(
-                "Live device transport is not wired yet."
-            );
-
-            const char* profiles[]={
-                "Android Companion",
-                "iPhone / iPad",
-                "External AR Camera"
-            };
-
-            ImGui::SetNextItemWidth(220.0f);
-
-            ImGui::Combo(
-                "Device profile",
-                &arDeviceProfile,
-                profiles,
-                3
-            );
-
-            ImGui::Spacing();
-            ImGui::Separator();
-
-            if (ImGui::MenuItem(
-                "Use Editor Preview"))
-            {
-                arEditorPreview=true;
-                arDeviceConnected=false;
-                arSessionRunning=false;
-                arRecording=false;
-                ImGui::CloseCurrentPopup();
-            }
-
-            ImGui::EndPopup();
-        }
-
-        ImGui::SameLine(0.0f,14.0f);
-        ImGui::TextDisabled("OPACITY");
-        ImGui::SameLine(0.0f,6.0f);
-
-        ImGui::SetNextItemWidth(108.0f);
-
-        ImGui::SliderFloat(
-            "##AROpacityCompact",
-            &arOpacity,
-            0.10f,
-            1.00f,
-            "%.2f"
+        ImGui::SetNextItemWidth(116.0f);
+        ImGui::Combo(
+            "##ViewportOrthoView",
+            &orthoView,
+            orthoViews,
+            3
         );
     }
     else if (viewportMode==1)
     {
-        ImGui::SameLine(0.0f,18.0f);
-        ImGui::TextDisabled("DISPLAY");
-        ImGui::SameLine(0.0f,6.0f);
-
         const char* renderModes[]={
             "Lit",
             "Wireframe",
             "Analysis"
         };
 
-        ImGui::SetNextItemWidth(118.0f);
+        ImGui::TextDisabled("DISPLAY");
+        ImGui::SameLine(0.0f,7.0f);
 
+        ImGui::SetNextItemWidth(132.0f);
         ImGui::Combo(
-            "##CompactRenderMode",
+            "##ViewportRenderMode",
             &renderMode,
             renderModes,
             3
@@ -2130,282 +1808,23 @@ static void drawViewportView()
     }
     else
     {
-        ImGui::SameLine(0.0f,18.0f);
-        ImGui::TextDisabled("VIEW");
-        ImGui::SameLine(0.0f,6.0f);
+        ImGui::TextDisabled("DEVICE OFFLINE");
+        ImGui::SameLine(0.0f,14.0f);
 
-        const char* orthoModes[]={
-            "Top",
-            "Front",
-            "Right"
-        };
-
-        ImGui::SetNextItemWidth(112.0f);
-
-        ImGui::Combo(
-            "##CompactOrthoMode",
-            &orthoView,
-            orthoModes,
-            3
+        ImGui::SetNextItemWidth(154.0f);
+        ImGui::SliderFloat(
+            "##ViewportAROpacity",
+            &arOpacity,
+            0.25f,
+            1.0f,
+            "Overlay %.2f"
         );
     }
 
     ImGui::EndChild();
-    if (viewportMode==2)
-    {
-        ImGui::Spacing();
-
-        ImGui::BeginChild(
-            "ViewportARCompactTools",
-            ImVec2(0.0f,52.0f),
-            true,
-            ImGuiWindowFlags_NoScrollbar
-        );
-
-        ImGui::TextDisabled("PLACEMENT");
-        ImGui::SameLine(0.0f,7.0f);
-
-        const char* placementModes[]={
-            "Origin",
-            "Surface",
-            "Vehicle"
-        };
-
-        ImGui::SetNextItemWidth(112.0f);
-
-        ImGui::Combo(
-            "##CompactARPlacement",
-            &arPlacementMode,
-            placementModes,
-            3
-        );
-
-        ImGui::SameLine(0.0f,14.0f);
-        ImGui::TextDisabled("TRACKING");
-        ImGui::SameLine(0.0f,7.0f);
-
-        const char* trackingModes[]={
-            "Poor",
-            "Limited",
-            "Good"
-        };
-
-        ImGui::SetNextItemWidth(104.0f);
-
-        ImGui::Combo(
-            "##CompactARTracking",
-            &arTrackingQuality,
-            trackingModes,
-            3
-        );
-
-        ImGui::SameLine(0.0f,12.0f);
-
-        ImGui::Checkbox(
-            "Occlusion",
-            &arOcclusion
-        );
-
-        ImGui::SameLine(0.0f,9.0f);
-
-        ImGui::Checkbox(
-            "Planes",
-            &arPlaneMesh
-        );
-
-        ImGui::SameLine(0.0f,9.0f);
-
-        ImGui::Checkbox(
-            "Reticle",
-            &arReticle
-        );
-
-        ImGui::SameLine(0.0f,12.0f);
-
-        const bool canPlaceAnchor=
-            arEditorPreview ||
-            (arDeviceConnected &&
-             arSessionRunning);
-
-        if (editorButton(
-            "PLACE ANCHOR",
-            118.0f,
-            true,
-            canPlaceAnchor))
-        {
-            arAnchorCount=
-                std::min(
-                    8,
-                    arAnchorCount+1
-                );
-        }
-
-        ImGui::SameLine(0.0f,7.0f);
-
-        if (editorButton(
-            "MORE  v",
-            86.0f,
-            false,
-            true))
-        {
-            ImGui::OpenPopup(
-                "##CompactARMorePopup"
-            );
-        }
-
-        if (ImGui::BeginPopup(
-            "##CompactARMorePopup"))
-        {
-            ImGui::TextDisabled(
-                "AR SESSION"
-            );
-
-            ImGui::Separator();
-
-            if (ImGui::MenuItem(
-                "Reset Origin"))
-            {
-                arPlacementMode=0;
-                arAnchorCount=0;
-            }
-
-            if (ImGui::MenuItem(
-                "Clear Anchors",
-                nullptr,
-                false,
-                arAnchorCount>0))
-            {
-                arAnchorCount=0;
-            }
-
-            ImGui::Separator();
-
-            if (arDeviceConnected)
-            {
-                if (!arSessionRunning)
-                {
-                    if (ImGui::MenuItem(
-                        "Start Session"))
-                    {
-                        arSessionRunning=true;
-                        arEditorPreview=false;
-                    }
-                }
-                else
-                {
-                    if (ImGui::MenuItem(
-                        "Stop Session"))
-                    {
-                        arSessionRunning=false;
-                        arRecording=false;
-                    }
-                }
-            }
-            else
-            {
-                ImGui::MenuItem(
-                    "Start Session",
-                    nullptr,
-                    false,
-                    false
-                );
-            }
-
-            const bool canRecord=
-                arEditorPreview ||
-                (arDeviceConnected &&
-                 arSessionRunning);
-
-            if (ImGui::MenuItem(
-                arRecording
-                    ? "Stop Recording"
-                    : "Record",
-                nullptr,
-                false,
-                canRecord))
-            {
-                arRecording=!arRecording;
-            }
-
-            ImGui::Separator();
-
-            if (ImGui::BeginMenu(
-                "Overlays"))
-            {
-                ImGui::MenuItem(
-                    "Grid",
-                    nullptr,
-                    &showGrid
-                );
-
-                ImGui::MenuItem(
-                    "Axes",
-                    nullptr,
-                    &showAxes
-                );
-
-                ImGui::MenuItem(
-                    "Bounds",
-                    nullptr,
-                    &showBounds
-                );
-
-                ImGui::MenuItem(
-                    "Measurements",
-                    nullptr,
-                    &showMeasurements
-                );
-
-                ImGui::MenuItem(
-                    "Object Names",
-                    nullptr,
-                    &showNames
-                );
-
-                ImGui::MenuItem(
-                    "Statistics",
-                    nullptr,
-                    &showStats
-                );
-
-                ImGui::MenuItem(
-                    "Safe Frame",
-                    nullptr,
-                    &showSafeFrame
-                );
-
-                ImGui::Separator();
-
-                ImGui::MenuItem(
-                    "AR Anchors",
-                    nullptr,
-                    &arShowAnchors
-                );
-
-                ImGui::MenuItem(
-                    "Collision Guide",
-                    nullptr,
-                    &arShowCollisionGuide
-                );
-
-                ImGui::EndMenu();
-            }
-
-            ImGui::Separator();
-
-            ImGui::TextDisabled(
-                "Shortcuts: P Preview   A Anchor   C Clear"
-            );
-
-            ImGui::EndPopup();
-        }
-
-        ImGui::EndChild();
-    }
     ImGui::Spacing();
 
-    if (viewportMode!=2)
-    {ImGui::BeginChild(
+    ImGui::BeginChild(
         "ViewportSecondaryToolbar",
         ImVec2(0.0f,48.0f),
         true,
@@ -2591,13 +2010,11 @@ static void drawViewportView()
     }
 
     ImGui::EndChild();
-    }
     if (viewportMode==1 || viewportMode==2)
     {
         ImGui::Spacing();
 
-        if (viewportMode!=2)
-    {ImGui::BeginChild(
+        ImGui::BeginChild(
             "Viewport3DARProStrip",
             ImVec2(0.0f,52.0f),
             true,
@@ -2749,12 +2166,189 @@ static void drawViewportView()
         }
 
         ImGui::EndChild();
-    }
     if (viewportMode==2)
     {
         ImGui::Spacing();
 
-        // Compact AR toolbar owns session/device/record controls.
+        ImGui::BeginChild(
+            "ViewportARSessionBar",
+            ImVec2(0.0f,54.0f),
+            true,
+            ImGuiWindowFlags_NoScrollbar
+        );
+
+        ImGui::TextDisabled("SESSION");
+        ImGui::SameLine(0.0f,10.0f);
+
+        if (arEditorPreview)
+            drawStatus("EDITOR PREVIEW",StatusTone::Accent);
+        else if (arDeviceConnected && arSessionRunning)
+            drawStatus("LIVE SESSION",StatusTone::Success);
+        else if (arDeviceConnected)
+            drawStatus("DEVICE CONNECTED",StatusTone::Neutral);
+        else
+            drawStatus("OFFLINE",StatusTone::Neutral);
+
+        ImGui::SameLine(0.0f,16.0f);
+
+        if (!arEditorPreview)
+        {
+            if (editorButton(
+                "EDITOR PREVIEW",
+                126.0f,
+                false,
+                true))
+            {
+                arEditorPreview=true;
+                arSessionRunning=false;
+                arRecording=false;
+            }
+        }
+        else
+        {
+            if (editorButton(
+                "EXIT PREVIEW",
+                110.0f,
+                false,
+                true))
+            {
+                arEditorPreview=false;
+                arRecording=false;
+            }
+        }
+
+        ImGui::SameLine(0.0f,7.0f);
+
+        if (editorButton(
+            arDeviceConnected
+                ? "DEVICE"
+                : "CONNECT DEVICE",
+            arDeviceConnected
+                ? 82.0f
+                : 126.0f,
+            false,
+            true))
+        {
+            ImGui::OpenPopup("##ARDeviceSetupPopup");
+        }
+
+        ImGui::SameLine(0.0f,7.0f);
+
+        if (arDeviceConnected)
+        {
+            if (!arSessionRunning)
+            {
+                if (editorButton(
+                    "START SESSION",
+                    118.0f,
+                    true,
+                    true))
+                {
+                    arSessionRunning=true;
+                    arEditorPreview=false;
+                }
+            }
+            else
+            {
+                if (editorButton(
+                    "STOP SESSION",
+                    112.0f,
+                    false,
+                    true))
+                {
+                    arSessionRunning=false;
+                    arRecording=false;
+                }
+            }
+        }
+        else
+        {
+            editorButton(
+                "START SESSION",
+                118.0f,
+                false,
+                false
+            );
+        }
+
+        ImGui::SameLine(0.0f,7.0f);
+
+        const bool canRecord=
+            arEditorPreview ||
+            (arDeviceConnected && arSessionRunning);
+
+        if (arRecording)
+        {
+            if (editorButton(
+                "STOP RECORD",
+                108.0f,
+                true,
+                true))
+            {
+                arRecording=false;
+            }
+        }
+        else
+        {
+            if (editorButton(
+                "RECORD",
+                82.0f,
+                false,
+                canRecord))
+            {
+                arRecording=true;
+            }
+        }
+
+        if (ImGui::BeginPopup("##ARDeviceSetupPopup"))
+        {
+            ImGui::Text("AR DEVICE SETUP");
+            ImGui::Separator();
+
+            ImGui::TextDisabled(
+                "Live mobile transport is not wired into the renderer yet."
+            );
+
+            ImGui::Spacing();
+
+            const char* deviceProfiles[]={
+                "Android Companion",
+                "iPhone / iPad",
+                "External AR Camera"
+            };
+
+            ImGui::SetNextItemWidth(220.0f);
+            ImGui::Combo(
+                "Device profile",
+                &arDeviceProfile,
+                deviceProfiles,
+                3
+            );
+
+            ImGui::Spacing();
+            ImGui::Separator();
+
+            ImGui::TextDisabled(
+                "Use Editor Preview for UI/placement testing today."
+            );
+
+            ImGui::Spacing();
+
+            if (ImGui::Button(
+                "USE EDITOR PREVIEW",
+                ImVec2(190.0f,0.0f)))
+            {
+                arEditorPreview=true;
+                arDeviceConnected=false;
+                arSessionRunning=false;
+                arRecording=false;
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        }
+
+        ImGui::EndChild();
     }
     }
     ImGui::Spacing();
@@ -3995,665 +3589,6 @@ static const char* selectedEntityName()
         default: return "Nothing selected";
     }
 }
-static void drawDeepPropertiesInspectorBody()
-{
-    static float objectPosition[10][3]{};
-    static float objectRotation[10][3]{};
-
-    static float objectScale[10][3]={
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f},
-        {1.0f,1.0f,1.0f}
-    };
-
-    static bool objectVisible[10]={
-        true,true,true,true,true,
-        true,true,true,true,true
-    };
-
-    static bool objectLocked[10]{};
-
-    static char vehicleMake[2][48]={
-        "Vehicle A",
-        "Vehicle B"
-    };
-
-    static char vehicleModel[2][48]={
-        "Unknown",
-        "Unknown"
-    };
-
-    static float vehicleMass[2]={
-        1500.0f,
-        1250.0f
-    };
-
-    static float vehicleWheelbase[2]={
-        2.70f,
-        2.60f
-    };
-
-    static float vehicleCgHeight[2]={
-        0.55f,
-        0.52f
-    };
-
-    static float vehicleVelocity[2]={
-        12.0f,
-        -8.0f
-    };
-
-    static float vehicleHeading[2]={
-        0.0f,
-        180.0f
-    };
-
-    static float vehicleSteering[2]={
-        0.0f,
-        0.0f
-    };
-
-    static float vehicleFriction[2]={
-        0.70f,
-        0.70f
-    };
-
-    static float vehicleRestitution[2]={
-        0.20f,
-        0.20f
-    };
-
-    static float vehicleCrushDepth[2]={
-        0.0f,
-        0.0f
-    };
-
-    static int roadSurfaceType=0;
-    static float roadFriction=0.72f;
-    static float roadGrade=0.0f;
-
-    static float skidLength=24.0f;
-    static float skidWidth=0.18f;
-    static float skidFriction=0.70f;
-    static int skidEvidenceType=0;
-    static float skidConfidence=0.90f;
-
-    static float markerConfidence=0.95f;
-    static int markerCategory=0;
-
-    static float debrisRadius=2.5f;
-    static int debrisPieceCount=12;
-    static float debrisConfidence=0.80f;
-
-    static float measurementDistance=12.50f;
-    static float measurementAngle=32.0f;
-    static int measurementUnits=0;
-    static bool measurementLocked=false;
-
-    static char evidenceSource[96]="Scene survey";
-    static char objectNotes[256]="";
-
-    const int entity=
-        std::max(
-            0,
-            std::min(
-                9,
-                gEditorShell.selectedEntity
-            )
-        );
-
-    auto section =
-        [](const char* label)
-    {
-        ImGui::Spacing();
-
-        ImGui::PushStyleColor(
-            ImGuiCol_Header,
-            ImVec4(0.12f,0.13f,0.145f,1.0f)
-        );
-
-        ImGui::PushStyleColor(
-            ImGuiCol_HeaderHovered,
-            ImVec4(0.16f,0.17f,0.19f,1.0f)
-        );
-
-        const bool open=
-            ImGui::CollapsingHeader(
-                label,
-                ImGuiTreeNodeFlags_DefaultOpen
-            );
-
-        ImGui::PopStyleColor(2);
-        return open;
-    };
-
-    if (entity==0)
-    {
-        if (section("SCENE SETTINGS"))
-        {
-            ImGui::TextDisabled("Units");
-            ImGui::SameLine();
-            ImGui::TextUnformatted("Metric");
-
-            ImGui::TextDisabled("Coordinate system");
-            ImGui::SameLine();
-            ImGui::TextUnformatted("World");
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "Snap increment",
-                &gEditorShell.snapValue,
-                0.01f,
-                0.01f,
-                10.0f,
-                "%.2f m"
-            );
-
-            ImGui::Checkbox(
-                "Enable snapping",
-                &gEditorShell.snapEnabled
-            );
-        }
-
-        return;
-    }
-
-    ImGui::Text(
-        "%s",
-        selectedEntityName()
-    );
-
-    ImGui::SameLine();
-
-    ImGui::TextDisabled(
-        "#%02d",
-        entity
-    );
-
-    if (section("TRANSFORM"))
-    {
-        ImGui::SetNextItemWidth(-1.0f);
-
-        ImGui::DragFloat3(
-            "Position",
-            objectPosition[entity],
-            0.01f,
-            -10000.0f,
-            10000.0f,
-            "%.3f m"
-        );
-
-        ImGui::SetNextItemWidth(-1.0f);
-
-        ImGui::DragFloat3(
-            "Rotation",
-            objectRotation[entity],
-            0.25f,
-            -360.0f,
-            360.0f,
-            "%.1f deg"
-        );
-
-        ImGui::SetNextItemWidth(-1.0f);
-
-        ImGui::DragFloat3(
-            "Scale",
-            objectScale[entity],
-            0.01f,
-            0.001f,
-            1000.0f,
-            "%.3f"
-        );
-    }
-
-    // Ground Plane / Road Surface
-    if (entity==1 || entity==2)
-    {
-        if (section("SURFACE"))
-        {
-            const char* surfaceTypes[]={
-                "Asphalt",
-                "Concrete",
-                "Gravel",
-                "Grass",
-                "Unknown"
-            };
-
-            if (entity==2)
-            {
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::Combo(
-                    "Surface type",
-                    &roadSurfaceType,
-                    surfaceTypes,
-                    5
-                );
-            }
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::SliderFloat(
-                "Friction coefficient",
-                &roadFriction,
-                0.05f,
-                1.50f,
-                "%.2f"
-            );
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "Road grade",
-                &roadGrade,
-                0.05f,
-                -45.0f,
-                45.0f,
-                "%.2f deg"
-            );
-        }
-    }
-
-    // Vehicle A / Vehicle B
-    if (entity==3 || entity==4)
-    {
-        const int i=entity-3;
-
-        if (section("VEHICLE PHYSICS"))
-        {
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::InputText(
-                "Make / ID",
-                vehicleMake[i],
-                sizeof(vehicleMake[i])
-            );
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::InputText(
-                "Model",
-                vehicleModel[i],
-                sizeof(vehicleModel[i])
-            );
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "Mass",
-                &vehicleMass[i],
-                5.0f,
-                1.0f,
-                100000.0f,
-                "%.1f kg"
-            );
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "Wheelbase",
-                &vehicleWheelbase[i],
-                0.01f,
-                0.50f,
-                10.0f,
-                "%.2f m"
-            );
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "CG height",
-                &vehicleCgHeight[i],
-                0.01f,
-                0.05f,
-                5.0f,
-                "%.2f m"
-            );
-        }
-
-        if (section("INITIAL STATE"))
-        {
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "Velocity",
-                &vehicleVelocity[i],
-                0.10f,
-                -200.0f,
-                200.0f,
-                "%.2f m/s"
-            );
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "Heading",
-                &vehicleHeading[i],
-                0.25f,
-                -360.0f,
-                360.0f,
-                "%.1f deg"
-            );
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "Steering",
-                &vehicleSteering[i],
-                0.10f,
-                -60.0f,
-                60.0f,
-                "%.1f deg"
-            );
-        }
-
-        if (section("TIRES / ROAD"))
-        {
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::SliderFloat(
-                "Friction coefficient",
-                &vehicleFriction[i],
-                0.05f,
-                1.50f,
-                "%.2f"
-            );
-        }
-
-        if (section("COLLISION"))
-        {
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::DragFloat(
-                "Crush depth",
-                &vehicleCrushDepth[i],
-                0.01f,
-                0.0f,
-                5.0f,
-                "%.3f m"
-            );
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::SliderFloat(
-                "Restitution",
-                &vehicleRestitution[i],
-                0.0f,
-                1.0f,
-                "%.2f"
-            );
-        }
-    }
-
-    // Evidence: Skid / Marker / Debris
-    if (entity>=5 && entity<=7)
-    {
-        if (section("EVIDENCE METADATA"))
-        {
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::InputText(
-                "Source",
-                evidenceSource,
-                sizeof(evidenceSource)
-            );
-
-            if (entity==5)
-            {
-                const char* skidTypes[]={
-                    "Braking skid",
-                    "Yaw mark",
-                    "Scuff mark",
-                    "Tire scrub"
-                };
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::Combo(
-                    "Evidence type",
-                    &skidEvidenceType,
-                    skidTypes,
-                    4
-                );
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::DragFloat(
-                    "Length",
-                    &skidLength,
-                    0.05f,
-                    0.0f,
-                    1000.0f,
-                    "%.2f m"
-                );
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::DragFloat(
-                    "Width",
-                    &skidWidth,
-                    0.01f,
-                    0.01f,
-                    5.0f,
-                    "%.2f m"
-                );
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::SliderFloat(
-                    "Friction coefficient",
-                    &skidFriction,
-                    0.05f,
-                    1.50f,
-                    "%.2f"
-                );
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::SliderFloat(
-                    "Confidence",
-                    &skidConfidence,
-                    0.0f,
-                    1.0f,
-                    "%.2f"
-                );
-            }
-            else if (entity==6)
-            {
-                const char* markerTypes[]={
-                    "Reference",
-                    "Impact",
-                    "Evidence",
-                    "Survey"
-                };
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::Combo(
-                    "Category",
-                    &markerCategory,
-                    markerTypes,
-                    4
-                );
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::SliderFloat(
-                    "Confidence",
-                    &markerConfidence,
-                    0.0f,
-                    1.0f,
-                    "%.2f"
-                );
-            }
-            else
-            {
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::DragFloat(
-                    "Field radius",
-                    &debrisRadius,
-                    0.05f,
-                    0.0f,
-                    100.0f,
-                    "%.2f m"
-                );
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::DragInt(
-                    "Estimated pieces",
-                    &debrisPieceCount,
-                    1.0f,
-                    0,
-                    10000
-                );
-
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::SliderFloat(
-                    "Confidence",
-                    &debrisConfidence,
-                    0.0f,
-                    1.0f,
-                    "%.2f"
-                );
-            }
-        }
-    }
-
-    // Measurements: Distance / Angle
-    if (entity==8 || entity==9)
-    {
-        if (section("MEASUREMENT SETTINGS"))
-        {
-            const char* units[]={
-                "Metric",
-                "Imperial"
-            };
-
-            ImGui::SetNextItemWidth(-1.0f);
-
-            ImGui::Combo(
-                "Units",
-                &measurementUnits,
-                units,
-                2
-            );
-
-            if (entity==8)
-            {
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::DragFloat(
-                    "Distance",
-                    &measurementDistance,
-                    0.01f,
-                    0.0f,
-                    100000.0f,
-                    measurementUnits==0
-                        ? "%.3f m"
-                        : "%.3f ft"
-                );
-            }
-            else
-            {
-                ImGui::SetNextItemWidth(-1.0f);
-
-                ImGui::DragFloat(
-                    "Angle",
-                    &measurementAngle,
-                    0.10f,
-                    -360.0f,
-                    360.0f,
-                    "%.2f deg"
-                );
-            }
-
-            ImGui::Checkbox(
-                "Lock measurement",
-                &measurementLocked
-            );
-        }
-    }
-
-    if (section("VISIBILITY"))
-    {
-        ImGui::Checkbox(
-            "Visible",
-            &objectVisible[entity]
-        );
-
-        ImGui::Checkbox(
-            "Locked",
-            &objectLocked[entity]
-        );
-
-        ImGui::TextDisabled("Selectable");
-        ImGui::SameLine();
-
-        ImGui::TextUnformatted(
-            objectLocked[entity]
-                ? "No"
-                : "Yes"
-        );
-    }
-
-    if (section("METADATA"))
-    {
-        ImGui::TextDisabled("Object ID");
-        ImGui::SameLine();
-        ImGui::Text("%d",entity);
-
-        ImGui::TextDisabled("Type");
-        ImGui::SameLine();
-
-        const char* type=
-            entity<=2
-                ? "Environment"
-                : (entity<=4
-                    ? "Vehicle"
-                    : (entity<=7
-                        ? "Evidence"
-                        : "Measurement"));
-
-        ImGui::TextUnformatted(type);
-
-        ImGui::SetNextItemWidth(-1.0f);
-
-        ImGui::InputTextMultiline(
-            "Notes",
-            objectNotes,
-            sizeof(objectNotes),
-            ImVec2(-1.0f,82.0f)
-        );
-    }
-}
-static bool shellSnapEnabled()
-{
-    return gEditorShell.snapEnabled;
-}
-
-static float shellSnapValue()
-{
-    return gEditorShell.snapValue;
-}
-
-static const char* shellSelectedEntityName()
-{
-    if (gEditorShell.selectedEntity==0)
-        return "";
-
-    return selectedEntityName();
-}
 
 static UiGlyph selectedEntityGlyph()
 {
@@ -5231,29 +4166,6 @@ static void drawOutliner()
         &gEditorShell.showOutliner,
         ImGuiWindowFlags_NoMove
     );
-    beginEditorContextHeader(
-        "##OutlinerContextHeader"
-    );
-
-    ImGui::TextDisabled("SCENE");
-
-    editorContextSeparator();
-
-    ImGui::Text("9 objects");
-
-    editorContextSeparator();
-
-    ImGui::TextDisabled("Selected");
-    ImGui::SameLine(0.0f,5.0f);
-
-    ImGui::Text(
-        "%s",
-        gEditorShell.selectedEntity!=0
-            ? selectedEntityName()
-            : "None"
-    );
-
-    endEditorContextHeader();
 
     // Header / filter.
     ImGui::Text("SCENE OUTLINER");
@@ -5576,37 +4488,9 @@ static void drawProperties()
         &gEditorShell.showProperties,
         ImGuiWindowFlags_NoMove
     );
-    beginEditorContextHeader(
-        "##PropertiesContextHeader"
-    );
 
-    ImGui::TextDisabled("INSPECTOR");
-
-    editorContextSeparator();
-
-    ImGui::TextDisabled("Context");
-    ImGui::SameLine(0.0f,5.0f);
-
-    ImGui::Text(
-        "%s",
-        gEditorShell.selectedEntity!=0
-            ? selectedEntityName()
-            : "Scene"
-    );
-
-    editorContextSeparator();
-
-    ImGui::TextDisabled(
-        gEditorShell.selectedEntity!=0
-            ? "Object Properties"
-            : "No object selected"
-    );
-
-    endEditorContextHeader();
-    drawDeepPropertiesInspectorBody();
-
-
-    
+    ImGui::Text("INSPECTOR");
+    ImGui::Separator();
 
     // Selection header.
     beginSurface(
@@ -7347,76 +6231,6 @@ static void drawNodeEditor()
         &gEditorShell.showNodeEditor,
         ImGuiWindowFlags_NoMove
     );
-    beginEditorContextHeader(
-        "##NodeEditorContextHeader"
-    );
-
-    ImGui::TextDisabled("NODE GRAPH");
-
-    editorContextSeparator();
-
-    ImGui::Text(
-        "%d nodes",
-        static_cast<int>(
-            nodes.size()
-        )
-    );
-
-    editorContextSeparator();
-
-    ImGui::Text(
-        "%d links",
-        static_cast<int>(
-            links.size()
-        )
-    );
-
-    editorContextSeparator();
-
-    if (!selectedNodes.empty())
-    {
-        ImGui::Text(
-            "%d selected",
-            static_cast<int>(
-                selectedNodes.size()
-            )
-        );
-    }
-    else if (!selectedLinks.empty())
-    {
-        ImGui::Text(
-            "%d link selected",
-            static_cast<int>(
-                selectedLinks.size()
-            )
-        );
-    }
-    else
-    {
-        ImGui::TextDisabled(
-            "Nothing selected"
-        );
-    }
-
-    editorContextSeparator();
-
-    if (graphMessageError)
-    {
-        ImGui::TextColored(
-            ImVec4(0.90f,0.58f,0.45f,1.0f),
-            "%s",
-            graphMessage.c_str()
-        );
-    }
-    else
-    {
-        ImGui::TextDisabled(
-            "%s",
-            graphMessage.c_str()
-        );
-    }
-
-    endEditorContextHeader();
 
     // ========================================================
     // SHORTCUTS
@@ -9877,56 +8691,6 @@ static void drawTimeline()
         &gEditorShell.showTimeline,
         ImGuiWindowFlags_NoMove
     );
-    beginEditorContextHeader(
-        "##TimelineContextHeader"
-    );
-
-    ImGui::TextDisabled("TIMELINE");
-
-    editorContextSeparator();
-
-    ImGui::Text(
-        "Frame %d",
-        currentFrame
-    );
-
-    editorContextSeparator();
-
-    const char* timelineHeaderPhase=
-        currentFrame<preImpactEnd
-            ? "Pre-impact"
-            : (currentFrame<impactEnd
-                ? "Impact"
-                : "Post-impact");
-
-    ImGui::Text(
-        "%s",
-        timelineHeaderPhase
-    );
-
-    editorContextSeparator();
-
-    ImGui::TextDisabled(
-        playing
-            ? "Playing"
-            : "Paused"
-    );
-
-    editorContextSeparator();
-
-    ImGui::TextDisabled(
-        snapToFrames
-            ? "Snap On"
-            : "Snap Off"
-    );
-
-    ImGui::SameLine(0.0f,14.0f);
-
-    ImGui::TextDisabled(
-        "Space Play/Pause"
-    );
-
-    endEditorContextHeader();
     // ========================================================
     // TIMELINE KEYBOARD SHORTCUTS
     // ========================================================
@@ -11086,27 +9850,19 @@ static void drawMainMenuBar()
     if (ImGui::BeginMenu("View"))
     {
         ImGui::MenuItem(
-            "Scene Outliner",
-            "Ctrl+Shift+O",
-            &gEditorShell.showOutliner
+            "Scene Outliner",`r`n            "Ctrl+Shift+O",`r`n            &gEditorShell.showOutliner
         );
 
         ImGui::MenuItem(
-            "Properties",
-            "Ctrl+Shift+I",
-            &gEditorShell.showProperties
+            "Properties",`r`n            "Ctrl+Shift+I",`r`n            &gEditorShell.showProperties
         );
 
         ImGui::MenuItem(
-            "Timeline",
-            "Ctrl+Shift+T",
-            &gEditorShell.showTimeline
+            "Timeline",`r`n            "Ctrl+Shift+T",`r`n            &gEditorShell.showTimeline
         );
 
         ImGui::MenuItem(
-            "Node Editor",
-            "Ctrl+Shift+N",
-            &gEditorShell.showNodeEditor
+            "Node Editor",`r`n            "Ctrl+Shift+N",`r`n            &gEditorShell.showNodeEditor
         );
 
         ImGui::Separator();
@@ -11150,9 +9906,7 @@ static void drawMainMenuBar()
 
         ImGui::Separator();
         ImGui::MenuItem(
-            "Snapping",
-            "Shift+Tab",
-            &gEditorShell.snapEnabled
+            "Snapping",`r`n            "Shift+Tab",`r`n            &gEditorShell.snapEnabled
         );
 
         ImGui::EndMenu();
@@ -11841,306 +10595,6 @@ static void drawShortcutReferenceWindow()
 
     ImGui::End();
 }
-static void pushUnifiedButtonTheme()
-{
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FrameRounding,
-        4.0f
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FrameBorderSize,
-        1.0f
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_FramePadding,
-        ImVec2(12.0f,7.0f)
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_Button,
-        ImVec4(0.18f,0.19f,0.21f,1.0f)
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_ButtonHovered,
-        ImVec4(0.23f,0.25f,0.28f,1.0f)
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_ButtonActive,
-        ImVec4(0.14f,0.36f,0.67f,1.0f)
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_Border,
-        ImVec4(0.34f,0.37f,0.42f,1.0f)
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_Text,
-        ImVec4(0.95f,0.96f,0.98f,1.0f)
-    );
-}
-
-static void popUnifiedButtonTheme()
-{
-    ImGui::PopStyleColor(5);
-    ImGui::PopStyleVar(3);
-}
-
-static void drawUnifiedButtonLabel(
-    ImDrawList* drawList,
-    const ImVec2& minPos,
-    const ImVec2& maxPos,
-    const char* label,
-    const ImVec4& textColor,
-    bool enabled)
-{
-    if (!label || !label[0])
-        return;
-
-    const ImVec2 textSize=
-        ImGui::CalcTextSize(label);
-
-    const ImVec2 textPos=
-        ImVec2(
-            minPos.x+(maxPos.x-minPos.x-textSize.x)*0.5f,
-            minPos.y+(maxPos.y-minPos.y-textSize.y)*0.5f-0.5f
-        );
-
-    ImVec4 primary=textColor;
-    ImVec4 secondary=textColor;
-
-    if (!enabled)
-    {
-        primary=ImVec4(
-            primary.x*0.75f,
-            primary.y*0.75f,
-            primary.z*0.75f,
-            0.85f
-        );
-
-        secondary=primary;
-    }
-
-    drawList->AddText(
-        textPos,
-        ImGui::ColorConvertFloat4ToU32(primary),
-        label
-    );
-
-    drawList->AddText(
-        ImVec2(textPos.x+0.55f,textPos.y),
-        ImGui::ColorConvertFloat4ToU32(secondary),
-        label
-    );
-}static constexpr float SOVEREIGN_STATUS_BAR_HEIGHT=30.0f;
-
-static void drawSovereignStatusBar()
-{
-    const ImGuiViewport* viewport=
-        ImGui::GetMainViewport();
-
-    if (!viewport)
-        return;
-
-    const ImVec2 statusPos(
-        viewport->WorkPos.x,
-        viewport->WorkPos.y+
-        viewport->WorkSize.y-
-        SOVEREIGN_STATUS_BAR_HEIGHT
-    );
-
-    const ImVec2 statusSize(
-        viewport->WorkSize.x,
-        SOVEREIGN_STATUS_BAR_HEIGHT
-    );
-
-    ImGui::SetNextWindowPos(
-        statusPos,
-        ImGuiCond_Always
-    );
-
-    ImGui::SetNextWindowSize(
-        statusSize,
-        ImGuiCond_Always
-    );
-
-    ImGui::SetNextWindowViewport(
-        viewport->ID
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_WindowPadding,
-        ImVec2(10.0f,5.0f)
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_WindowBorderSize,
-        1.0f
-    );
-
-    ImGui::PushStyleVar(
-        ImGuiStyleVar_WindowRounding,
-        0.0f
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_WindowBg,
-        ImVec4(0.075f,0.079f,0.086f,1.0f)
-    );
-
-    ImGui::PushStyleColor(
-        ImGuiCol_Border,
-        ImVec4(0.23f,0.245f,0.27f,1.0f)
-    );
-
-    const ImGuiWindowFlags flags=
-        ImGuiWindowFlags_NoDecoration |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoSavedSettings |
-        ImGuiWindowFlags_NoDocking |
-        ImGuiWindowFlags_NoNavFocus |
-        ImGuiWindowFlags_NoBringToFrontOnFocus;
-
-    if (ImGui::Begin(
-        "##SovereignStatusBar",
-        nullptr,
-        flags))
-    {
-        auto separator = []()
-        {
-            ImGui::SameLine(0.0f,10.0f);
-
-            ImGui::TextColored(
-                ImVec4(0.31f,0.33f,0.37f,1.0f),
-                "|"
-            );
-
-            ImGui::SameLine(0.0f,10.0f);
-        };
-
-        // ----------------------------------------------------
-        // LEFT: application state
-        // ----------------------------------------------------
-
-        ImGui::TextColored(
-            ImVec4(0.53f,0.80f,0.56f,1.0f),
-            "READY"
-        );
-
-        separator();
-
-        ImGui::TextDisabled(
-            "Scene"
-        );
-
-        ImGui::SameLine(0.0f,5.0f);
-
-        ImGui::Text(
-            "9 objects"
-        );
-
-        separator();
-
-        ImGui::TextDisabled(
-            "Selected"
-        );
-
-        ImGui::SameLine(0.0f,5.0f);
-
-        const char* selectedName=
-            selectedEntityName();
-
-        ImGui::Text(
-            "%s",
-            selectedName &&
-            selectedName[0]
-                ? selectedName
-                : "None"
-        );
-
-        separator();
-
-        ImGui::TextDisabled(
-            "Snap"
-        );
-
-        ImGui::SameLine(0.0f,5.0f);
-
-        if (gEditorShell.snapEnabled)
-        {
-            ImGui::Text(
-                "%.2f m",
-                gEditorShell.snapValue
-            );
-        }
-        else
-        {
-            ImGui::TextDisabled(
-                "Off"
-            );
-        }
-
-        separator();
-
-        ImGui::TextDisabled(
-            "Units"
-        );
-
-        ImGui::SameLine(0.0f,5.0f);
-
-        ImGui::Text(
-            "Metric"
-        );
-
-        // ----------------------------------------------------
-        // RIGHT: performance + discoverability
-        // ----------------------------------------------------
-
-        const float fps=
-            ImGui::GetIO().Framerate;
-
-        char rightText[128]{};
-
-        std::snprintf(
-            rightText,
-            sizeof(rightText),
-            "%.0f FPS    |    F1 Shortcuts",
-            fps
-        );
-
-        const float rightWidth=
-            ImGui::CalcTextSize(
-                rightText
-            ).x;
-
-        const float targetX=
-            ImGui::GetWindowContentRegionMax().x-
-            rightWidth;
-
-        if (targetX>
-            ImGui::GetCursorPosX()+20.0f)
-        {
-            ImGui::SameLine();
-            ImGui::SetCursorPosX(
-                targetX
-            );
-
-            ImGui::TextDisabled(
-                "%s",
-                rightText
-            );
-        }
-    }
-
-    ImGui::End();
-
-    ImGui::PopStyleColor(2);
-    ImGui::PopStyleVar(3);
-}
 static void drawInterface()
 {
     static bool layoutBuilt=false;
@@ -12148,7 +10602,6 @@ static void drawInterface()
 
     drawMainMenuBar();
     handleGlobalShortcuts();
-    pushUnifiedButtonTheme();
 
     if (gEditorShell.resetLayoutRequested)
     {
@@ -12159,17 +10612,7 @@ static void drawInterface()
     ImGuiViewport* viewport=ImGui::GetMainViewport();
 
     ImGui::SetNextWindowPos(viewport->WorkPos);
-    ImGui::SetNextWindowSize(
-        ImVec2(
-            viewport->WorkSize.x,
-            std::max(
-                100.0f,
-                viewport->WorkSize.y-
-                SOVEREIGN_STATUS_BAR_HEIGHT
-            )
-        ),
-        ImGuiCond_Always
-    );
+    ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
 
     const ImGuiWindowFlags hostFlags=
@@ -12321,10 +10764,7 @@ static void drawInterface()
     applyShortcutFocusRequest();
     drawShortcutReferenceWindow();
     drawShortcutToast();
-
-    drawSovereignStatusBar();
-
-    popUnifiedButtonTheme();}
+}
 
 int main()
 {
@@ -12397,14 +10837,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
-
-
-
-
-
-
-
 
 
 
