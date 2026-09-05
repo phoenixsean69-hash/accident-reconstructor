@@ -1,766 +1,1654 @@
-#include <glad/glad.h>
+﻿#define GLFW_INCLUDE_NONE
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#include <windows.h>
+#include <dwmapi.h>
+#endif
+
 #include <GLFW/glfw3.h>
+
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#endif
+
+#include <glad/glad.h>
 
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#include <algorithm>
+#include <array>
 #include <cstdio>
+#include <filesystem>
+#include <fstream>
+#include <iterator>
+#include <string>
+#include <vector>
+
+#ifndef SFE_ASSET_DIR
+#define SFE_ASSET_DIR "assets"
+#endif
+
+#define NANOSVG_IMPLEMENTATION
+#include "../third_party/nanosvg/nanosvg.h"
+#define NANOSVGRAST_IMPLEMENTATION
+#include "../third_party/nanosvg/nanosvgrast.h"
 
 constexpr int WINDOW_WIDTH = 1600;
 constexpr int WINDOW_HEIGHT = 900;
-
-const char* vertexShaderSource = R"(
-#version 460 core
-layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec3 aColor;
-
-out vec3 vColor;
-
-void main()
+constexpr float RIGHT_PANEL_MIN_WIDTH = 260.0f;
+constexpr float RIGHT_PANEL_MAX_WIDTH = 430.0f;
+#ifdef _WIN32
+static void applyNativeWindowTheme(GLFWwindow* window)
 {
-    gl_Position = vec4(aPos, 1.0);
-    vColor = aColor;
-}
-)";
+    HWND hwnd = glfwGetWin32Window(window);
 
-const char* fragmentShaderSource = R"(
-#version 460 core
-in vec3 vColor;
-out vec4 FragColor;
+    if (!hwnd)
+        return;
 
-void main()
-{
-    FragColor = vec4(vColor, 1.0);
-}
-)";
+    // Use numeric IDs so this also compiles with older Windows SDK headers.
+    constexpr DWORD DWMWA_USE_IMMERSIVE_DARK_MODE_OLD = 19;
+    constexpr DWORD DWMWA_USE_IMMERSIVE_DARK_MODE_NEW = 20;
+    constexpr DWORD DWMWA_CAPTION_COLOR_COMPAT = 35;
+    constexpr DWORD DWMWA_TEXT_COLOR_COMPAT = 36;
 
-static GLuint compileShader(GLenum type, const char* source)
-{
-    GLuint shader = glCreateShader(type);
-    glShaderSource(shader, 1, &source, nullptr);
-    glCompileShader(shader);
+    BOOL useDarkMode = TRUE;
 
-    GLint success = GL_FALSE;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    HRESULT darkResult = DwmSetWindowAttribute(
+        hwnd,
+        DWMWA_USE_IMMERSIVE_DARK_MODE_NEW,
+        &useDarkMode,
+        sizeof(useDarkMode)
+    );
 
-    if (!success)
+    if (FAILED(darkResult))
     {
-        char log[512]{};
-        glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
-        std::printf("[ERROR] Shader compilation failed:\n%s\n", log);
+        DwmSetWindowAttribute(
+            hwnd,
+            DWMWA_USE_IMMERSIVE_DARK_MODE_OLD,
+            &useDarkMode,
+            sizeof(useDarkMode)
+        );
     }
 
-    return shader;
+    // On supported Windows 11 builds these make the native caption
+    // visually match Sovereign's dark editor chrome.
+    const COLORREF captionColor = RGB(24, 25, 28);
+    const COLORREF captionText  = RGB(238, 240, 244);
+
+    DwmSetWindowAttribute(
+        hwnd,
+        DWMWA_CAPTION_COLOR_COMPAT,
+        &captionColor,
+        sizeof(captionColor)
+    );
+
+    DwmSetWindowAttribute(
+        hwnd,
+        DWMWA_TEXT_COLOR_COMPAT,
+        &captionText,
+        sizeof(captionText)
+    );
+
+    SetWindowPos(
+        hwnd,
+        nullptr,
+        0,
+        0,
+        0,
+        0,
+        SWP_NOMOVE |
+        SWP_NOSIZE |
+        SWP_NOZORDER |
+        SWP_NOACTIVATE |
+        SWP_FRAMECHANGED
+    );
+}
+#endif
+
+static std::array<GLuint, 9> gToolIcons{};
+
+static std::filesystem::path assetPath(const char* relative)
+{
+    return std::filesystem::path(SFE_ASSET_DIR) / relative;
 }
 
-static GLuint createShaderProgram()
+static GLuint loadSvgTexture(const char* path)
 {
-    GLuint vertexShader =
-        compileShader(GL_VERTEX_SHADER, vertexShaderSource);
+    const std::filesystem::path relativePath(path);
+    const std::array<std::filesystem::path, 5> candidates = {
+        relativePath,
+        std::filesystem::path(SFE_ASSET_DIR).parent_path() / relativePath,
+        std::filesystem::path(SFE_ASSET_DIR) / relativePath.filename(),
+        std::filesystem::current_path() / ".." / relativePath,
+        std::filesystem::current_path() / ".." / ".." / relativePath
+    };
 
-    GLuint fragmentShader =
-        compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
-
-    GLuint program = glCreateProgram();
-
-    glAttachShader(program, vertexShader);
-    glAttachShader(program, fragmentShader);
-    glLinkProgram(program);
-
-    GLint success = GL_FALSE;
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-
-    if (!success)
+    std::filesystem::path resolvedPath;
+    for (const auto& candidate : candidates)
     {
-        char log[512]{};
-        glGetProgramInfoLog(program, sizeof(log), nullptr, log);
-        std::printf("[ERROR] Shader linking failed:\n%s\n", log);
+        if (std::filesystem::exists(candidate))
+        {
+            resolvedPath = candidate;
+            break;
+        }
     }
 
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    if (resolvedPath.empty())
+    {
+        std::fprintf(stderr, "[icons] Missing SVG: %s\n", path);
+        return 0;
+    }
 
-    return program;
+    std::ifstream file(resolvedPath);
+    if (!file) return 0;
+
+    const std::string source((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    NSVGimage* image = nsvgParse(const_cast<char*>(source.c_str()), "px", 96.0f);
+    if (!image) return 0;
+
+    NSVGrasterizer* rasterizer = nsvgCreateRasterizer();
+    if (!rasterizer)
+    {
+        nsvgDelete(image);
+        return 0;
+    }
+
+    const int width = std::max(1, static_cast<int>(image->width));
+    const int height = std::max(1, static_cast<int>(image->height));
+    std::vector<unsigned char> pixels(static_cast<size_t>(width * height * 4));
+    nsvgRasterize(rasterizer, image, 0.0f, 0.0f, 1.0f, pixels.data(), width, height, width * 4);
+
+    for (size_t i = 0; i + 3 < pixels.size(); i += 4)
+    {
+        if (pixels[i + 3] > 0)
+        {
+            pixels[i] = 255;
+            pixels[i + 1] = 255;
+            pixels[i + 2] = 255;
+        }
+    }
+
+    GLuint texture = 0;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    nsvgDeleteRasterizer(rasterizer);
+    nsvgDelete(image);
+    return texture;
 }
+
+static ImVec4 colorWindow() { return ImVec4(0.070f, 0.073f, 0.079f, 1.0f); }
+static ImVec4 colorPanel() { return ImVec4(0.095f, 0.100f, 0.108f, 1.0f); }
+static ImVec4 colorPanelRaised() { return ImVec4(0.125f, 0.132f, 0.143f, 1.0f); }
+static ImVec4 colorBorder() { return ImVec4(0.245f, 0.260f, 0.285f, 1.0f); }
+static ImVec4 colorAccent() { return ImVec4(0.98f, 0.68f, 0.08f, 1.0f); }
+static ImVec4 colorAccentMuted() { return ImVec4(0.245f, 0.175f, 0.055f, 1.0f); }
+static ImVec4 colorText() { return ImVec4(0.965f, 0.972f, 0.982f, 1.0f); }
+static ImVec4 colorMuted() { return ImVec4(0.700f, 0.725f, 0.760f, 1.0f); }
+static ImVec4 colorSuccess() { return ImVec4(0.48f, 0.84f, 0.46f, 1.0f); }
 
 static void applySovereignTheme()
 {
     ImGui::StyleColorsDark();
-
     ImGuiStyle& style = ImGui::GetStyle();
 
     style.WindowRounding = 2.0f;
-    style.ChildRounding = 2.0f;
+    style.ChildRounding = 3.0f;
     style.FrameRounding = 2.0f;
-    style.PopupRounding = 2.0f;
+    style.PopupRounding = 3.0f;
     style.ScrollbarRounding = 2.0f;
     style.GrabRounding = 2.0f;
     style.TabRounding = 2.0f;
-
+    style.WindowBorderSize = 1.0f;
+    style.ChildBorderSize = 1.0f;
+    style.FrameBorderSize = 1.0f;
+    style.TabBorderSize = 0.0f;
     style.WindowPadding = ImVec2(10.0f, 8.0f);
-    style.FramePadding = ImVec2(8.0f, 5.0f);
-    style.ItemSpacing = ImVec2(7.0f, 6.0f);
+    style.FramePadding = ImVec2(9.0f, 6.0f);
+    style.ItemSpacing = ImVec2(8.0f, 7.0f);
     style.ItemInnerSpacing = ImVec2(6.0f, 4.0f);
-    style.ScrollbarSize = 13.0f;
+    style.CellPadding = ImVec2(9.0f, 6.0f);
+    style.ScrollbarSize = 12.0f;
 
     ImVec4* c = style.Colors;
-
-    c[ImGuiCol_Text] = ImVec4(0.92f, 0.90f, 0.84f, 1.0f);
-    c[ImGuiCol_TextDisabled] = ImVec4(0.52f, 0.51f, 0.47f, 1.0f);
-
-    c[ImGuiCol_WindowBg] = ImVec4(0.025f, 0.027f, 0.030f, 1.0f);
-    c[ImGuiCol_ChildBg] = ImVec4(0.045f, 0.047f, 0.050f, 1.0f);
-    c[ImGuiCol_PopupBg] = ImVec4(0.075f, 0.075f, 0.070f, 1.0f);
-
-    c[ImGuiCol_Border] = ImVec4(0.25f, 0.23f, 0.17f, 1.0f);
-    c[ImGuiCol_Separator] = ImVec4(0.30f, 0.27f, 0.18f, 1.0f);
-
-    c[ImGuiCol_FrameBg] = ImVec4(0.105f, 0.105f, 0.095f, 1.0f);
-    c[ImGuiCol_FrameBgHovered] = ImVec4(0.27f, 0.22f, 0.11f, 1.0f);
-    c[ImGuiCol_FrameBgActive] = ImVec4(0.42f, 0.31f, 0.10f, 1.0f);
-
-    c[ImGuiCol_TitleBg] = ImVec4(0.045f, 0.047f, 0.050f, 1.0f);
-    c[ImGuiCol_TitleBgActive] = ImVec4(0.25f, 0.19f, 0.08f, 1.0f);
-    c[ImGuiCol_MenuBarBg] = ImVec4(0.075f, 0.075f, 0.070f, 1.0f);
-
-    c[ImGuiCol_Button] = ImVec4(0.13f, 0.12f, 0.09f, 1.0f);
-    c[ImGuiCol_ButtonHovered] = ImVec4(0.46f, 0.34f, 0.10f, 1.0f);
-    c[ImGuiCol_ButtonActive] = ImVec4(0.72f, 0.52f, 0.13f, 1.0f);
-
-    c[ImGuiCol_Header] = ImVec4(0.22f, 0.17f, 0.08f, 1.0f);
-    c[ImGuiCol_HeaderHovered] = ImVec4(0.45f, 0.32f, 0.10f, 1.0f);
-    c[ImGuiCol_HeaderActive] = ImVec4(0.70f, 0.50f, 0.12f, 1.0f);
-
-    c[ImGuiCol_CheckMark] = ImVec4(0.95f, 0.68f, 0.12f, 1.0f);
-    c[ImGuiCol_SliderGrab] = ImVec4(0.75f, 0.52f, 0.10f, 1.0f);
-    c[ImGuiCol_SliderGrabActive] = ImVec4(0.98f, 0.73f, 0.16f, 1.0f);
-
-    c[ImGuiCol_Tab] = ImVec4(0.10f, 0.10f, 0.085f, 1.0f);
-    c[ImGuiCol_TabHovered] = ImVec4(0.50f, 0.36f, 0.10f, 1.0f);
-    c[ImGuiCol_TabActive] = ImVec4(0.32f, 0.24f, 0.10f, 1.0f);
-
-    c[ImGuiCol_DockingPreview] = ImVec4(0.95f, 0.68f, 0.12f, 0.70f);
+    c[ImGuiCol_Text] = colorText();
+    c[ImGuiCol_TextDisabled] = colorMuted();
+    c[ImGuiCol_WindowBg] = colorWindow();
+    c[ImGuiCol_ChildBg] = colorPanel();
+    c[ImGuiCol_PopupBg] = colorPanelRaised();
+    c[ImGuiCol_Border] = colorBorder();
+    c[ImGuiCol_BorderShadow] = ImVec4(0,0,0,0);
+    c[ImGuiCol_FrameBg] = ImVec4(0.145f, 0.152f, 0.165f, 1.0f);
+    c[ImGuiCol_FrameBgHovered] = ImVec4(0.190f, 0.200f, 0.218f, 1.0f);
+    c[ImGuiCol_FrameBgActive] = ImVec4(0.225f, 0.238f, 0.258f, 1.0f);
+    c[ImGuiCol_TitleBg] = ImVec4(0.090f, 0.095f, 0.103f, 1.0f);
+    c[ImGuiCol_TitleBgActive] = ImVec4(0.125f, 0.132f, 0.145f, 1.0f);
+    c[ImGuiCol_MenuBarBg] = ImVec4(0.090f, 0.095f, 0.104f, 1.0f);
+    c[ImGuiCol_Button] = ImVec4(0.145f, 0.152f, 0.165f, 1.0f);
+    c[ImGuiCol_ButtonHovered] = ImVec4(0.205f, 0.216f, 0.235f, 1.0f);
+    c[ImGuiCol_ButtonActive] = ImVec4(0.250f, 0.263f, 0.286f, 1.0f);
+    c[ImGuiCol_Header] = ImVec4(0.135f, 0.143f, 0.156f, 1.0f);
+    c[ImGuiCol_HeaderHovered] = ImVec4(0.190f, 0.202f, 0.220f, 1.0f);
+    c[ImGuiCol_HeaderActive] = ImVec4(0.220f, 0.234f, 0.255f, 1.0f);
+    c[ImGuiCol_Separator] = ImVec4(0.235f, 0.250f, 0.275f, 1.0f);
+    c[ImGuiCol_SeparatorHovered] = ImVec4(0.40f,0.42f,0.45f,1.0f);
+    c[ImGuiCol_SeparatorActive] = colorAccent();
+    c[ImGuiCol_CheckMark] = colorAccent();
+    c[ImGuiCol_SliderGrab] = ImVec4(0.70f,0.48f,0.07f,1.0f);
+    c[ImGuiCol_SliderGrabActive] = colorAccent();
+    c[ImGuiCol_Tab] = ImVec4(0.105f, 0.112f, 0.122f, 1.0f);
+    c[ImGuiCol_TabHovered] = ImVec4(0.195f, 0.205f, 0.224f, 1.0f);
+    c[ImGuiCol_TabActive] = ImVec4(0.158f, 0.168f, 0.184f, 1.0f);
+    c[ImGuiCol_TabUnfocused] = ImVec4(0.090f, 0.095f, 0.105f, 1.0f);
+    c[ImGuiCol_TabUnfocusedActive] = ImVec4(0.125f, 0.133f, 0.145f, 1.0f);
+    c[ImGuiCol_TableHeaderBg] = ImVec4(0.160f, 0.170f, 0.185f, 1.0f);
+    c[ImGuiCol_TableRowBgAlt] = ImVec4(0.090f, 0.095f, 0.105f, 1.0f);
+    c[ImGuiCol_DockingPreview] = ImVec4(0.94f,0.64f,0.06f,0.28f);
 }
 
-static void drawToolButton(const char* label, const char* shortcut, int& tool, int value)
+enum class UiGlyph
 {
-    bool active = tool == value;
+    Folder, Hash, Calendar, Pin, Clock, Cube, Document, Bars, Pie, Image,
+    Check, Link, Ruler, Marker, Speed, Momentum, Report, Info
+};
 
-    if (active)
+enum class StatusTone { Neutral, Accent, Success };
+
+static ImU32 toU32(const ImVec4& c) { return ImGui::ColorConvertFloat4ToU32(c); }
+
+static ImVec4 toneColor(StatusTone tone)
+{
+    switch (tone)
     {
-        ImGui::PushStyleColor(
-            ImGuiCol_Button,
-            ImVec4(0.68f, 0.48f, 0.10f, 1.0f)
-        );
+        case StatusTone::Accent: return colorAccent();
+        case StatusTone::Success: return colorSuccess();
+        default: return colorMuted();
+    }
+}
+
+static void drawGlyph(ImDrawList* d, UiGlyph glyph, const ImVec2& center, float size, ImU32 color)
+{
+    const float s=size, x=center.x, y=center.y, t=std::max(1.0f,size*0.085f);
+
+    switch (glyph)
+    {
+        case UiGlyph::Folder:
+            d->AddRect(ImVec2(x-s*.44f,y-s*.24f),ImVec2(x+s*.44f,y+s*.30f),color,2.0f,0,t);
+            d->AddLine(ImVec2(x-s*.38f,y-s*.24f),ImVec2(x-s*.16f,y-s*.42f),color,t);
+            d->AddLine(ImVec2(x-s*.16f,y-s*.42f),ImVec2(x+s*.08f,y-s*.42f),color,t);
+            break;
+        case UiGlyph::Hash:
+            d->AddLine(ImVec2(x-s*.18f,y-s*.42f),ImVec2(x-s*.28f,y+s*.42f),color,t);
+            d->AddLine(ImVec2(x+s*.18f,y-s*.42f),ImVec2(x+s*.08f,y+s*.42f),color,t);
+            d->AddLine(ImVec2(x-s*.40f,y-s*.12f),ImVec2(x+s*.38f,y-s*.12f),color,t);
+            d->AddLine(ImVec2(x-s*.42f,y+s*.18f),ImVec2(x+s*.36f,y+s*.18f),color,t);
+            break;
+        case UiGlyph::Calendar:
+            d->AddRect(ImVec2(x-s*.40f,y-s*.34f),ImVec2(x+s*.40f,y+s*.38f),color,2.0f,0,t);
+            d->AddLine(ImVec2(x-s*.40f,y-s*.12f),ImVec2(x+s*.40f,y-s*.12f),color,t);
+            d->AddLine(ImVec2(x-s*.20f,y-s*.45f),ImVec2(x-s*.20f,y-s*.25f),color,t);
+            d->AddLine(ImVec2(x+s*.20f,y-s*.45f),ImVec2(x+s*.20f,y-s*.25f),color,t);
+            break;
+        case UiGlyph::Pin:
+        case UiGlyph::Marker:
+            d->AddCircle(ImVec2(x,y-s*.12f),s*.26f,color,24,t);
+            d->AddCircleFilled(ImVec2(x,y-s*.12f),s*.07f,color);
+            d->AddLine(ImVec2(x-s*.15f,y+s*.10f),ImVec2(x,y+s*.42f),color,t);
+            d->AddLine(ImVec2(x+s*.15f,y+s*.10f),ImVec2(x,y+s*.42f),color,t);
+            break;
+        case UiGlyph::Clock:
+            d->AddCircle(center,s*.38f,color,28,t);
+            d->AddLine(center,ImVec2(x,y-s*.22f),color,t);
+            d->AddLine(center,ImVec2(x+s*.19f,y+s*.12f),color,t);
+            break;
+        case UiGlyph::Cube:
+            d->AddRect(ImVec2(x-s*.30f,y-s*.30f),ImVec2(x+s*.30f,y+s*.30f),color,1.0f,0,t);
+            d->AddLine(ImVec2(x-s*.30f,y-s*.30f),ImVec2(x,y-s*.46f),color,t);
+            d->AddLine(ImVec2(x+s*.30f,y-s*.30f),ImVec2(x,y-s*.46f),color,t);
+            d->AddLine(ImVec2(x,y-s*.46f),ImVec2(x,y+s*.18f),color,t);
+            break;
+        case UiGlyph::Document:
+        case UiGlyph::Report:
+            d->AddRect(ImVec2(x-s*.30f,y-s*.40f),ImVec2(x+s*.30f,y+s*.40f),color,1.0f,0,t);
+            d->AddLine(ImVec2(x-s*.16f,y-s*.12f),ImVec2(x+s*.16f,y-s*.12f),color,t);
+            d->AddLine(ImVec2(x-s*.16f,y+s*.06f),ImVec2(x+s*.16f,y+s*.06f),color,t);
+            d->AddLine(ImVec2(x-s*.16f,y+s*.24f),ImVec2(x+s*.10f,y+s*.24f),color,t);
+            break;
+        case UiGlyph::Bars:
+            d->AddRectFilled(ImVec2(x-s*.34f,y+s*.06f),ImVec2(x-s*.20f,y+s*.38f),color);
+            d->AddRectFilled(ImVec2(x-s*.07f,y-s*.16f),ImVec2(x+s*.07f,y+s*.38f),color);
+            d->AddRectFilled(ImVec2(x+s*.20f,y-s*.38f),ImVec2(x+s*.34f,y+s*.38f),color);
+            break;
+        case UiGlyph::Pie:
+            d->AddCircle(center,s*.36f,color,28,t);
+            d->AddLine(center,ImVec2(x,y-s*.36f),color,t);
+            d->AddLine(center,ImVec2(x+s*.30f,y+s*.20f),color,t);
+            break;
+        case UiGlyph::Image:
+            d->AddRect(ImVec2(x-s*.42f,y-s*.32f),ImVec2(x+s*.42f,y+s*.32f),color,2.0f,0,t);
+            d->AddCircleFilled(ImVec2(x+s*.20f,y-s*.12f),s*.07f,color);
+            d->AddLine(ImVec2(x-s*.34f,y+s*.18f),ImVec2(x-s*.08f,y-s*.02f),color,t);
+            d->AddLine(ImVec2(x-s*.08f,y-s*.02f),ImVec2(x+s*.10f,y+s*.14f),color,t);
+            d->AddLine(ImVec2(x+s*.10f,y+s*.14f),ImVec2(x+s*.30f,y-s*.02f),color,t);
+            break;
+        case UiGlyph::Check:
+            d->AddCircle(center,s*.36f,color,28,t);
+            d->AddLine(ImVec2(x-s*.18f,y),ImVec2(x-s*.04f,y+s*.15f),color,t);
+            d->AddLine(ImVec2(x-s*.04f,y+s*.15f),ImVec2(x+s*.20f,y-s*.16f),color,t);
+            break;
+        case UiGlyph::Link:
+            d->AddCircle(ImVec2(x-s*.14f,y),s*.22f,color,20,t);
+            d->AddCircle(ImVec2(x+s*.14f,y),s*.22f,color,20,t);
+            d->AddLine(ImVec2(x-s*.06f,y),ImVec2(x+s*.06f,y),color,t);
+            break;
+        case UiGlyph::Ruler:
+            d->AddLine(ImVec2(x-s*.36f,y+s*.28f),ImVec2(x+s*.36f,y-s*.28f),color,t*1.2f);
+            for (int i=-2;i<=2;++i)
+            {
+                const float px=x+i*s*.12f, py=y-i*s*.09f;
+                d->AddLine(ImVec2(px,py),ImVec2(px+s*.08f,py+s*.10f),color,t);
+            }
+            break;
+        case UiGlyph::Speed:
+            d->AddCircle(center,s*.36f,color,28,t);
+            d->AddLine(center,ImVec2(x+s*.23f,y-s*.18f),color,t);
+            d->AddCircleFilled(center,s*.05f,color);
+            break;
+        case UiGlyph::Momentum:
+            d->AddLine(ImVec2(x-s*.34f,y),ImVec2(x+s*.02f,y),color,t);
+            d->AddTriangleFilled(ImVec2(x+s*.02f,y),ImVec2(x-s*.10f,y-s*.12f),ImVec2(x-s*.10f,y+s*.12f),color);
+            d->AddLine(ImVec2(x+s*.34f,y),ImVec2(x-s*.02f,y),color,t);
+            d->AddTriangleFilled(ImVec2(x-s*.02f,y),ImVec2(x+s*.10f,y-s*.12f),ImVec2(x+s*.10f,y+s*.12f),color);
+            break;
+        case UiGlyph::Info:
+            d->AddCircle(center,s*.36f,color,28,t);
+            d->AddCircleFilled(ImVec2(x,y-s*.16f),s*.04f,color);
+            d->AddLine(ImVec2(x,y-s*.02f),ImVec2(x,y+s*.20f),color,t);
+            break;
+    }
+}
+
+static void drawIconBadge(UiGlyph glyph, const ImVec2& pos, float boxSize, bool accent)
+{
+    ImDrawList* d=ImGui::GetWindowDrawList();
+    const ImU32 bg=toU32(accent?colorAccentMuted():colorPanelRaised());
+    const ImU32 border=toU32(accent?ImVec4(0.45f,0.31f,0.06f,1.0f):colorBorder());
+    const ImU32 fg=toU32(accent?colorAccent():colorText());
+    d->AddRectFilled(pos,ImVec2(pos.x+boxSize,pos.y+boxSize),bg,3.0f);
+    d->AddRect(pos,ImVec2(pos.x+boxSize,pos.y+boxSize),border,3.0f,0,1.0f);
+    drawGlyph(d,glyph,ImVec2(pos.x+boxSize*.5f,pos.y+boxSize*.5f),boxSize*.52f,fg);
+}
+
+static void beginSurface(const char* id, const ImVec2& size, bool raised=false, ImGuiWindowFlags flags=0)
+{
+    ImGui::PushStyleColor(ImGuiCol_ChildBg,raised?colorPanelRaised():colorPanel());
+    ImGui::PushStyleColor(ImGuiCol_Border,colorBorder());
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding,3.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2(12.0f,10.0f));
+    ImGui::BeginChild(id,size,true,flags);
+}
+
+static void endSurface()
+{
+    ImGui::EndChild();
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor(2);
+}
+
+static void drawStatus(const char* text, StatusTone tone)
+{
+    const ImVec4 c=toneColor(tone);
+    const ImVec2 p=ImGui::GetCursorScreenPos();
+    const float h=ImGui::GetTextLineHeight();
+    ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(p.x+5.0f,p.y+h*.5f),4.0f,toU32(c));
+    ImGui::Dummy(ImVec2(11.0f,h));
+    ImGui::SameLine(0.0f,4.0f);
+    ImGui::TextColored(c,"%s",text);
+}
+
+static bool editorButton(
+    const char* label,
+    float width=0.0f,
+    bool primary=false,
+    bool enabled=true)
+{
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    // Measure the visible label and guarantee enough horizontal room.
+    const float textW = ImGui::CalcTextSize(label, nullptr, true).x;
+    const float minW =
+        textW +
+        (style.FramePadding.x * 2.0f) +
+        18.0f;
+
+    const float finalW =
+        (width > 0.0f)
+            ? std::max(width, minW)
+            : minW;
+
+    if (!enabled)
+        ImGui::BeginDisabled();
+
+    if (primary)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, colorAccentMuted());
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorAccentMuted());
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorAccentMuted());
+        ImGui::PushStyleColor(ImGuiCol_Text, colorAccent());
+    }
+    else
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, colorPanelRaised());
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, colorPanelRaised());
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, colorPanelRaised());
+        ImGui::PushStyleColor(ImGuiCol_Text, colorText());
     }
 
-    if (ImGui::Button(label, ImVec2(-1.0f, 34.0f)))
-        tool = value;
+    ImGui::PushStyleVar(
+        ImGuiStyleVar_FramePadding,
+        ImVec2(12.0f, 7.0f)
+    );
 
-    if (active)
+    ImGui::PushStyleVar(
+        ImGuiStyleVar_FrameRounding,
+        4.0f
+    );
+
+    const bool pressed =
+        ImGui::Button(
+            label,
+            ImVec2(finalW, 0.0f)
+        );
+
+    ImGui::PopStyleVar(2);
+    ImGui::PopStyleColor(4);
+
+    if (!enabled)
+        ImGui::EndDisabled();
+
+    return pressed;
+}
+
+static void drawMetricTile(const char* id, UiGlyph glyph, const char* label, const char* value, const char* note, float width, float height=76.0f, bool accentIcon=false)
+{
+    beginSurface(id,ImVec2(width,height),true,ImGuiWindowFlags_NoScrollbar);
+    const ImVec2 p=ImGui::GetCursorScreenPos();
+    const float textX=p.x+50.0f;
+
+    drawIconBadge(glyph,p,38.0f,accentIcon);
+
+    ImGui::SetCursorScreenPos(ImVec2(textX,p.y+1.0f));
+    ImGui::TextDisabled("%s",label);
+
+    ImGui::SetCursorScreenPos(ImVec2(textX,p.y+23.0f));
+    ImGui::Text("%s",value);
+
+    if (note && note[0])
+    {
+        ImGui::SetCursorScreenPos(ImVec2(textX,p.y+45.0f));
+        ImGui::TextDisabled("%s",note);
+    }
+
+    endSurface();
+}
+
+static void drawModuleCard(const char* id, UiGlyph glyph, const char* title, const char* description, const char* status, StatusTone tone, const char* action, float width)
+{
+    beginSurface(id,ImVec2(width,174.0f),false,ImGuiWindowFlags_NoScrollbar);
+    const ImVec2 p=ImGui::GetCursorScreenPos();
+    drawIconBadge(glyph,p,40.0f,tone==StatusTone::Accent);
+    ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+2.0f));
+    ImGui::Text("%s",title);
+    ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+27.0f));
+    ImGui::PushTextWrapPos(ImGui::GetCursorPosX()+std::max(90.0f,width-70.0f));
+    ImGui::TextDisabled("%s",description);
+    ImGui::PopTextWrapPos();
+    ImGui::SetCursorPosY(100.0f);
+    drawStatus(status,tone);
+    ImGui::SetCursorPosY(133.0f);
+    editorButton(action,ImGui::GetContentRegionAvail().x,tone==StatusTone::Accent);
+    endSurface();
+}
+
+static void drawCaseView()
+{
+    ImGui::Begin("Case View");
+
+    beginSurface("CaseHeader",ImVec2(0.0f,70.0f),false,ImGuiWindowFlags_NoScrollbar);
+    const ImVec2 h=ImGui::GetCursorScreenPos();
+    drawIconBadge(UiGlyph::Folder,h,40.0f,true);
+
+    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+1.0f));
+    ImGui::Text("CASE OVERVIEW");
+
+    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+24.0f));
+    ImGui::TextDisabled("Build the reconstruction from one place. Review scene, evidence and analysis status.");
+    const float draftWidth=108.0f;
+    ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-draftWidth-12.0f,h.y+5.0f));
+    editorButton("DRAFT",draftWidth,true);
+    endSurface();
+    ImGui::Spacing();
+
+    const float w=ImGui::GetContentRegionAvail().x;
+    const float gap=7.0f;
+    const float mw=std::max(150.0f,(w-gap*3.0f)/4.0f);
+    drawMetricTile("CaseId",UiGlyph::Hash,"CASE ID","UNASSIGNED","",mw);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseDate",UiGlyph::Calendar,"INCIDENT DATE","NOT SET","",mw);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseLocation",UiGlyph::Pin,"LOCATION","NOT SET","",mw);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseUpdated",UiGlyph::Clock,"LAST UPDATED","JUST NOW","",mw);
+    ImGui::Spacing();
+
+    ImGui::Text("CASE PROGRESS");
+    ImGui::Separator();
+
+    const auto progressCard=[](const char* id, UiGlyph glyph, const char* title, const char* status, StatusTone tone, float progress, const char* caption, float width)
+    {
+        beginSurface(id,ImVec2(width,112.0f),true,ImGuiWindowFlags_NoScrollbar);
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+        drawIconBadge(glyph,p,34.0f,tone==StatusTone::Accent);
+        ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y)); ImGui::Text("%s",title);
+        ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+23.0f)); drawStatus(status,tone);
+        ImGui::SetCursorPosY(70.0f);
+        ImGui::PushStyleColor(ImGuiCol_PlotHistogram,tone==StatusTone::Success?colorSuccess():colorAccent());
+        ImGui::ProgressBar(progress,ImVec2(-1.0f,7.0f),"");
         ImGui::PopStyleColor();
+        ImGui::TextDisabled("%s",caption);
+        endSurface();
+    };
 
-    ImGui::SameLine();
-    ImGui::TextDisabled("%s", shortcut);
-    ImGui::NewLine();
+    progressCard("SceneSetup",UiGlyph::Cube,"SCENE SETUP","READY",StatusTone::Success,1.0f,"100% complete",mw);
+    ImGui::SameLine(0.0f,gap); progressCard("EvidenceReview",UiGlyph::Document,"EVIDENCE REVIEW","NOT STARTED",StatusTone::Neutral,0.0f,"0% complete",mw);
+    ImGui::SameLine(0.0f,gap); progressCard("AnalysisState",UiGlyph::Bars,"ANALYSIS","NOT STARTED",StatusTone::Neutral,0.0f,"0% complete",mw);
+    ImGui::SameLine(0.0f,gap); progressCard("OverallState",UiGlyph::Pie,"OVERALL PROGRESS","IN PROGRESS",StatusTone::Accent,0.18f,"18% complete",mw);
+    ImGui::Spacing();
+
+    beginSurface("IncidentSummary",ImVec2(0.0f,82.0f),false,ImGuiWindowFlags_NoScrollbar);
+    {
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
+
+        drawIconBadge(UiGlyph::Document,p,40.0f,false);
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+3.0f));
+        ImGui::Text("INCIDENT SUMMARY");
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+29.0f));
+        ImGui::TextDisabled(
+            "No incident summary has been entered. Add essential facts, scene location and reconstruction notes.");
+
+        const float editW=132.0f;
+        ImGui::SetCursorScreenPos(ImVec2(right-editW-12.0f,p.y+13.0f));
+        editorButton("EDIT SUMMARY",editW);
+    }
+    endSurface();
+    ImGui::Spacing();
+
+    beginSurface("CaseContent",ImVec2(0.0f,206.0f),false,ImGuiWindowFlags_NoScrollbar);
+    {
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+        ImDrawList* dl=ImGui::GetWindowDrawList();
+        const float left=p.x;
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-12.0f;
+
+        drawIconBadge(UiGlyph::Document,p,34.0f,false);
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+2.0f));
+        ImGui::Text("CASE CONTENT");
+
+        const float titleW=ImGui::CalcTextSize("CASE CONTENT").x;
+        const float dividerX=p.x+58.0f+titleW;
+        dl->AddLine(
+            ImVec2(dividerX,p.y+2.0f),
+            ImVec2(dividerX,p.y+24.0f),
+            toU32(colorBorder()),
+            1.0f);
+
+        ImGui::SetCursorScreenPos(ImVec2(dividerX+16.0f,p.y+3.0f));
+        ImGui::TextDisabled("Items included in this case.");
+
+        ImGui::SetCursorScreenPos(ImVec2(left,p.y+45.0f));
+
+        if (ImGui::BeginTable(
+            "CaseTablePremium",
+            4,
+            ImGuiTableFlags_RowBg |
+            ImGuiTableFlags_BordersInnerH |
+            ImGuiTableFlags_BordersInnerV |
+            ImGuiTableFlags_SizingStretchProp))
+        {
+            ImGui::TableSetupColumn("CATEGORY",ImGuiTableColumnFlags_WidthStretch,0.57f);
+            ImGui::TableSetupColumn("COUNT",ImGuiTableColumnFlags_WidthStretch,0.14f);
+            ImGui::TableSetupColumn("STATUS",ImGuiTableColumnFlags_WidthStretch,0.24f);
+            ImGui::TableSetupColumn("##OPEN",ImGuiTableColumnFlags_WidthFixed,34.0f);
+            ImGui::TableHeadersRow();
+
+            struct PremiumCaseRow
+            {
+                UiGlyph glyph;
+                const char* category;
+                const char* count;
+                const char* status;
+                StatusTone tone;
+            };
+
+            const PremiumCaseRow rows[]={
+                {UiGlyph::Cube,"Vehicles","2","READY",StatusTone::Success},
+                {UiGlyph::Document,"Evidence","0","EMPTY",StatusTone::Neutral},
+                {UiGlyph::Ruler,"Measurements","0","EMPTY",StatusTone::Neutral}
+            };
+
+            for (const PremiumCaseRow& row:rows)
+            {
+                ImGui::TableNextRow(ImGuiTableRowFlags_None,39.0f);
+
+                ImGui::TableSetColumnIndex(0);
+                {
+                    const ImVec2 rp=ImGui::GetCursorScreenPos();
+                    drawIconBadge(row.glyph,ImVec2(rp.x,rp.y+3.0f),28.0f,false);
+                    ImGui::SetCursorScreenPos(ImVec2(rp.x+40.0f,rp.y+8.0f));
+                    ImGui::Text("%s",row.category);
+                }
+
+                ImGui::TableSetColumnIndex(1);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
+                ImGui::Text("%s",row.count);
+
+                ImGui::TableSetColumnIndex(2);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
+                drawStatus(row.status,row.tone);
+
+                ImGui::TableSetColumnIndex(3);
+                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
+                ImGui::TextDisabled(">");
+            }
+
+            ImGui::EndTable();
+        }
+    }
+    endSurface();
+    ImGui::Spacing();
+
+    beginSurface("CaseActions",ImVec2(0.0f,78.0f),false,ImGuiWindowFlags_NoScrollbar);
+    {
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+        ImDrawList* dl=ImGui::GetWindowDrawList();
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
+
+        drawIconBadge(UiGlyph::Bars,p,38.0f,false);
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+2.0f));
+        ImGui::Text("NEXT ACTIONS");
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+28.0f));
+        ImGui::TextDisabled("Continue building the case with the available tools.");
+
+        const float dividerX=p.x+355.0f;
+        dl->AddLine(
+            ImVec2(dividerX,p.y+3.0f),
+            ImVec2(dividerX,p.y+43.0f),
+            toU32(colorBorder()),
+            1.0f);
+
+        const float openW=150.0f;
+        const float evidenceW=140.0f;
+        const float analysisW=150.0f;
+        const float exportW=132.0f;
+        const float buttonGap=7.0f;
+        const float groupW=openW+evidenceW+analysisW+exportW+(buttonGap*3.0f);
+
+        float groupX=right-groupW-12.0f;
+        groupX=std::max(groupX,dividerX+18.0f);
+
+        ImGui::SetCursorScreenPos(ImVec2(groupX,p.y+11.0f));
+        editorButton("OPEN VIEWPORT",openW,true);
+
+        ImGui::SameLine(0.0f,buttonGap);
+        editorButton("ADD EVIDENCE",evidenceW);
+
+        ImGui::SameLine(0.0f,buttonGap);
+        editorButton("START ANALYSIS",analysisW);
+
+        ImGui::SameLine(0.0f,buttonGap);
+        editorButton("EXPORT CASE",exportW);
+    }
+    endSurface();
+    ImGui::Spacing();
+
+    beginSurface("CaseParties",ImVec2(0.0f,72.0f),false,ImGuiWindowFlags_NoScrollbar);
+    {
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+        ImDrawList* dl=ImGui::GetWindowDrawList();
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
+
+        drawIconBadge(UiGlyph::Info,p,38.0f,false);
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+2.0f));
+        ImGui::Text("INVOLVED PARTIES");
+
+        const float dividerX=p.x+205.0f;
+        dl->AddLine(
+            ImVec2(dividerX,p.y+2.0f),
+            ImVec2(dividerX,p.y+40.0f),
+            toU32(colorBorder()),
+            1.0f);
+
+        ImGui::SetCursorScreenPos(ImVec2(dividerX+16.0f,p.y+12.0f));
+        ImGui::TextDisabled("No parties have been added.");
+
+        const float partyW=112.0f;
+        ImGui::SetCursorScreenPos(ImVec2(right-partyW-12.0f,p.y+9.0f));
+        editorButton("ADD PARTY",partyW);
+    }
+    endSurface();
+
+    ImGui::End();
+}
+
+static void sectionLabel(const char* title, const char* subtitle=nullptr)
+{
+    ImGui::Text("%s", title);
+
+    if (subtitle && subtitle[0] != '\0')
+    {
+        ImGui::SameLine(0.0f, 10.0f);
+        ImGui::TextDisabled("%s", subtitle);
+    }
+}
+static void drawEvidenceView()
+{
+    ImGui::Begin("Evidence");
+
+    beginSurface("EvidenceHeader",ImVec2(0.0f,70.0f),false,ImGuiWindowFlags_NoScrollbar);
+    const ImVec2 h=ImGui::GetCursorScreenPos();
+    drawIconBadge(UiGlyph::Image,h,40.0f,true);
+
+    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+1.0f));
+    ImGui::Text("EVIDENCE WORKSPACE");
+
+    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+24.0f));
+    ImGui::TextDisabled("Manage and review photographs, skid marks, debris, scene markers and measurements.");
+    const float importW=124.0f, addW=132.0f;
+    ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-importW-addW-24.0f,h.y+5.0f));
+    editorButton("ADD EVIDENCE",addW,true); ImGui::SameLine(); editorButton("IMPORT PHOTOS",importW);
+    endSurface();
+    ImGui::Spacing();
+
+    beginSurface("EvidenceFilters",ImVec2(0.0f,42.0f),false,ImGuiWindowFlags_NoScrollbar);
+    editorButton("ALL",70.0f,true); ImGui::SameLine(); editorButton("PHOTOS",82.0f); ImGui::SameLine(); editorButton("SKID MARKS",106.0f);
+    ImGui::SameLine(); editorButton("DEBRIS",82.0f); ImGui::SameLine(); editorButton("MEASUREMENTS",118.0f); ImGui::SameLine(); editorButton("MARKERS",88.0f);
+    const float searchW=220.0f, rightEdge=ImGui::GetWindowWidth()-searchW-14.0f;
+    if (rightEdge>ImGui::GetCursorPosX()+12.0f)
+    {
+        ImGui::SameLine(); ImGui::SetCursorPosX(rightEdge);
+        static char search[128]="";
+        ImGui::SetNextItemWidth(searchW);
+        ImGui::InputTextWithHint("##EvidenceSearch","Search evidence...",search,sizeof(search));
+    }
+    endSurface();
+    ImGui::Spacing();
+
+    const float w=ImGui::GetContentRegionAvail().x, gap=7.0f, mw=std::max(150.0f,(w-gap*3.0f)/4.0f);
+    drawMetricTile("EvidenceTotal",UiGlyph::Document,"TOTAL EVIDENCE","0 items","",mw);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceReviewed",UiGlyph::Check,"REVIEWED","0 items","0%",mw);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceLinked",UiGlyph::Link,"LINKED TO SCENE","0 items","0%",mw);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceLast",UiGlyph::Clock,"LAST ADDED","NONE","No evidence yet",mw);
+    ImGui::Spacing();
+
+    ImGui::Text("EVIDENCE LIBRARY");
+    ImGui::Separator();
+    beginSurface("EvidenceLibrary",ImVec2(0.0f,198.0f),false,ImGuiWindowFlags_NoScrollbar);
+    const ImVec2 wp=ImGui::GetWindowPos(), ws=ImGui::GetWindowSize(), center(wp.x+ws.x*.5f,wp.y+55.0f);
+    drawGlyph(ImGui::GetWindowDrawList(),UiGlyph::Image,center,54.0f,toU32(colorMuted()));
+    ImGui::SetCursorPosY(92.0f);
+    const char* title="No evidence added yet";
+    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-ImGui::CalcTextSize(title).x)*.5f)); ImGui::Text("%s",title);
+    const char* note="Add photos, skid marks, debris fields, markers or measurements to build the case evidence library.";
+    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-ImGui::CalcTextSize(note).x)*.5f)); ImGui::TextDisabled("%s",note);
+    const float groupW=132.0f+7.0f+124.0f;
+    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-groupW)*.5f)); editorButton("ADD EVIDENCE",132.0f,true); ImGui::SameLine(); editorButton("IMPORT PHOTOS",124.0f);
+    endSurface();
+    ImGui::Spacing();
+
+    ImGui::Text("EVIDENCE CATEGORIES");
+    ImGui::Separator();
+    const float cw=std::max(126.0f,(w-gap*4.0f)/5.0f);
+    struct Cat { const char* id; UiGlyph glyph; const char* name; const char* note; };
+    const Cat cats[]={
+        {"Photos",UiGlyph::Image,"Photographs","Scene photos and documentation"},
+        {"Skids",UiGlyph::Ruler,"Skid Marks","Tire marks and friction evidence"},
+        {"Debris",UiGlyph::Document,"Debris Fields","Vehicle debris and fragments"},
+        {"Markers",UiGlyph::Marker,"Scene Markers","Reference points and markers"},
+        {"Measures",UiGlyph::Ruler,"Measurements","Distances, angles and dimensions"}
+    };
+    for (int i=0;i<5;++i)
+    {
+        if (i) ImGui::SameLine(0.0f,gap);
+        beginSurface(cats[i].id,ImVec2(cw,102.0f),true,ImGuiWindowFlags_NoScrollbar);
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+        drawIconBadge(cats[i].glyph,p,32.0f,true);
+        ImGui::SetCursorScreenPos(ImVec2(p.x+43.0f,p.y));
+        ImGui::Text("%s",cats[i].name);
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+43.0f,p.y+22.0f));
+        ImGui::TextDisabled("0 items");
+
+        ImGui::SetCursorPosY(67.0f);
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX()+cw-22.0f);
+        ImGui::TextDisabled("%s",cats[i].note);
+        ImGui::PopTextWrapPos();
+        endSurface();
+    }
+    ImGui::Spacing();
+
+    beginSurface("EvidenceInspector",ImVec2(0.0f,82.0f),false,ImGuiWindowFlags_NoScrollbar);
+    const ImVec2 p=ImGui::GetCursorScreenPos();
+    drawIconBadge(UiGlyph::Info,p,34.0f,false);
+
+    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y));
+    ImGui::TextDisabled("EVIDENCE INSPECTOR");
+
+    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+21.0f));
+    ImGui::Text("SELECT AN ITEM TO INSPECT");
+
+    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+43.0f));
+    ImGui::TextDisabled("Choose an evidence item to view details, metadata and scene links.");
+
+    endSurface();
+
+    ImGui::End();
+}
+
+static void drawAnalysisView()
+{
+    static bool selectOverviewOnFirstFrame = true;
+
+    ImGui::Begin("Analysis");
+
+    // ========================================================
+    // FIXED WORKSPACE HEADER
+    // ========================================================
+
+    beginSurface("AnalysisHeader",ImVec2(0.0f,76.0f),false,ImGuiWindowFlags_NoScrollbar);
+    {
+        const ImVec2 p=ImGui::GetCursorScreenPos();
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
+
+        drawIconBadge(UiGlyph::Bars,p,42.0f,true);
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+54.0f,p.y+2.0f));
+        ImGui::Text("ANALYSIS WORKSPACE");
+
+        ImGui::SetCursorScreenPos(ImVec2(p.x+54.0f,p.y+29.0f));
+        ImGui::TextDisabled(
+            "Run reconstruction methods, review prerequisites, follow workflow and inspect results."
+        );
+
+        const float guideW=138.0f;
+        ImGui::SetCursorScreenPos(ImVec2(right-guideW-12.0f,p.y+15.0f));
+        editorButton("ANALYSIS GUIDE",guideW,true);
+    }
+    endSurface();
+
+    ImGui::Spacing();
+
+    // ========================================================
+    // INTERNAL ANALYSIS TABS
+    // ========================================================
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,ImVec2(14.0f,7.0f));
+
+    if (ImGui::BeginTabBar(
+        "AnalysisWorkspaceTabs",
+        ImGuiTabBarFlags_FittingPolicyScroll))
+    {
+        const ImGuiTabItemFlags overviewFlags =
+            selectOverviewOnFirstFrame
+                ? ImGuiTabItemFlags_SetSelected
+                : ImGuiTabItemFlags_None;
+
+        // ====================================================
+        // TAB 1: OVERVIEW
+        // ====================================================
+
+        if (ImGui::BeginTabItem("Overview",nullptr,overviewFlags))
+        {
+            ImGui::Spacing();
+
+            ImGui::Text("CASE READINESS");
+            ImGui::SameLine(0.0f,10.0f);
+            ImGui::TextDisabled("A compact view of what is ready and what still blocks analysis.");
+            ImGui::Separator();
+
+            const float contentW=ImGui::GetContentRegionAvail().x;
+            const float gap=8.0f;
+            const float cardW=std::max(260.0f,(contentW-gap)/2.0f);
+
+            drawMetricTile(
+                "OverviewReady",
+                UiGlyph::Check,
+                "ANALYSIS READINESS",
+                "NOT READY",
+                "Required evidence is still missing",
+                cardW,
+                92.0f,
+                true
+            );
+
+            ImGui::SameLine(0.0f,gap);
+
+            drawMetricTile(
+                "OverviewEvidence",
+                UiGlyph::Document,
+                "EVIDENCE LINKED",
+                "0 OF 2",
+                "No measurements linked",
+                cardW,
+                92.0f
+            );
+
+            ImGui::Spacing();
+
+            drawMetricTile(
+                "OverviewCase",
+                UiGlyph::Folder,
+                "CASE STATE",
+                "UNASSIGNED",
+                "Set incident date and location",
+                cardW,
+                92.0f
+            );
+
+            ImGui::SameLine(0.0f,gap);
+
+            drawMetricTile(
+                "OverviewUpdated",
+                UiGlyph::Clock,
+                "LAST UPDATED",
+                "JUST NOW",
+                "No analysis has been run",
+                cardW,
+                92.0f
+            );
+
+            ImGui::Spacing();
+
+            beginSurface("OverviewNextStep",ImVec2(0.0f,118.0f),false,ImGuiWindowFlags_NoScrollbar);
+            {
+                const ImVec2 p=ImGui::GetCursorScreenPos();
+                const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
+
+                drawIconBadge(UiGlyph::Info,p,40.0f,false);
+
+                ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+1.0f));
+                ImGui::Text("NEXT REQUIRED STEP");
+
+                ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+27.0f));
+                ImGui::TextDisabled(
+                    "Link evidence and measurements before running speed or momentum analysis."
+                );
+
+                ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+59.0f));
+                drawStatus("BLOCKED BY MISSING EVIDENCE",StatusTone::Accent);
+
+                const float linkW=144.0f;
+                const float openW=154.0f;
+                const float groupW=linkW+8.0f+openW;
+
+                ImGui::SetCursorScreenPos(ImVec2(right-groupW-12.0f,p.y+42.0f));
+                editorButton("LINK EVIDENCE",linkW,true);
+
+                ImGui::SameLine(0.0f,8.0f);
+                editorButton("OPEN EVIDENCE",openW);
+            }
+            endSurface();
+
+            ImGui::EndTabItem();
+        }
+
+        // ====================================================
+        // TAB 2: MODULES
+        // ====================================================
+
+        if (ImGui::BeginTabItem("Modules"))
+        {
+            ImGui::Spacing();
+
+            ImGui::Text("ANALYSIS MODULES");
+            ImGui::SameLine(0.0f,10.0f);
+            ImGui::TextDisabled("Choose a reconstruction method based on the evidence available.");
+            ImGui::Separator();
+
+            const float contentW=ImGui::GetContentRegionAvail().x;
+            const float gap=8.0f;
+            const float moduleW=std::max(280.0f,(contentW-gap)/2.0f);
+
+            drawModuleCard(
+                "TabbedSkidModule",
+                UiGlyph::Ruler,
+                "SKID ANALYSIS",
+                "Calculate vehicle speed from skid distance, friction and road-surface data.",
+                "NOT STARTED",
+                StatusTone::Neutral,
+                "CONFIGURE",
+                moduleW
+            );
+
+            ImGui::SameLine(0.0f,gap);
+
+            drawModuleCard(
+                "TabbedMomentumModule",
+                UiGlyph::Momentum,
+                "MOMENTUM ANALYSIS",
+                "Analyze vehicle motion using conservation of momentum and collision dynamics.",
+                "AWAITING EVIDENCE",
+                StatusTone::Accent,
+                "OPEN",
+                moduleW
+            );
+
+            ImGui::Spacing();
+
+            drawModuleCard(
+                "TabbedSpeedModule",
+                UiGlyph::Speed,
+                "SPEED ANALYSIS",
+                "Determine vehicle speed from crush, throw distance and simulation evidence.",
+                "AWAITING EVIDENCE",
+                StatusTone::Accent,
+                "OPEN",
+                moduleW
+            );
+
+            ImGui::SameLine(0.0f,gap);
+
+            drawModuleCard(
+                "TabbedResultsModule",
+                UiGlyph::Report,
+                "RECONSTRUCTION RESULTS",
+                "Compile analysis outputs into the complete incident reconstruction and report.",
+                "NOT STARTED",
+                StatusTone::Neutral,
+                "OPEN",
+                moduleW
+            );
+
+            ImGui::EndTabItem();
+        }
+
+        // ====================================================
+        // TAB 3: WORKFLOW
+        // ====================================================
+
+        if (ImGui::BeginTabItem("Workflow"))
+        {
+            ImGui::Spacing();
+
+            ImGui::Text("ANALYSIS WORKFLOW");
+            ImGui::SameLine(0.0f,10.0f);
+            ImGui::TextDisabled("Move through the reconstruction process one stage at a time.");
+            ImGui::Separator();
+
+            struct WorkflowStep
+            {
+                const char* id;
+                int number;
+                UiGlyph glyph;
+                const char* title;
+                const char* note;
+                const char* state;
+                StatusTone tone;
+            };
+
+            const WorkflowStep steps[]={
+                {"WorkflowCollect",1,UiGlyph::Document,"COLLECT EVIDENCE",
+                 "Add skid marks, debris fields, scene markers and measurements.",
+                 "CURRENT STEP",StatusTone::Accent},
+
+                {"WorkflowLink",2,UiGlyph::Link,"LINK MEASUREMENTS",
+                 "Associate the collected evidence with scene elements and vehicles.",
+                 "WAITING",StatusTone::Neutral},
+
+                {"WorkflowRun",3,UiGlyph::Bars,"RUN ANALYSIS",
+                 "Configure the required reconstruction modules and execute calculations.",
+                 "WAITING",StatusTone::Neutral},
+
+                {"WorkflowReview",4,UiGlyph::Report,"REVIEW RESULTS",
+                 "Validate calculated outputs and prepare reconstruction findings.",
+                 "WAITING",StatusTone::Neutral}
+            };
+
+            const float contentW=ImGui::GetContentRegionAvail().x;
+            const float gap=8.0f;
+            const float cardW=std::max(280.0f,(contentW-gap)/2.0f);
+
+            auto drawWorkflowCard = [](const WorkflowStep& step,float width)
+            {
+                beginSurface(
+                    step.id,
+                    ImVec2(width,148.0f),
+                    true,
+                    ImGuiWindowFlags_NoScrollbar
+                );
+
+                const ImVec2 p=ImGui::GetCursorScreenPos();
+                ImDrawList* dl=ImGui::GetWindowDrawList();
+                const ImVec4 tone=toneColor(step.tone);
+
+                dl->AddCircle(
+                    ImVec2(p.x+20.0f,p.y+20.0f),
+                    18.0f,
+                    toU32(tone),
+                    24,
+                    2.0f
+                );
+
+                char number[8]{};
+                std::snprintf(number,sizeof(number),"%d",step.number);
+                const ImVec2 numberSize=ImGui::CalcTextSize(number);
+
+                dl->AddText(
+                    ImVec2(
+                        p.x+20.0f-numberSize.x*0.5f,
+                        p.y+20.0f-numberSize.y*0.5f
+                    ),
+                    toU32(tone),
+                    number
+                );
+
+                drawIconBadge(
+                    step.glyph,
+                    ImVec2(p.x+52.0f,p.y+1.0f),
+                    38.0f,
+                    step.tone==StatusTone::Accent
+                );
+
+                ImGui::SetCursorScreenPos(ImVec2(p.x+102.0f,p.y+3.0f));
+                ImGui::Text("%s",step.title);
+
+                ImGui::SetCursorScreenPos(ImVec2(p.x+102.0f,p.y+29.0f));
+                drawStatus(step.state,step.tone);
+
+                ImGui::SetCursorScreenPos(ImVec2(p.x+20.0f,p.y+74.0f));
+                ImGui::PushTextWrapPos(p.x+width-20.0f);
+                ImGui::TextDisabled("%s",step.note);
+                ImGui::PopTextWrapPos();
+
+                endSurface();
+            };
+
+            drawWorkflowCard(steps[0],cardW);
+            ImGui::SameLine(0.0f,gap);
+            drawWorkflowCard(steps[1],cardW);
+
+            ImGui::Spacing();
+
+            drawWorkflowCard(steps[2],cardW);
+            ImGui::SameLine(0.0f,gap);
+            drawWorkflowCard(steps[3],cardW);
+
+            ImGui::EndTabItem();
+        }
+
+        // ====================================================
+        // TAB 4: RESULTS
+        // ====================================================
+
+        if (ImGui::BeginTabItem("Results"))
+        {
+            ImGui::Spacing();
+
+            ImGui::Text("RESULTS & REPORTING");
+            ImGui::SameLine(0.0f,10.0f);
+            ImGui::TextDisabled("Calculated reconstruction outputs will appear here.");
+            ImGui::Separator();
+
+            beginSurface("ResultsEmptyState",ImVec2(0.0f,184.0f),false,ImGuiWindowFlags_NoScrollbar);
+            {
+                const ImVec2 pos=ImGui::GetWindowPos();
+                const ImVec2 size=ImGui::GetWindowSize();
+
+                const ImVec2 iconPos(
+                    pos.x+size.x*0.5f-21.0f,
+                    pos.y+24.0f
+                );
+
+                drawIconBadge(UiGlyph::Report,iconPos,42.0f,false);
+
+                const char* title="No reconstruction results yet";
+                const char* note=
+                    "Run an analysis module to generate calculated speeds, momentum values and reportable findings.";
+
+                const float titleW=ImGui::CalcTextSize(title).x;
+                const float noteW=ImGui::CalcTextSize(note).x;
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        pos.x+(size.x-titleW)*0.5f,
+                        pos.y+78.0f
+                    )
+                );
+                ImGui::Text("%s",title);
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        pos.x+std::max(18.0f,(size.x-noteW)*0.5f),
+                        pos.y+107.0f
+                    )
+                );
+                ImGui::TextDisabled("%s",note);
+
+                const float reportW=138.0f;
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        pos.x+(size.x-reportW)*0.5f,
+                        pos.y+139.0f
+                    )
+                );
+                editorButton("VIEW REPORTS",reportW,false,false);
+            }
+            endSurface();
+
+            ImGui::Spacing();
+
+            ImGui::Text("QUICK ACTIONS");
+            ImGui::Separator();
+
+            const float contentW=ImGui::GetContentRegionAvail().x;
+            const float gap=8.0f;
+            const float actionW=std::max(
+                210.0f,
+                (contentW-(gap*2.0f))/3.0f
+            );
+
+            auto drawActionCard = [](
+                const char* id,
+                UiGlyph glyph,
+                const char* title,
+                const char* note,
+                const char* action,
+                float width,
+                bool primary,
+                bool enabled)
+            {
+                beginSurface(
+                    id,
+                    ImVec2(width,126.0f),
+                    true,
+                    ImGuiWindowFlags_NoScrollbar
+                );
+
+                const ImVec2 p=ImGui::GetCursorScreenPos();
+
+                drawIconBadge(glyph,p,36.0f,primary);
+
+                ImGui::SetCursorScreenPos(ImVec2(p.x+48.0f,p.y+1.0f));
+                ImGui::Text("%s",title);
+
+                ImGui::SetCursorScreenPos(ImVec2(p.x,p.y+48.0f));
+                ImGui::PushTextWrapPos(p.x+width-18.0f);
+                ImGui::TextDisabled("%s",note);
+                ImGui::PopTextWrapPos();
+
+                ImGui::SetCursorPosY(84.0f);
+                editorButton(
+                    action,
+                    ImGui::GetContentRegionAvail().x,
+                    primary,
+                    enabled
+                );
+
+                endSurface();
+            };
+
+            drawActionCard(
+                "ResultActionSkid",
+                UiGlyph::Ruler,
+                "START SKID ANALYSIS",
+                "Configure skid-distance and friction inputs.",
+                "START",
+                actionW,
+                true,
+                true
+            );
+
+            ImGui::SameLine(0.0f,gap);
+
+            drawActionCard(
+                "ResultActionEvidence",
+                UiGlyph::Link,
+                "LINK EVIDENCE",
+                "Associate measurements with the reconstruction scene.",
+                "OPEN EVIDENCE",
+                actionW,
+                false,
+                true
+            );
+
+            ImGui::SameLine(0.0f,gap);
+
+            drawActionCard(
+                "ResultActionAll",
+                UiGlyph::Bars,
+                "RUN ALL ANALYSES",
+                "Execute all configured analysis modules.",
+                "RUN ALL",
+                actionW,
+                false,
+                false
+            );
+
+            ImGui::EndTabItem();
+        }
+
+        ImGui::EndTabBar();
+        selectOverviewOnFirstFrame=false;
+    }
+
+    ImGui::PopStyleVar();
+
+    ImGui::End();
+}
+
+static void drawRailButton(const char* id, const char* label, int iconIndex, bool active, bool* clicked)
+{
+    ImGui::PushID(id);
+    const float width=std::max(1.0f,ImGui::GetContentRegionAvail().x), height=58.0f;
+    const ImVec2 pos=ImGui::GetCursorScreenPos();
+    ImGui::InvisibleButton("##Rail",ImVec2(width,height));
+    const bool hovered=ImGui::IsItemHovered();
+    if (clicked) *clicked=ImGui::IsItemClicked();
+    ImDrawList* d=ImGui::GetWindowDrawList();
+    if (active)
+    {
+        d->AddRectFilled(pos,ImVec2(pos.x+width,pos.y+height),IM_COL32(57,41,12,255),3.0f);
+        d->AddRect(pos,ImVec2(pos.x+width,pos.y+height),IM_COL32(225,157,17,170),3.0f,0,1.0f);
+        d->AddRectFilled(ImVec2(pos.x,pos.y+7.0f),ImVec2(pos.x+3.0f,pos.y+height-7.0f),IM_COL32(238,174,38,255));
+    }
+    else if (hovered) d->AddRectFilled(pos,ImVec2(pos.x+width,pos.y+height),IM_COL32(31,34,37,255),3.0f);
+
+    const float iconSize=22.0f;
+    if (iconIndex>=0 && iconIndex<(int)gToolIcons.size() && gToolIcons[(size_t)iconIndex])
+    {
+        d->AddImage((ImTextureID)gToolIcons[(size_t)iconIndex],ImVec2(pos.x+(width-iconSize)*.5f,pos.y+6.0f),ImVec2(pos.x+(width+iconSize)*.5f,pos.y+6.0f+iconSize),ImVec2(0,0),ImVec2(1,1),active?IM_COL32(255,190,51,255):IM_COL32(225,228,232,255));
+    }
+    const ImVec2 ls=ImGui::CalcTextSize(label);
+    d->AddText(ImVec2(pos.x+(width-ls.x)*.5f,pos.y+35.0f),active?IM_COL32(255,184,35,255):(hovered?IM_COL32(224,226,229,255):IM_COL32(155,160,166,255)),label);
+    ImGui::PopID();
+}
+
+static void drawViewportView()
+{
+    static int selectedTool=0;
+    static bool showGrid=true, showAxes=true;
+    ImGui::Begin("Viewport");
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2(7.0f,7.0f));
+    ImGui::BeginChild("ViewportToolRail",ImVec2(112.0f,0.0f),true,ImGuiWindowFlags_NoScrollbar);
+    bool clicked=false;
+    drawRailButton("select","SELECT",0,selectedTool==0,&clicked); if (clicked) selectedTool=0;
+    drawRailButton("move","MOVE",1,selectedTool==1,&clicked); if (clicked) selectedTool=1;
+    drawRailButton("rotate","ROTATE",2,selectedTool==2,&clicked); if (clicked) selectedTool=2;
+    drawRailButton("scale","SCALE",3,selectedTool==3,&clicked); if (clicked) selectedTool=3;
+    ImGui::Separator();
+    drawRailButton("vehicle","VEHICLE",4,false,&clicked);
+    drawRailButton("evidence","EVIDENCE",5,false,&clicked);
+    drawRailButton("measure","MEASURE",6,false,&clicked);
+    ImGui::Separator();
+    drawRailButton("grid","GRID",7,showGrid,&clicked); if (clicked) showGrid=!showGrid;
+    drawRailButton("axes","AXES",8,showAxes,&clicked); if (clicked) showAxes=!showAxes;
+    ImGui::EndChild();
+
+    ImGui::SameLine(0.0f,6.0f);
+    ImGui::BeginChild("SceneCanvas",ImGui::GetContentRegionAvail(),true,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
+    const ImVec2 cp=ImGui::GetWindowPos(), cs=ImGui::GetWindowSize();
+    ImDrawList* d=ImGui::GetWindowDrawList();
+    d->AddRectFilled(cp,ImVec2(cp.x+cs.x,cp.y+cs.y),IM_COL32(18,20,22,255));
+    if (showGrid)
+    {
+        const float gs=32.0f;
+        for (float x=cp.x;x<cp.x+cs.x;x+=gs) d->AddLine(ImVec2(x,cp.y),ImVec2(x,cp.y+cs.y),IM_COL32(49,52,55,255));
+        for (float y=cp.y;y<cp.y+cs.y;y+=gs) d->AddLine(ImVec2(cp.x,y),ImVec2(cp.x+cs.x,y),IM_COL32(49,52,55,255));
+    }
+    const ImVec2 center(cp.x+cs.x*.5f,cp.y+cs.y*.5f);
+    d->AddCircleFilled(center,7.0f,IM_COL32(238,174,38,255));
+    if (showAxes)
+    {
+        d->AddLine(center,ImVec2(center.x+100.0f,center.y),IM_COL32(190,65,55,255),2.0f);
+        d->AddLine(center,ImVec2(center.x,center.y-100.0f),IM_COL32(70,145,80,255),2.0f);
+        d->AddText(ImVec2(center.x+105.0f,center.y-10.0f),IM_COL32(220,90,75,255),"X");
+        d->AddText(ImVec2(center.x+7.0f,center.y-120.0f),IM_COL32(100,190,110,255),"Y");
+    }
+    d->AddText(ImVec2(cp.x+16.0f,cp.y+16.0f),IM_COL32(225,226,228,255),"SCENE VIEWPORT");
+    d->AddText(ImVec2(cp.x+16.0f,cp.y+40.0f),IM_COL32(135,139,145,255),"No scene objects loaded");
+    ImGui::EndChild();
+    ImGui::PopStyleVar();
+    ImGui::End();
+}
+
+static void drawOutliner()
+{
+    ImGui::Begin("Outliner",nullptr,ImGuiWindowFlags_NoMove);
+    ImGui::Text("SCENE OUTLINER"); ImGui::Separator();
+    if (ImGui::TreeNodeEx("Environment",ImGuiTreeNodeFlags_DefaultOpen))
+    { ImGui::BulletText("Ground Plane"); ImGui::BulletText("Road Surface"); ImGui::TreePop(); }
+    if (ImGui::TreeNodeEx("Vehicles",ImGuiTreeNodeFlags_DefaultOpen))
+    { ImGui::Selectable("Vehicle A"); ImGui::Selectable("Vehicle B"); ImGui::TreePop(); }
+    if (ImGui::TreeNode("Evidence"))
+    { ImGui::Selectable("Skid Mark 01"); ImGui::Selectable("Marker 01"); ImGui::Selectable("Debris Field 01"); ImGui::TreePop(); }
+    if (ImGui::TreeNode("Measurements"))
+    { ImGui::Selectable("Distance 01"); ImGui::Selectable("Angle 01"); ImGui::TreePop(); }
+    ImGui::End();
+}
+
+static void drawProperties()
+{
+    ImGui::Begin("Properties",nullptr,ImGuiWindowFlags_NoMove);
+    ImGui::Text("INSPECTOR"); ImGui::Separator(); ImGui::TextDisabled("Nothing selected"); ImGui::Spacing();
+    if (ImGui::CollapsingHeader("Transform",ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        static float position[3]={0,0,0}, rotation[3]={0,0,0}, scale[3]={1,1,1};
+        ImGui::DragFloat3("Position",position,0.1f); ImGui::DragFloat3("Rotation",rotation,1.0f); ImGui::DragFloat3("Scale",scale,0.01f);
+    }
+    if (ImGui::CollapsingHeader("Metadata"))
+    {
+        static char name[128]="Untitled Object";
+        ImGui::InputText("Name",name,sizeof(name)); ImGui::Text("Type: Scene Entity"); ImGui::Text("Units: meters");
+    }
+    if (ImGui::CollapsingHeader("Analysis"))
+    { ImGui::TextDisabled("No analysis data available."); ImGui::TextDisabled("Add evidence to begin."); }
+    ImGui::End();
+}
+
+static void drawTimeline()
+{
+    static int frame=1, speedIndex=1;
+    static float position=0.0f;
+    ImGui::Begin("Timeline");
+    ImGui::Text("TIMELINE"); ImGui::SameLine();
+    if (editorButton("|<",34.0f)) { frame=1; position=0.0f; }
+    ImGui::SameLine(); editorButton("Play",48.0f); ImGui::SameLine(); if (editorButton("Stop",48.0f)) frame=1;
+    ImGui::SameLine(); ImGui::Text("Frame"); ImGui::SameLine(); ImGui::SetNextItemWidth(100.0f); ImGui::DragInt("##Frame",&frame,1.0f,1,1000);
+    ImGui::SameLine(0.0f,12.0f); ImGui::TextDisabled("Pre-impact  >  Impact  >  Rest");
+    const float speedW=70.0f; ImGui::SameLine(); ImGui::SetCursorPosX(ImGui::GetWindowWidth()-speedW-14.0f);
+    const char* speeds[]={"0.5x","1x","2x"}; ImGui::SetNextItemWidth(speedW); ImGui::Combo("##Speed",&speedIndex,speeds,3);
+    ImGui::Separator(); ImGui::PushStyleColor(ImGuiCol_SliderGrab,colorAccent()); ImGui::PushStyleColor(ImGuiCol_SliderGrabActive,colorAccent());
+    ImGui::SetNextItemWidth(-1.0f); ImGui::SliderFloat("##TimelinePosition",&position,0.0f,100.0f,"%.0f"); ImGui::PopStyleColor(2);
+    ImGui::End();
+}
+
+static void enforceRightPanelBounds(ImGuiID rightNodeId)
+{
+    ImGuiDockNode* rightNode=ImGui::DockBuilderGetNode(rightNodeId);
+    if (!rightNode) return;
+    ImGuiDockNode* parent=rightNode->ParentNode;
+    if (!parent || parent->SplitAxis!=ImGuiAxis_X) return;
+    const float screenWidth=ImGui::GetMainViewport()->WorkSize.x;
+    float desired=std::clamp(rightNode->Size.x,RIGHT_PANEL_MIN_WIDTH,RIGHT_PANEL_MAX_WIDTH);
+    if (parent->ChildNodes[1]==rightNode)
+    {
+        const float splitX=parent->Pos.x+parent->Size.x-desired;
+        if (parent->ChildNodes[0]) parent->ChildNodes[0]->SizeRef.x=splitX-parent->Pos.x;
+        if (parent->ChildNodes[1]) parent->ChildNodes[1]->SizeRef.x=desired;
+    }
+    else rightNode->SizeRef.x=desired;
+    if (screenWidth<RIGHT_PANEL_MAX_WIDTH+RIGHT_PANEL_MIN_WIDTH) rightNode->SizeRef.x=std::max(180.0f,screenWidth*.28f);
+}
+
+static void drawMainMenuBar()
+{
+    if (!ImGui::BeginMainMenuBar()) return;
+    if (ImGui::BeginMenu("File")) { ImGui::MenuItem("New Case"); ImGui::MenuItem("Open Case"); ImGui::MenuItem("Save Case"); ImGui::Separator(); ImGui::MenuItem("Exit"); ImGui::EndMenu(); }
+    if (ImGui::BeginMenu("Edit")) { ImGui::MenuItem("Undo"); ImGui::MenuItem("Redo"); ImGui::EndMenu(); }
+    if (ImGui::BeginMenu("View")) { ImGui::MenuItem("Outliner"); ImGui::MenuItem("Properties"); ImGui::MenuItem("Timeline"); ImGui::EndMenu(); }
+    if (ImGui::BeginMenu("Scene")) { ImGui::MenuItem("Add Vehicle"); ImGui::MenuItem("Add Evidence"); ImGui::MenuItem("Add Measurement"); ImGui::EndMenu(); }
+    if (ImGui::BeginMenu("Tools")) { ImGui::MenuItem("Skid Analysis"); ImGui::MenuItem("Momentum Analysis"); ImGui::MenuItem("Speed Analysis"); ImGui::EndMenu(); }
+    if (ImGui::BeginMenu("Help")) { ImGui::MenuItem("About Sovereign"); ImGui::EndMenu(); }
+    ImGui::EndMainMenuBar();
 }
 
 static void drawInterface()
 {
-    static int selectedTool = 0;
-    static int currentFrame = 1;
+    static bool layoutBuilt=false;
+    static ImGuiID rightDockNodeId=0;
+    drawMainMenuBar();
 
-    ImGuiViewport* viewport = ImGui::GetMainViewport();
-
+    ImGuiViewport* viewport=ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
 
-    ImGuiWindowFlags hostFlags =
-        ImGuiWindowFlags_NoTitleBar |
-        ImGuiWindowFlags_NoCollapse |
-        ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove |
-        ImGuiWindowFlags_NoBringToFrontOnFocus |
-        ImGuiWindowFlags_NoNavFocus |
-        ImGuiWindowFlags_NoBackground;
-
-    ImGui::Begin("Sovereign Workspace", nullptr, hostFlags);
-
-    ImGuiID dockspace = ImGui::GetID("SovereignDockspace");
-    ImGui::DockSpace(
-        dockspace,
-        ImVec2(0.0f, 0.0f),
-        ImGuiDockNodeFlags_PassthruCentralNode
-    );
-
-    static bool layoutBuilt = false;
+    const ImGuiWindowFlags hostFlags=ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoCollapse|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoBringToFrontOnFocus|ImGuiWindowFlags_NoNavFocus|ImGuiWindowFlags_NoBackground;
+    ImGui::Begin("Sovereign Workspace",nullptr,hostFlags);
+    const ImGuiID dockspace=ImGui::GetID("SovereignDockspace");
+    ImGui::DockSpace(dockspace,ImVec2(0,0),ImGuiDockNodeFlags_PassthruCentralNode);
 
     if (!layoutBuilt)
     {
         ImGui::DockBuilderRemoveNode(dockspace);
-        ImGui::DockBuilderAddNode(
-            dockspace,
-            ImGuiDockNodeFlags_DockSpace
-        );
-
-        ImGui::DockBuilderSetNodeSize(
-            dockspace,
-            viewport->WorkSize
-        );
-
-        ImGuiID center = dockspace;
-        ImGuiID left = 0;
-        ImGuiID right = 0;
-        ImGuiID bottom = 0;
-        ImGuiID rightTop = 0;
-
-        ImGui::DockBuilderSplitNode(
-            center,
-            ImGuiDir_Left,
-            0.075f,
-            &left,
-            &center
-        );
-
-        ImGui::DockBuilderSplitNode(
-            center,
-            ImGuiDir_Right,
-            0.245f,
-            &right,
-            &center
-        );
-
-        ImGui::DockBuilderSplitNode(
-            center,
-            ImGuiDir_Down,
-            0.16f,
-            &bottom,
-            &center
-        );
-
-        ImGui::DockBuilderSplitNode(
-            right,
-            ImGuiDir_Up,
-            0.46f,
-            &rightTop,
-            &right
-        );
-
-        ImGui::DockBuilderDockWindow("Tools", left);
-        ImGui::DockBuilderDockWindow("Viewport", center);
-        ImGui::DockBuilderDockWindow("Timeline", bottom);
-        ImGui::DockBuilderDockWindow("Outliner", rightTop);
-        ImGui::DockBuilderDockWindow("Properties", right);
-
+        ImGui::DockBuilderAddNode(dockspace,ImGuiDockNodeFlags_DockSpace);
+        ImGui::DockBuilderSetNodeSize(dockspace,viewport->WorkSize);
+        ImGuiID center=dockspace, right=0, bottom=0, rightTop=0;
+        ImGui::DockBuilderSplitNode(center,ImGuiDir_Right,0.245f,&right,&center);
+        rightDockNodeId=right;
+        ImGui::DockBuilderSplitNode(center,ImGuiDir_Down,0.16f,&bottom,&center);
+        ImGui::DockBuilderSplitNode(right,ImGuiDir_Up,0.46f,&rightTop,&right);
+        ImGui::DockBuilderDockWindow("Case View",center);
+        ImGui::DockBuilderDockWindow("Evidence",center);
+        ImGui::DockBuilderDockWindow("Viewport",center);
+        ImGui::DockBuilderDockWindow("Analysis",center);
+        ImGui::DockBuilderDockWindow("Timeline",bottom);
+        ImGui::DockBuilderDockWindow("Outliner",rightTop);
+        ImGui::DockBuilderDockWindow("Properties",right);
         ImGui::DockBuilderFinish(dockspace);
-        layoutBuilt = true;
+        layoutBuilt=true;
     }
 
     ImGui::End();
-
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File"))
-        {
-            ImGui::MenuItem("New Case");
-            ImGui::MenuItem("Open Case");
-            ImGui::MenuItem("Save Case");
-            ImGui::Separator();
-            ImGui::MenuItem("Exit");
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Edit"))
-        {
-            ImGui::MenuItem("Undo");
-            ImGui::MenuItem("Redo");
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("View"))
-        {
-            ImGui::MenuItem("Tools");
-            ImGui::MenuItem("Outliner");
-            ImGui::MenuItem("Properties");
-            ImGui::MenuItem("Timeline");
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Scene"))
-        {
-            ImGui::MenuItem("Add Vehicle");
-            ImGui::MenuItem("Add Evidence");
-            ImGui::MenuItem("Add Measurement");
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Analysis"))
-        {
-            ImGui::MenuItem("Skid Analysis");
-            ImGui::MenuItem("Momentum Analysis");
-            ImGui::MenuItem("Speed Analysis");
-            ImGui::EndMenu();
-        }
-
-        if (ImGui::BeginMenu("Help"))
-        {
-            ImGui::MenuItem("About Sovereign");
-            ImGui::EndMenu();
-        }
-
-        ImGui::EndMainMenuBar();
-    }
-
-    // Left tool shelf
-    ImGui::Begin("Tools");
-
-    ImGui::Text("TOOLS");
-    ImGui::Separator();
-
-    drawToolButton("Select", "Q", selectedTool, 0);
-    drawToolButton("Move", "W", selectedTool, 1);
-    drawToolButton("Rotate", "E", selectedTool, 2);
-    drawToolButton("Scale", "R", selectedTool, 3);
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    ImGui::Text("SCENE");
-
-    if (ImGui::Button("Add Vehicle", ImVec2(-1.0f, 32.0f)))
-    {
-    }
-
-    if (ImGui::Button("Add Evidence", ImVec2(-1.0f, 32.0f)))
-    {
-    }
-
-    if (ImGui::Button("Measure", ImVec2(-1.0f, 32.0f)))
-    {
-    }
-
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Spacing();
-
-    ImGui::Text("DISPLAY");
-
-    static bool showGrid = true;
-    static bool showAxes = true;
-
-    ImGui::Checkbox("Grid", &showGrid);
-    ImGui::Checkbox("Axes", &showAxes);
-
-    ImGui::End();
-
-    // Central viewport
-    ImGui::Begin("Viewport");
-
-    ImGui::Text("PERSPECTIVE");
-    ImGui::SameLine();
-    ImGui::TextDisabled("|");
-    ImGui::SameLine();
-    ImGui::TextDisabled("CASE VIEW");
-
-    ImGui::Separator();
-
-    ImVec2 available = ImGui::GetContentRegionAvail();
-
-    ImGui::BeginChild(
-        "SceneCanvas",
-        available,
-        true,
-        ImGuiWindowFlags_NoScrollbar
-    );
-
-    ImVec2 canvasPos = ImGui::GetCursorScreenPos();
-    ImVec2 canvasSize = ImGui::GetContentRegionAvail();
-
-    ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-    drawList->AddRectFilled(
-        canvasPos,
-        ImVec2(
-            canvasPos.x + canvasSize.x,
-            canvasPos.y + canvasSize.y
-        ),
-        IM_COL32(18, 20, 22, 255)
-    );
-
-    if (showGrid)
-    {
-        const float gridSize = 32.0f;
-
-        for (float x = canvasPos.x; x < canvasPos.x + canvasSize.x; x += gridSize)
-        {
-            drawList->AddLine(
-                ImVec2(x, canvasPos.y),
-                ImVec2(x, canvasPos.y + canvasSize.y),
-                IM_COL32(48, 48, 43, 255)
-            );
-        }
-
-        for (float y = canvasPos.y; y < canvasPos.y + canvasSize.y; y += gridSize)
-        {
-            drawList->AddLine(
-                ImVec2(canvasPos.x, y),
-                ImVec2(canvasPos.x + canvasSize.x, y),
-                IM_COL32(48, 48, 43, 255)
-            );
-        }
-    }
-
-    ImVec2 centerPoint(
-        canvasPos.x + canvasSize.x * 0.50f,
-        canvasPos.y + canvasSize.y * 0.50f
-    );
-
-    drawList->AddCircleFilled(
-        centerPoint,
-        7.0f,
-        IM_COL32(238, 174, 38, 255)
-    );
-
-    if (showAxes)
-    {
-        drawList->AddLine(
-            centerPoint,
-            ImVec2(centerPoint.x + 100.0f, centerPoint.y),
-            IM_COL32(190, 65, 55, 255),
-            2.0f
-        );
-
-        drawList->AddLine(
-            centerPoint,
-            ImVec2(centerPoint.x, centerPoint.y - 100.0f),
-            IM_COL32(70, 145, 80, 255),
-            2.0f
-        );
-
-        drawList->AddText(
-            ImVec2(centerPoint.x + 105.0f, centerPoint.y - 10.0f),
-            IM_COL32(220, 90, 75, 255),
-            "X"
-        );
-
-        drawList->AddText(
-            ImVec2(centerPoint.x + 7.0f, centerPoint.y - 120.0f),
-            IM_COL32(100, 190, 110, 255),
-            "Y"
-        );
-    }
-
-    ImGui::SetCursorScreenPos(
-        ImVec2(canvasPos.x + 16.0f, canvasPos.y + 16.0f)
-    );
-
-    ImGui::Text("SCENE VIEWPORT");
-    ImGui::TextDisabled("No scene objects loaded");
-
-    ImGui::EndChild();
-    ImGui::End();
-
-    // Right outliner
-    ImGui::Begin("Outliner");
-
-    ImGui::Text("SCENE OUTLINER");
-    ImGui::Separator();
-
-    if (ImGui::TreeNodeEx(
-        "Environment",
-        ImGuiTreeNodeFlags_DefaultOpen
-    ))
-    {
-        ImGui::BulletText("Ground Plane");
-        ImGui::BulletText("Road Surface");
-        ImGui::TreePop();
-    }
-
-    if (ImGui::TreeNodeEx(
-        "Vehicles",
-        ImGuiTreeNodeFlags_DefaultOpen
-    ))
-    {
-        ImGui::Selectable("Vehicle A");
-        ImGui::Selectable("Vehicle B");
-        ImGui::TreePop();
-    }
-
-    if (ImGui::TreeNode("Evidence"))
-    {
-        ImGui::Selectable("Skid Mark 01");
-        ImGui::Selectable("Marker 01");
-        ImGui::Selectable("Debris Field 01");
-        ImGui::TreePop();
-    }
-
-    if (ImGui::TreeNode("Measurements"))
-    {
-        ImGui::Selectable("Distance 01");
-        ImGui::Selectable("Angle 01");
-        ImGui::TreePop();
-    }
-
-    ImGui::End();
-
-    // Right properties
-    ImGui::Begin("Properties");
-
-    ImGui::Text("INSPECTOR");
-    ImGui::Separator();
-
-    ImGui::TextDisabled("Nothing selected");
-
-    ImGui::Spacing();
-
-    if (ImGui::CollapsingHeader(
-        "Transform",
-        ImGuiTreeNodeFlags_DefaultOpen
-    ))
-    {
-        static float position[3] = { 0.0f, 0.0f, 0.0f };
-        static float rotation[3] = { 0.0f, 0.0f, 0.0f };
-        static float scale[3] = { 1.0f, 1.0f, 1.0f };
-
-        ImGui::DragFloat3("Position", position, 0.1f);
-        ImGui::DragFloat3("Rotation", rotation, 1.0f);
-        ImGui::DragFloat3("Scale", scale, 0.01f);
-    }
-
-    if (ImGui::CollapsingHeader("Metadata"))
-    {
-        static char objectName[128] = "Untitled Object";
-        ImGui::InputText("Name", objectName, sizeof(objectName));
-        ImGui::Text("Type: Scene Entity");
-        ImGui::Text("Units: meters");
-    }
-
-    if (ImGui::CollapsingHeader("Analysis"))
-    {
-        ImGui::TextDisabled("No analysis data available.");
-        ImGui::TextDisabled("Add evidence to begin.");
-    }
-
-    ImGui::End();
-
-    // Bottom timeline
-    ImGui::Begin("Timeline");
-
-    ImGui::Text("TIMELINE");
-    ImGui::SameLine();
-
-    if (ImGui::Button("|<"))
-        currentFrame = 1;
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Play"))
-    {
-    }
-
-    ImGui::SameLine();
-
-    if (ImGui::Button("Stop"))
-        currentFrame = 1;
-
-    ImGui::SameLine();
-
-    ImGui::Text("Frame");
-    ImGui::SameLine();
-
-    ImGui::SetNextItemWidth(100.0f);
-    ImGui::DragInt("##Frame", &currentFrame, 1.0f, 1, 1000);
-
-    ImGui::SameLine();
-    ImGui::TextDisabled("Pre-impact  →  Impact  →  Rest");
-
-    ImGui::Separator();
-
-    ImGui::SetNextItemWidth(-1.0f);
-    static float timelinePosition = 0.0f;
-    ImGui::SliderFloat(
-        "##TimelinePosition",
-        &timelinePosition,
-        0.0f,
-        100.0f,
-        "%.0f"
-    );
-
-    ImGui::End();
+    if (rightDockNodeId) enforceRightPanelBounds(rightDockNodeId);
+    drawCaseView();
+    drawEvidenceView();
+    drawAnalysisView();
+    drawViewportView();
+    drawOutliner();
+    drawProperties();
+    drawTimeline();
 }
 
 int main()
 {
-    if (!glfwInit())
-    {
-        std::printf("[FATAL] Failed to initialize GLFW.\n");
-        return -1;
-    }
+    if (!glfwInit()) { std::printf("[FATAL] Failed to initialize GLFW.\n"); return -1; }
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE,GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE,GLFW_TRUE);
+    glfwWindowHint(GLFW_VISIBLE,GLFW_FALSE);
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-
-    GLFWwindow* window = glfwCreateWindow(
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
-        "Sovereign Accident Reconstructor v0.1.0 — OpenGL 4.6",
-        nullptr,
-        nullptr
-    );
-
-    if (!window)
-    {
-        glfwTerminate();
-        return -1;
-    }
-
+    GLFWwindow* window=glfwCreateWindow(WINDOW_WIDTH,WINDOW_HEIGHT,"Sovereign Accident Reconstructor v0.1.0 - OpenGL 4.6",nullptr,nullptr);
+    if (!window) { glfwTerminate(); return -1; }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-    if (!gladLoadGLLoader(
-        reinterpret_cast<GLADloadproc>(glfwGetProcAddress)))
-    {
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return -1;
-    }
+#ifdef _WIN32
+    applyNativeWindowTheme(window);
+#endif
+
+    glfwShowWindow(window);
+    if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) { glfwDestroyWindow(window); glfwTerminate(); return -1; }
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-
-    ImGuiIO& io = ImGui::GetIO();
-
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
+    ImGuiIO& io=ImGui::GetIO();
+    io.IniFilename=nullptr;
+    io.ConfigFlags|=ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags|=ImGuiConfigFlags_DockingEnable;
     applySovereignTheme();
 
-    io.FontGlobalScale = 1.0f;
+    const std::filesystem::path rubikPath=assetPath("fonts/Rubik-Regular.ttf");
+    ImFont* rubik=io.Fonts->AddFontFromFileTTF(rubikPath.string().c_str(),18.5f);
+    if (!rubik) std::printf("[WARN] Could not load %s\n",rubikPath.string().c_str());
 
-    ImFont* rubik = io.Fonts->AddFontFromFileTTF(
-        "assets/fonts/Rubik-Regular.ttf",
-        18.0f
-    );
+    if (!ImGui_ImplGlfw_InitForOpenGL(window,true)) { ImGui::DestroyContext(); glfwDestroyWindow(window); glfwTerminate(); return -1; }
+    if (!ImGui_ImplOpenGL3_Init("#version 460")) { ImGui_ImplGlfw_Shutdown(); ImGui::DestroyContext(); glfwDestroyWindow(window); glfwTerminate(); return -1; }
 
-    if (!rubik)
-    {
-        std::printf(
-            "[ERROR] Could not load assets/fonts/Rubik-Regular.ttf\n"
-        );
-    }
-
-    if (!ImGui_ImplGlfw_InitForOpenGL(window, true))
-    {
-        ImGui::DestroyContext();
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return -1;
-    }
-
-    if (!ImGui_ImplOpenGL3_Init("#version 460"))
-    {
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return -1;
-    }
-
-    GLuint program = createShaderProgram();
-
-    float vertices[] =
-    {
-         0.0f,  0.5f, 0.0f, 1.0f, 0.6f, 0.2f,
-        -0.5f, -0.5f, 0.0f, 0.2f, 0.6f, 1.0f,
-         0.5f, -0.5f, 0.0f, 0.2f, 0.8f, 0.4f
+    const char* iconPaths[]={
+        "assets/icons/blender/select.svg","assets/icons/blender/move.svg","assets/icons/blender/rotate.svg",
+        "assets/icons/blender/scale.svg","assets/icons/blender/vehicle.svg","assets/icons/blender/evidence.svg",
+        "assets/icons/blender/measure.svg","assets/icons/blender/grid.svg","assets/icons/blender/axes.svg"
     };
-
-    GLuint vao = 0;
-    GLuint vbo = 0;
-
-    glGenVertexArrays(1, &vao);
-    glGenBuffers(1, &vbo);
-
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        sizeof(vertices),
-        vertices,
-        GL_STATIC_DRAW
-    );
-
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        nullptr
-    );
-
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        reinterpret_cast<void*>(3 * sizeof(float))
-    );
-
-    glEnableVertexAttribArray(1);
-    glBindVertexArray(0);
+    for (size_t i=0;i<gToolIcons.size();++i) gToolIcons[i]=loadSvgTexture(iconPaths[i]);
 
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        if (rubik)
-            ImGui::PushFont(rubik);
-
+        if (rubik) ImGui::PushFont(rubik);
         drawInterface();
-
-        if (rubik)
-            ImGui::PopFont();
-
-        glClearColor(0.025f, 0.027f, 0.030f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        glUseProgram(program);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
+        if (rubik) ImGui::PopFont();
         ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(
-            ImGui::GetDrawData()
-        );
-
+        glClearColor(0.024f,0.026f,0.029f,1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     }
 
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteProgram(program);
-
+    // Tool icon textures are owned by the OpenGL context.
+// They are released automatically when the context is destroyed.
+// Do not place ImGui shutdown inside the icon loop.
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
-
     glfwDestroyWindow(window);
     glfwTerminate();
-
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

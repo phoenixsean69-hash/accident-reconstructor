@@ -34,6 +34,10 @@ PFNGLDRAWARRAYSPROC glad_glDrawArrays = NULL;
 PFNGLGETSTRINGPROC glad_glGetString = NULL;
 PFNGLGETSTRINGIPROC glad_glGetStringi = NULL;
 PFNGLGETINTEGERVPROC glad_glGetIntegerv = NULL;
+PFNGLGENTEXTURESPROC glad_glGenTextures = NULL;
+PFNGLBINDTEXTUREPROC glad_glBindTexture = NULL;
+PFNGLTEXPARAMETERIPROC glad_glTexParameteri = NULL;
+PFNGLTEXIMAGE2DPROC glad_glTexImage2D = NULL;
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -90,6 +94,10 @@ static void load_gl_version(void) {
     glad_glGetString = (PFNGLGETSTRINGPROC)get_proc("glGetString");
     glad_glGetStringi = (PFNGLGETSTRINGIPROC)get_proc("glGetStringi");
     glad_glGetIntegerv = (PFNGLGETINTEGERVPROC)get_proc("glGetIntegerv");
+    glad_glGenTextures = (PFNGLGENTEXTURESPROC)get_proc("glGenTextures");
+    glad_glBindTexture = (PFNGLBINDTEXTUREPROC)get_proc("glBindTexture");
+    glad_glTexParameteri = (PFNGLTEXPARAMETERIPROC)get_proc("glTexParameteri");
+    glad_glTexImage2D = (PFNGLTEXIMAGE2DPROC)get_proc("glTexImage2D");
 }
 
 int gladLoadGLLoader(GLADloadproc load) {

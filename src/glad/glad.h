@@ -64,6 +64,13 @@ typedef void* (* GLADloadproc)(const char *name);
 /* OpenGL 4.1 */
 #define GL_SHADER_TYPE                    0x8B4F
 
+/* Texture upload */
+#define GL_TEXTURE_2D                      0x0DE1
+#define GL_TEXTURE_MIN_FILTER              0x2801
+#define GL_TEXTURE_MAG_FILTER              0x2800
+#define GL_LINEAR                          0x2601
+#define GL_RGBA                            0x1908
+
 /* Types */
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;
@@ -113,6 +120,10 @@ typedef void (APIENTRYP PFNGLDRAWARRAYSPROC)(GLenum mode, GLint first, GLsizei c
 typedef const GLubyte *(APIENTRYP PFNGLGETSTRINGPROC)(GLenum name);
 typedef const GLubyte *(APIENTRYP PFNGLGETSTRINGIPROC)(GLenum name, GLuint index);
 typedef void (APIENTRYP PFNGLGETINTEGERVPROC)(GLenum pname, GLint *data);
+typedef void (APIENTRYP PFNGLGENTEXTURESPROC)(GLsizei n, GLuint *textures);
+typedef void (APIENTRYP PFNGLBINDTEXTUREPROC)(GLenum target, GLuint texture);
+typedef void (APIENTRYP PFNGLTEXPARAMETERIPROC)(GLenum target, GLenum pname, GLint param);
+typedef void (APIENTRYP PFNGLTEXIMAGE2DPROC)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels);
 
 /* Function declarations */
 GLAPI PFNGLCLEARPROC glad_glClear;
@@ -144,6 +155,10 @@ GLAPI PFNGLDRAWARRAYSPROC glad_glDrawArrays;
 GLAPI PFNGLGETSTRINGPROC glad_glGetString;
 GLAPI PFNGLGETSTRINGIPROC glad_glGetStringi;
 GLAPI PFNGLGETINTEGERVPROC glad_glGetIntegerv;
+GLAPI PFNGLGENTEXTURESPROC glad_glGenTextures;
+GLAPI PFNGLBINDTEXTUREPROC glad_glBindTexture;
+GLAPI PFNGLTEXPARAMETERIPROC glad_glTexParameteri;
+GLAPI PFNGLTEXIMAGE2DPROC glad_glTexImage2D;
 
 /* Macros */
 #define glClear glad_glClear
@@ -175,6 +190,10 @@ GLAPI PFNGLGETINTEGERVPROC glad_glGetIntegerv;
 #define glGetString glad_glGetString
 #define glGetStringi glad_glGetStringi
 #define glGetIntegerv glad_glGetIntegerv
+#define glGenTextures glad_glGenTextures
+#define glBindTexture glad_glBindTexture
+#define glTexParameteri glad_glTexParameteri
+#define glTexImage2D glad_glTexImage2D
 
 /* Loader */
 GLAPI int gladLoadGLLoader(GLADloadproc);
