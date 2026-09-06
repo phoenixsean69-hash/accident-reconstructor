@@ -381,26 +381,7 @@ struct FootageRecord
     };
 };
 
-// ROADSAFE_PREMIUM_ASSET_REFERENCE_V1
-// Persistent reference used by the upcoming native GLB/glTF/PBR loader.
-struct AssetReference
-{
-    std::string assetId;
-    std::string sourcePath;
-    std::string collisionPath;
-    std::string materialProfile;
-
-    // Conversion from source-file units into RoadSafe metres.
-    float metersPerUnit=1.0f;
-
-    // Renderer preference; actual LOD availability is asset-dependent.
-    int lodBias=0;
-
-    bool pbrEnabled=true;
-    bool castShadows=true;
-    bool receiveShadows=true;
-    bool arReady=true;
-};// ROADSAFE_SCENE_ENTITY_MODEL_V2
+// ROADSAFE_SCENE_ENTITY_MODEL_V2
 enum class SceneEntityKind
 {
     Environment=0,
@@ -428,7 +409,6 @@ struct SceneEntityRecord
 
     std::string name;
     std::string notes;
-    AssetReference asset;
 
     std::array<float,3> position{
         0.0f,
@@ -541,7 +521,6 @@ inline const char* textOr(
 }
 
 } // namespace roadsafe
-
 
 
 
