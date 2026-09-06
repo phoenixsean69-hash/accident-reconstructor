@@ -50,17 +50,10 @@
 #include <iomanip>
 #include <utility>
 
-// ROADSAFE_CORE_MODEL_BINDING_V1
-#include "roadsafe/roadsafe_core.h"
-
 constexpr int WINDOW_WIDTH = 1600;
 constexpr int WINDOW_HEIGHT = 900;
 constexpr float RIGHT_PANEL_MIN_WIDTH = 360.0f;
 constexpr float RIGHT_PANEL_MAX_WIDTH = 520.0f;
-
-// Central RoadSafe AR investigation/case state.
-// Existing editor islands will be migrated into this model incrementally.
-static roadsafe::RoadSafeCase gRoadSafeCase{};
 #ifdef _WIN32
 static void applyNativeWindowTheme(GLFWwindow* window)
 {
@@ -1677,9 +1670,9 @@ static void drawCaseView()
     const float w=ImGui::GetContentRegionAvail().x;
     const float gap=7.0f;
     const float mw=std::max(150.0f,(w-gap*3.0f)/4.0f);
-    drawMetricTile("CaseId",UiGlyph::Hash,"CASE ID",roadsafe::textOr(gRoadSafeCase.identity.caseNumber,"UNASSIGNED"),"",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseDate",UiGlyph::Calendar,"INCIDENT DATE",roadsafe::textOr(gRoadSafeCase.identity.accidentDateTime,"NOT SET"),"",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseLocation",UiGlyph::Pin,"LOCATION",roadsafe::textOr(gRoadSafeCase.identity.location,"NOT SET"),"",mw);
+    drawMetricTile("CaseId",UiGlyph::Hash,"CASE ID","UNASSIGNED","",mw);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseDate",UiGlyph::Calendar,"INCIDENT DATE","NOT SET","",mw);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseLocation",UiGlyph::Pin,"LOCATION","NOT SET","",mw);
     ImGui::SameLine(0.0f,gap); drawMetricTile("CaseUpdated",UiGlyph::Clock,"LAST UPDATED","JUST NOW","",mw);
     ImGui::Spacing();
 
@@ -15556,7 +15549,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 
