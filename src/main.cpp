@@ -12375,7 +12375,7 @@ static void drawCommandPalette()
     const ImVec2 center=
         viewport
             ? viewport->GetCenter()
-            : ImGui::GetIO().DisplaySize*0.5f;
+            : ImVec2(ImGui::GetIO().DisplaySize.x * 0.5f, ImGui::GetIO().DisplaySize.y * 0.5f);
 
     ImGui::SetNextWindowPos(
         center,
