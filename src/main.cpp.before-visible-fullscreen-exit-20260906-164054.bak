@@ -2792,53 +2792,7 @@ if (gViewportFullscreen)
         );
     }
 
-    
-    // SOVEREIGN_VISIBLE_FULLSCREEN_EXIT_V1
-    // This lives INSIDE ViewportModeStrip, so it cannot disappear
-    // behind the 2D / 3D / AR canvas child.
-    if (gViewportFullscreen)
-    {
-        const ImVec2 modeStripWindowPos=
-            ImGui::GetWindowPos();
-
-        const float exitFullscreenW=
-            172.0f;
-
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                modeStripWindowPos.x+
-                    ImGui::GetWindowContentRegionMax().x-
-                    exitFullscreenW-
-                    8.0f,
-                modeStripWindowPos.y+
-                    8.0f
-            )
-        );
-
-        if (editorButton(
-            "EXIT FULL SCREEN",
-            exitFullscreenW,
-            true,
-            true))
-        {
-            gViewportFullscreen=false;
-        }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip(
-                "Exit %s full screen | F11 or Esc",
-                viewportMode==0
-                    ? "2D Plan"
-                    : (
-                        viewportMode==1
-                            ? "3D Scene"
-                            : "AR Preview"
-                      )
-            );
-        }
-    }
-ImGui::EndChild();
+    ImGui::EndChild();
     if (viewportMode==2)
     {
         ImGui::Spacing();
@@ -8793,58 +8747,7 @@ static void drawNodeEditor()
         );
     }
 
-    
-    // Fullscreen control is part of the visible NODE GRAPH header.
-    {
-        const ImVec2 nodeHeaderWindowPos=
-            ImGui::GetWindowPos();
-
-        const float nodeFullscreenW=
-            gNodeEditorFullscreen
-                ? 172.0f
-                : 128.0f;
-
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                nodeHeaderWindowPos.x+
-                    ImGui::GetWindowContentRegionMax().x-
-                    nodeFullscreenW-
-                    8.0f,
-                nodeHeaderWindowPos.y+
-                    5.0f
-            )
-        );
-
-        if (editorButton(
-            gNodeEditorFullscreen
-                ? "EXIT FULL SCREEN"
-                : "FULL SCREEN",
-            nodeFullscreenW,
-            gNodeEditorFullscreen,
-            true))
-        {
-            if (gNodeEditorFullscreen)
-            {
-                gNodeEditorFullscreen=false;
-            }
-            else
-            {
-                gViewportFullscreen=false;
-                gNodeEditorFullscreen=true;
-            }
-        }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip(
-                "%s Node Editor | F11 toggle | Esc exit",
-                gNodeEditorFullscreen
-                    ? "Exit full screen:"
-                    : "Full screen:"
-            );
-        }
-    }
-endEditorContextHeader();
+    endEditorContextHeader();
 
     // ========================================================
     // SHORTCUTS
@@ -15052,7 +14955,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 

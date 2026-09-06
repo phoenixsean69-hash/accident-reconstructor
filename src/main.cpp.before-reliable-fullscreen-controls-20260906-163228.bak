@@ -2228,7 +2228,6 @@ static const char* shellSelectedEntityName();
 static void drawEditorModeStrip();
 // SOVEREIGN_VIEWPORT_FULLSCREEN_V1
 // SOVEREIGN_NODE_FULLSCREEN_V1
-// SOVEREIGN_RELIABLE_FULLSCREEN_CONTROLS_V1
 static bool gViewportFullscreen=false;
 static bool gNodeEditorFullscreen=false;
 static void drawViewportView()
@@ -2792,53 +2791,7 @@ if (gViewportFullscreen)
         );
     }
 
-    
-    // SOVEREIGN_VISIBLE_FULLSCREEN_EXIT_V1
-    // This lives INSIDE ViewportModeStrip, so it cannot disappear
-    // behind the 2D / 3D / AR canvas child.
-    if (gViewportFullscreen)
-    {
-        const ImVec2 modeStripWindowPos=
-            ImGui::GetWindowPos();
-
-        const float exitFullscreenW=
-            172.0f;
-
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                modeStripWindowPos.x+
-                    ImGui::GetWindowContentRegionMax().x-
-                    exitFullscreenW-
-                    8.0f,
-                modeStripWindowPos.y+
-                    8.0f
-            )
-        );
-
-        if (editorButton(
-            "EXIT FULL SCREEN",
-            exitFullscreenW,
-            true,
-            true))
-        {
-            gViewportFullscreen=false;
-        }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip(
-                "Exit %s full screen | F11 or Esc",
-                viewportMode==0
-                    ? "2D Plan"
-                    : (
-                        viewportMode==1
-                            ? "3D Scene"
-                            : "AR Preview"
-                      )
-            );
-        }
-    }
-ImGui::EndChild();
+    ImGui::EndChild();
     if (viewportMode==2)
     {
         ImGui::Spacing();
@@ -3089,26 +3042,7 @@ ImGui::EndChild();
             ImGui::EndPopup();
         }
 
-        
-        ImGui::SameLine(0.0f,7.0f);
-
-        if (!gViewportFullscreen &&
-            editorButton(
-                "FULL SCREEN",
-                126.0f,
-                false,
-                true))
-        {
-            setViewportFullscreen(true);
-        }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip(
-                "AR Preview full screen | F11"
-            );
-        }
-ImGui::EndChild();
+        ImGui::EndChild();
     }
     ImGui::Spacing();
 
@@ -4712,94 +4646,40 @@ ImGui::EndChild();
 ImGui::EndChild();
     ImGui::PopStyleVar();
     
-ImGui::End();
+    // Last-drawn overlay: cannot be covered by 2D, 3D or AR content.
     if (gViewportFullscreen)
     {
-        const ImGuiViewport* exitViewport=
-            ImGui::GetMainViewport();
+        const ImVec2 windowPos=
+            ImGui::GetWindowPos();
 
-        if (exitViewport)
+        const ImVec2 contentMin=
+            ImGui::GetWindowContentRegionMin();
+
+        const ImVec2 contentMax=
+            ImGui::GetWindowContentRegionMax();
+
+        constexpr float exitW=170.0f;
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                windowPos.x+
+                    contentMax.x-
+                    exitW-
+                    12.0f,
+                windowPos.y+
+                    contentMin.y+
+                    10.0f
+            )
+        );
+
+        if (editorButton(
+            "EXIT FULL SCREEN",
+            exitW,
+            true,
+            true))
         {
-            ImGui::SetNextWindowPos(
-                ImVec2(
-                    exitViewport->Pos.x+
-                        exitViewport->Size.x-
-                        14.0f,
-                    exitViewport->Pos.y+
-                        12.0f
-                ),
-                ImGuiCond_Always,
-                ImVec2(1.0f,0.0f)
-            );
-
-            ImGui::SetNextWindowViewport(
-                exitViewport->ID
-            );
+            setViewportFullscreen(false);
         }
-
-        ImGui::SetNextWindowBgAlpha(0.0f);
-
-        ImGui::PushStyleVar(
-            ImGuiStyleVar_WindowPadding,
-            ImVec2(0.0f,0.0f)
-        );
-
-        const ImGuiWindowFlags exitFlags=
-            ImGuiWindowFlags_NoDecoration |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoDocking |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_NoNavFocus |
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_NoScrollWithMouse;
-
-        ImGui::Begin(
-            "##SovereignViewportFullscreenExit",
-            nullptr,
-            exitFlags
-        );
-
-        ImGui::PushStyleColor(
-            ImGuiCol_Button,
-            ImVec4(
-                0.12f,
-                0.42f,
-                0.78f,
-                1.0f
-            )
-        );
-
-        ImGui::PushStyleColor(
-            ImGuiCol_ButtonHovered,
-            ImVec4(
-                0.15f,
-                0.48f,
-                0.86f,
-                1.0f
-            )
-        );
-
-        ImGui::PushStyleColor(
-            ImGuiCol_ButtonActive,
-            ImVec4(
-                0.10f,
-                0.36f,
-                0.69f,
-                1.0f
-            )
-        );
-
-        const bool exitViewportFullscreen=
-            ImGui::Button(
-                "EXIT FULL SCREEN",
-                ImVec2(
-                    170.0f,
-                    34.0f
-                )
-            );
-
-        ImGui::PopStyleColor(3);
 
         if (ImGui::IsItemHovered())
         {
@@ -4814,16 +4694,8 @@ ImGui::End();
                       )
             );
         }
-
-        ImGui::End();
-        ImGui::PopStyleVar();
-
-        if (exitViewportFullscreen)
-        {
-            setViewportFullscreen(false);
-        }
     }
-
+ImGui::End();
 }
 
 struct EditorShellState
@@ -8793,58 +8665,7 @@ static void drawNodeEditor()
         );
     }
 
-    
-    // Fullscreen control is part of the visible NODE GRAPH header.
-    {
-        const ImVec2 nodeHeaderWindowPos=
-            ImGui::GetWindowPos();
-
-        const float nodeFullscreenW=
-            gNodeEditorFullscreen
-                ? 172.0f
-                : 128.0f;
-
-        ImGui::SetCursorScreenPos(
-            ImVec2(
-                nodeHeaderWindowPos.x+
-                    ImGui::GetWindowContentRegionMax().x-
-                    nodeFullscreenW-
-                    8.0f,
-                nodeHeaderWindowPos.y+
-                    5.0f
-            )
-        );
-
-        if (editorButton(
-            gNodeEditorFullscreen
-                ? "EXIT FULL SCREEN"
-                : "FULL SCREEN",
-            nodeFullscreenW,
-            gNodeEditorFullscreen,
-            true))
-        {
-            if (gNodeEditorFullscreen)
-            {
-                gNodeEditorFullscreen=false;
-            }
-            else
-            {
-                gViewportFullscreen=false;
-                gNodeEditorFullscreen=true;
-            }
-        }
-
-        if (ImGui::IsItemHovered())
-        {
-            ImGui::SetTooltip(
-                "%s Node Editor | F11 toggle | Esc exit",
-                gNodeEditorFullscreen
-                    ? "Exit full screen:"
-                    : "Full screen:"
-            );
-        }
-    }
-endEditorContextHeader();
+    endEditorContextHeader();
 
     // ========================================================
     // SHORTCUTS
@@ -11281,114 +11102,48 @@ endEditorContextHeader();
     ImGui::EndChild();
 
     
-    const ImVec2 nodeFullscreenControlWindowPos=
-        ImGui::GetWindowPos();
-
-    const ImVec2 nodeFullscreenControlContentMin=
-        ImGui::GetWindowContentRegionMin();
-
-    const ImVec2 nodeFullscreenControlContentMax=
-        ImGui::GetWindowContentRegionMax();
-
-    const ImGuiViewport* nodeFullscreenControlViewport=
-        ImGui::GetWindowViewport();
-ImGui::End();
+    // Draw this LAST so the graph canvas can never cover it.
     {
-        const float nodeControlWidth=
+        const ImVec2 nodeWindowPos=
+            ImGui::GetWindowPos();
+
+        const ImVec2 nodeContentMin=
+            ImGui::GetWindowContentRegionMin();
+
+        const ImVec2 nodeContentMax=
+            ImGui::GetWindowContentRegionMax();
+
+        const char* nodeFullscreenLabel=
+            gNodeEditorFullscreen
+                ? "EXIT FULL SCREEN"
+                : "FULL SCREEN";
+
+        const float nodeFullscreenW=
             gNodeEditorFullscreen
                 ? 170.0f
                 : 128.0f;
 
-        ImGui::SetNextWindowPos(
+        ImGui::SetCursorScreenPos(
             ImVec2(
-                nodeFullscreenControlWindowPos.x+
-                    nodeFullscreenControlContentMax.x-
+                nodeWindowPos.x+
+                    nodeContentMax.x-
+                    nodeFullscreenW-
                     12.0f,
-                nodeFullscreenControlWindowPos.y+
-                    nodeFullscreenControlContentMin.y+
-                    8.0f
-            ),
-            ImGuiCond_Always,
-            ImVec2(1.0f,0.0f)
+                nodeWindowPos.y+
+                    nodeContentMin.y+
+                    10.0f
+            )
         );
 
-        if (nodeFullscreenControlViewport)
+        if (editorButton(
+            nodeFullscreenLabel,
+            nodeFullscreenW,
+            gNodeEditorFullscreen,
+            true))
         {
-            ImGui::SetNextWindowViewport(
-                nodeFullscreenControlViewport->ID
+            setNodeEditorFullscreen(
+                !gNodeEditorFullscreen
             );
-        }
-
-        ImGui::SetNextWindowBgAlpha(0.0f);
-
-        ImGui::PushStyleVar(
-            ImGuiStyleVar_WindowPadding,
-            ImVec2(0.0f,0.0f)
-        );
-
-        const ImGuiWindowFlags nodeControlFlags=
-            ImGuiWindowFlags_NoDecoration |
-            ImGuiWindowFlags_AlwaysAutoResize |
-            ImGuiWindowFlags_NoDocking |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_NoNavFocus |
-            ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_NoScrollWithMouse;
-
-        ImGui::Begin(
-            "##SovereignNodeFullscreenControl",
-            nullptr,
-            nodeControlFlags
-        );
-
-        if (gNodeEditorFullscreen)
-        {
-            ImGui::PushStyleColor(
-                ImGuiCol_Button,
-                ImVec4(
-                    0.12f,
-                    0.42f,
-                    0.78f,
-                    1.0f
-                )
-            );
-
-            ImGui::PushStyleColor(
-                ImGuiCol_ButtonHovered,
-                ImVec4(
-                    0.15f,
-                    0.48f,
-                    0.86f,
-                    1.0f
-                )
-            );
-
-            ImGui::PushStyleColor(
-                ImGuiCol_ButtonActive,
-                ImVec4(
-                    0.10f,
-                    0.36f,
-                    0.69f,
-                    1.0f
-                )
-            );
-        }
-
-        const bool toggleNodeFullscreen=
-            ImGui::Button(
-                gNodeEditorFullscreen
-                    ? "EXIT FULL SCREEN"
-                    : "FULL SCREEN",
-                ImVec2(
-                    nodeControlWidth,
-                    34.0f
-                )
-            );
-
-        if (gNodeEditorFullscreen)
-        {
-            ImGui::PopStyleColor(3);
         }
 
         if (ImGui::IsItemHovered())
@@ -11400,18 +11155,8 @@ ImGui::End();
                     : "Full screen:"
             );
         }
-
-        ImGui::End();
-        ImGui::PopStyleVar();
-
-        if (toggleNodeFullscreen)
-        {
-            setNodeEditorFullscreen(
-                !gNodeEditorFullscreen
-            );
-        }
     }
-
+ImGui::End();
 }
 static void drawTimeline()
 {
@@ -15052,8 +14797,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
-
 
 
 
