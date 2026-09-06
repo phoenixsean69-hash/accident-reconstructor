@@ -1,4 +1,4 @@
-# Build
+﻿# Build
 build/
 out/
 cmake-build-*/
@@ -14,11 +14,11 @@ CMakeFiles/
 .idea/
 *.user
 
-# Cases (evidence data — never commit)
+# Cases (evidence data â€” never commit)
 cases/*
 !cases/.gitkeep
 
-# Assets (large binaries — manage separately)
+# Assets (large binaries â€” manage separately)
 assets/vehicles/*.glb
 assets/vehicles/*.gltf
 assets/roads/*.glb
@@ -34,3 +34,7 @@ assets/environment/*.hdr
 # OS
 .DS_Store
 Thumbs.db
+
+# RoadSafe local Asset Library (downloaded model binaries)
+assets/library/**
+!assets/library/README.md

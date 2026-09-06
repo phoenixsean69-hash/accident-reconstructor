@@ -65,6 +65,7 @@ target_link_libraries(imgui PRIVATE glfw)
 add_executable(sfe
     src/main.cpp
     src/roadsafe/roadsafe_renderer.cpp
+    src/roadsafe/roadsafe_asset_library.cpp
     src/glad/glad.c
 )
 
@@ -104,6 +105,7 @@ endif()
 set_target_properties(sfe PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
 
 
 
