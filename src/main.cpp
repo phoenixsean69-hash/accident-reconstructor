@@ -52,6 +52,7 @@
 
 // ROADSAFE_CORE_MODEL_BINDING_V1
 #include "roadsafe/roadsafe_core.h"
+#include "roadsafe/roadsafe_renderer.h"
 
 constexpr int WINDOW_WIDTH = 1600;
 constexpr int WINDOW_HEIGHT = 900;
@@ -61,6 +62,9 @@ constexpr float RIGHT_PANEL_MAX_WIDTH = 520.0f;
 // Central RoadSafe AR investigation/case state.
 // Existing editor islands will be migrated into this model incrementally.
 static roadsafe::RoadSafeCase gRoadSafeCase{};
+
+// ROADSAFE_NATIVE_GLTF_VIEWPORT_V1
+static roadsafe::RoadSafeRenderer gRoadSafeRenderer;
 // ROADSAFE_EDITOR_RECORD_BINDING_V2
 // Seed the existing reconstruction scene into the new case model.
 // This only runs for a completely empty case and will not overwrite
@@ -3071,9 +3075,36 @@ static void endEditorContextHeader()
 static bool shellSnapEnabled();
 static float shellSnapValue();
 static const char* shellSelectedEntityName();
+static int shellSelectedEntityId();
 // SOVEREIGN_ENTITY_LOCK_ENFORCEMENT_V2
 static bool shellSelectedEntityLocked();
 static void drawEditorModeStrip();
+
+struct EditorShellState
+{
+    bool showOutliner=true;
+    bool showProperties=true;
+    bool showTimeline=true;
+    bool showNodeEditor=true;
+    bool showShortcutReference=false;
+    bool focusCommandSearch=false;
+    bool showCommandPalette=false;
+    int commandPaletteSelection=0;
+    bool snapEnabled=true;
+    bool requestExit=false;
+    bool resetLayoutRequested=false;
+    int transformMode=0;
+    int selectedEntity=0;
+    int shortcutFocusRequest=0;
+    float snapValue=0.10f;
+    char outlinerSearch[96]{};
+    char commandSearch[96]{};
+    char shortcutToast[128]{};
+    double shortcutToastUntil=0.0;
+};
+
+static EditorShellState gEditorShell;
+
 // SOVEREIGN_VIEWPORT_FULLSCREEN_V1
 // SOVEREIGN_NODE_FULLSCREEN_V1
 // SOVEREIGN_RELIABLE_FULLSCREEN_CONTROLS_V1
@@ -4391,15 +4422,71 @@ ImGui::EndChild();
     ImGui::BeginChild("SceneCanvas",ImGui::GetContentRegionAvail(),true,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
     const ImVec2 cp=ImGui::GetWindowPos(), cs=ImGui::GetWindowSize();
     ImDrawList* d=ImGui::GetWindowDrawList();
-    d->AddRectFilled(
-        cp,
-        ImVec2(cp.x+cs.x,cp.y+cs.y),
-        viewportMode==0
-            ? IM_COL32(18,20,22,255)
-            : (viewportMode==1
-                ? IM_COL32(22,25,30,255)
-                : IM_COL32(27,31,37,255))
-    );
+
+    bool roadSafe3DFrameReady=false;
+
+    if (viewportMode==1 &&
+        cs.x>8.0f &&
+        cs.y>8.0f)
+    {
+        roadsafe::RenderSettings roadSafeRenderSettings;
+        roadSafeRenderSettings.width=
+            static_cast<int>(
+                cs.x
+            );
+        roadSafeRenderSettings.height=
+            static_cast<int>(
+                cs.y
+            );
+        roadSafeRenderSettings.fovDegrees=
+            cameraFov;
+        roadSafeRenderSettings.viewPreset=
+            viewPreset3D;
+        roadSafeRenderSettings.renderMode=
+            renderMode;
+        roadSafeRenderSettings.selectedEntityId=
+            shellSelectedEntityId();
+
+        if (gRoadSafeRenderer.render(
+                gRoadSafeCase,
+                roadSafeRenderSettings,
+                std::filesystem::path(
+                    SFE_ASSET_DIR
+                )))
+        {
+            const GLuint roadSafeTexture=
+                gRoadSafeRenderer.colorTexture();
+
+            if (roadSafeTexture!=0)
+            {
+                d->AddImage(
+                    (ImTextureID)(intptr_t)roadSafeTexture,
+                    cp,
+                    ImVec2(
+                        cp.x+cs.x,
+                        cp.y+cs.y
+                    ),
+                    ImVec2(0.0f,1.0f),
+                    ImVec2(1.0f,0.0f)
+                );
+
+                roadSafe3DFrameReady=true;
+            }
+        }
+    }
+
+    if (!roadSafe3DFrameReady)
+    {
+        d->AddRectFilled(
+            cp,
+            ImVec2(cp.x+cs.x,cp.y+cs.y),
+            viewportMode==0
+                ? IM_COL32(18,20,22,255)
+                : (viewportMode==1
+                    ? IM_COL32(22,25,30,255)
+                    : IM_COL32(27,31,37,255))
+        );
+    }
     if (viewportMode==0 && showGrid)
     {
         const float gs=32.0f;
@@ -4418,7 +4505,8 @@ ImGui::EndChild();
     d->AddText(ImVec2(cp.x+16.0f,cp.y+16.0f),IM_COL32(225,226,228,255),viewportMode==0 ? "2D PLAN VIEW" : (viewportMode==1 ? "3D SCENE VIEW" : "AR PREVIEW"));
     d->AddText(ImVec2(cp.x+16.0f,cp.y+40.0f),IM_COL32(135,139,145,255),viewportMode==0 ? (orthoView==0 ? "Top orthographic reconstruction" : (orthoView==1 ? "Front orthographic reconstruction" : "Right orthographic reconstruction")) : (viewportMode==1 ? (renderMode==0 ? "Perspective lit reconstruction" : (renderMode==1 ? "Wireframe inspection" : "Analysis overlay")) : "Editor AR preview - live device integration pending"));
     
-    if (viewportMode==1)
+    if (viewportMode==1 &&
+        !roadSafe3DFrameReady)
     {
         const float horizon=
             cp.y+cs.y*0.34f;
@@ -5691,35 +5779,6 @@ ImGui::End();
     }
 
 }
-
-struct EditorShellState
-{
-    bool showOutliner=true;
-    bool showProperties=true;
-    bool showTimeline=true;
-    bool showNodeEditor=true;
-    bool showShortcutReference=false;
-    bool focusCommandSearch=false;
-
-    // SOVEREIGN_EXECUTABLE_COMMAND_PALETTE_V1
-    bool showCommandPalette=false;
-    int commandPaletteSelection=0;
-    bool snapEnabled=true;
-    bool requestExit=false;
-    bool resetLayoutRequested=false;
-
-    int transformMode=0;
-    int selectedEntity=0;
-    int shortcutFocusRequest=0;
-
-    float snapValue=0.10f;
-    char outlinerSearch[96]{};
-    char commandSearch[96]{};
-    char shortcutToast[128]{};
-    double shortcutToastUntil=0.0;
-};
-
-static EditorShellState gEditorShell;
 
 // SOVEREIGN_REAL_ENTITY_RENAME_V1
 static char gSovereignEntityNames[10][64]=
@@ -7228,6 +7287,42 @@ static void drawDeepPropertiesInspectorBody()
         ImGui::SetNextItemWidth(
             editorWidth()
         );
+        roadSafeInputText(
+            "Source URL",
+            selectedSceneEntity->asset.sourceUrl,
+            260
+        );
+
+        ImGui::SetNextItemWidth(
+            editorWidth()
+        );
+        roadSafeInputText(
+            "Author",
+            selectedSceneEntity->asset.author,
+            128
+        );
+
+        ImGui::SetNextItemWidth(
+            editorWidth()
+        );
+        roadSafeInputText(
+            "License",
+            selectedSceneEntity->asset.licenseName,
+            128
+        );
+
+        ImGui::SetNextItemWidth(
+            editorWidth()
+        );
+        roadSafeInputText(
+            "Attribution",
+            selectedSceneEntity->asset.attribution,
+            260
+        );
+
+        ImGui::SetNextItemWidth(
+            editorWidth()
+        );
 
         if (ImGui::DragFloat(
             "Meters per unit",
@@ -7408,8 +7503,15 @@ static bool shellSelectedEntityLocked()
         entity>=1 &&
         sovereignEntityLocked(entity);
 }
+
+static int shellSelectedEntityId()
+{
+    return gEditorShell.selectedEntity;
+}
+
 static UiGlyph roadSafeSceneEntityGlyph(
     const roadsafe::SceneEntityRecord& entity);
+
 
 static UiGlyph selectedEntityGlyph()
 {
@@ -16948,6 +17050,8 @@ if (rubik) ImGui::PopFont();
     // Tool icon textures are owned by the OpenGL context.
 // They are released automatically when the context is destroyed.
 // Do not place ImGui shutdown inside the icon loop.
+    gRoadSafeRenderer.shutdown();
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
@@ -16955,6 +17059,8 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
+
+
 
 
 

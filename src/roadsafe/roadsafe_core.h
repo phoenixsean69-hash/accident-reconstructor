@@ -390,6 +390,12 @@ struct AssetReference
     std::string collisionPath;
     std::string materialProfile;
 
+    // Free/premium-looking asset provenance and licence metadata.
+    std::string sourceUrl;
+    std::string author;
+    std::string licenseName;
+    std::string attribution;
+
     // Conversion from source-file units into RoadSafe metres.
     float metersPerUnit=1.0f;
 
@@ -541,6 +547,7 @@ inline const char* textOr(
 }
 
 } // namespace roadsafe
+
 
 
 

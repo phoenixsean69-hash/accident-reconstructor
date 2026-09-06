@@ -16,6 +16,22 @@ FetchContent_Declare(
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
 )
 FetchContent_MakeAvailable(imgui)
+# ROADSAFE_TINYGLTF_DEPENDENCY_V1
+# Pinned stable TinyGLTF v2 loader for free/licensed GLB/glTF assets.
+set(TINYGLTF_HEADER_ONLY ON CACHE BOOL "" FORCE)
+set(TINYGLTF_INSTALL OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_BUILD_LOADER_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_BUILD_GL_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_BUILD_VALIDATOR_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_BUILD_BUILDER_EXAMPLE OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    tinygltf
+    GIT_REPOSITORY https://github.com/syoyo/tinygltf.git
+    GIT_TAG v2.8.18
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(tinygltf)
 
 add_library(imgui STATIC
     ${imgui_SOURCE_DIR}/imgui.cpp
@@ -48,6 +64,7 @@ target_link_libraries(imgui PRIVATE glfw)
 # â”€â”€ Source files â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 add_executable(sfe
     src/main.cpp
+    src/roadsafe/roadsafe_renderer.cpp
     src/glad/glad.c
 )
 
@@ -62,6 +79,7 @@ set_target_properties(
 # â”€â”€ Include directories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 target_include_directories(sfe PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${tinygltf_SOURCE_DIR}
 )
 
 target_compile_definitions(sfe PRIVATE
@@ -86,5 +104,6 @@ endif()
 set_target_properties(sfe PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
 
 
