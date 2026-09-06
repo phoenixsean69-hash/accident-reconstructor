@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.28)
-project(RoadSafeAR CXX C)
+project(AccidentReconstructor CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -51,14 +51,6 @@ add_executable(sfe
     src/glad/glad.c
 )
 
-# RoadSafe AR product identity.
-# Keep the stable internal target name "sfe" so existing build
-# scripts keep working, but emit RoadSafeAR.exe to users.
-set_target_properties(
-    sfe
-    PROPERTIES
-    OUTPUT_NAME "RoadSafeAR"
-)
 # â”€â”€ Include directories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 target_include_directories(sfe PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -86,5 +78,4 @@ endif()
 set_target_properties(sfe PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
-
 
