@@ -1127,6 +1127,14 @@ static ButtonVisualSpec getButtonVisualSpec(const char* label)
     if (key=="RESET ORIGIN")
         return {true,UiGlyph::Marker,false,"RESET ORIGIN","Reset origin"};
 
+    // ROADSAFE_PROPERTIES_ASSET_ACCESS_V1
+    if (key=="ASSETS")
+        return {true,UiGlyph::Folder,false,"ASSETS","Open Asset Library"};
+    if (key=="BROWSE ASSET LIBRARY")
+        return {true,UiGlyph::Folder,false,"BROWSE ASSET LIBRARY","Browse installed 3D assets"};
+    if (key=="CLEAR ASSET")
+        return {true,UiGlyph::More,false,"CLEAR ASSET","Clear the selected entity's model assignment"};
+
     return spec;
 }
 static void drawUnifiedButtonLabel(
@@ -6440,16 +6448,96 @@ static void drawDeepPropertiesInspectorBody()
                 ImGuiTreeNodeFlags_DefaultOpen
             );
 
+        const ImVec2 headerMin=
+            ImGui::GetItemRectMin();
+
+        const ImVec2 headerMax=
+            ImGui::GetItemRectMax();
+
+        UiGlyph glyph=
+            UiGlyph::Info;
+
+        const std::string sectionName=
+            label ? label : "";
+
+        if (sectionName=="TRANSFORM")
+            glyph=UiGlyph::Cube;
+        else if (sectionName=="VEHICLE IDENTITY")
+            glyph=UiGlyph::Hash;
+        else if (sectionName=="VEHICLE PHYSICS")
+            glyph=UiGlyph::Speed;
+        else if (sectionName=="INITIAL STATE")
+            glyph=UiGlyph::Clock;
+        else if (sectionName=="TIRES / ROAD")
+            glyph=UiGlyph::Ruler;
+        else if (sectionName=="COLLISION")
+            glyph=UiGlyph::Momentum;
+        else if (sectionName=="FORENSIC LINEAGE")
+            glyph=UiGlyph::Link;
+        else if (sectionName=="EVIDENCE METADATA")
+            glyph=UiGlyph::Document;
+        else if (sectionName=="SKID / TIRE MARK")
+            glyph=UiGlyph::Ruler;
+        else if (sectionName=="SCENE MARKER")
+            glyph=UiGlyph::Marker;
+        else if (sectionName=="DEBRIS FIELD")
+            glyph=UiGlyph::Document;
+        else if (sectionName=="MEASUREMENT SETTINGS")
+            glyph=UiGlyph::Ruler;
+        else if (sectionName=="3D ASSET / PBR")
+            glyph=UiGlyph::Cube;
+        else if (sectionName=="VISIBILITY")
+            glyph=UiGlyph::Eye;
+        else if (sectionName=="METADATA")
+            glyph=UiGlyph::Info;
+        else if (sectionName=="SCENE SETTINGS")
+            glyph=UiGlyph::Bars;
+
+        if (headerMax.x-headerMin.x>70.0f)
+        {
+            drawGlyph(
+                ImGui::GetWindowDrawList(),
+                glyph,
+                ImVec2(
+                    headerMax.x-18.0f,
+                    (headerMin.y+headerMax.y)*0.5f
+                ),
+                16.0f,
+                toU32(
+                    open
+                        ? colorText()
+                        : colorMuted()
+                )
+            );
+        }
+
         ImGui::PopStyleColor(2);
         return open;
     };
 
+    // Keep enough room for the property label on the right.
+    // Narrow inspectors no longer sacrifice labels to oversized editors.
     const auto editorWidth=[]()
     {
+        const float available=
+            std::max(
+                1.0f,
+                ImGui::GetContentRegionAvail().x
+            );
+
+        const float labelReserve=
+            std::min(
+                190.0f,
+                std::max(
+                    138.0f,
+                    available*0.48f
+                )
+            );
+
         return
             std::max(
-                118.0f,
-                ImGui::GetContentRegionAvail().x*0.52f
+                108.0f,
+                available-labelReserve
             );
     };
 
@@ -7249,8 +7337,56 @@ static void drawDeepPropertiesInspectorBody()
     if (section("3D ASSET / PBR"))
     {
         ImGui::TextDisabled(
-            "Premium model reference (GLB/glTF-first)."
+            "Native GLB/glTF model assignment."
         );
+
+        if (editorButton(
+                "BROWSE ASSET LIBRARY",
+                ImGui::GetContentRegionAvail().x,
+                true,
+                true))
+        {
+            gRoadSafeAssetLibrary.open=true;
+            gRoadSafeAssetLibrary.requestFocus=true;
+            gRoadSafeAssetLibrary.initialized=false;
+        }
+
+        if (!selectedSceneEntity->
+                 asset.sourcePath.empty())
+        {
+            ImGui::TextDisabled(
+                "Assigned model"
+            );
+
+            ImGui::PushTextWrapPos(
+                ImGui::GetCursorPosX()+
+                ImGui::GetContentRegionAvail().x
+            );
+
+            ImGui::TextUnformatted(
+                selectedSceneEntity->
+                    asset.sourcePath.c_str()
+            );
+
+            ImGui::PopTextWrapPos();
+
+            if (editorButton(
+                    "CLEAR ASSET",
+                    ImGui::GetContentRegionAvail().x,
+                    false,
+                    true))
+            {
+                selectedSceneEntity->asset=
+                    roadsafe::AssetReference{};
+
+                gRoadSafeCase.touch();
+                gRoadSafeRenderer.clearAssetCache();
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
 
         ImGui::SetNextItemWidth(
             editorWidth()
@@ -7382,7 +7518,7 @@ static void drawDeepPropertiesInspectorBody()
         }
 
         ImGui::TextDisabled(
-            "Runtime GLB/PBR loading is the next renderer milestone."
+            "Native renderer active. Browse Assets to assign installed models."
         );
     }
 
@@ -8228,12 +8364,16 @@ static void drawEditorToolbar()
 
     if (editorButton(
             "ASSETS",
-            82.0f,
+            96.0f,
             gRoadSafeAssetLibrary.open,
             true))
     {
         gRoadSafeAssetLibrary.open=true;
         gRoadSafeAssetLibrary.requestFocus=true;
+
+        // Opening Assets always rescans the local library so models
+        // installed while RoadSafe was closed/idle appear immediately.
+        gRoadSafeAssetLibrary.initialized=false;
     }
 
     ImGui::SameLine();
@@ -9030,33 +9170,91 @@ static void drawProperties()
     // SOVEREIGN_PANEL_SCROLL_LIMITS_V1
     // Inspector-style panels never keep stale horizontal scroll.
     ImGui::SetScrollX(0.0f);
-    beginEditorContextHeader(
-        "##PropertiesContextHeader"
+    // Responsive Properties context header.
+    // The previous single-line header clipped "Object Properties"
+    // in the normal narrow inspector width.
+    beginSurface(
+        "##PropertiesContextHeader",
+        ImVec2(0.0f,64.0f),
+        false,
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse
     );
 
-    ImGui::TextDisabled("INSPECTOR");
+    const ImVec2 propertyHeaderPos=
+        ImGui::GetCursorScreenPos();
 
-    editorContextSeparator();
+    UiGlyph propertyHeaderGlyph=
+        UiGlyph::Info;
 
-    ImGui::TextDisabled("Context");
-    ImGui::SameLine(0.0f,5.0f);
+    if (const auto* propertyEntity=
+            roadSafeSceneEntityConst(
+                gEditorShell.selectedEntity
+            ))
+    {
+        switch (propertyEntity->kind)
+        {
+            case roadsafe::SceneEntityKind::Vehicle:
+                propertyHeaderGlyph=UiGlyph::Cube;
+                break;
+
+            case roadsafe::SceneEntityKind::Evidence:
+                propertyHeaderGlyph=UiGlyph::Document;
+                break;
+
+            case roadsafe::SceneEntityKind::Measurement:
+                propertyHeaderGlyph=UiGlyph::Ruler;
+                break;
+
+            case roadsafe::SceneEntityKind::Environment:
+                propertyHeaderGlyph=UiGlyph::Marker;
+                break;
+        }
+    }
+
+    drawIconBadge(
+        propertyHeaderGlyph,
+        propertyHeaderPos,
+        30.0f,
+        false
+    );
+
+    ImGui::SetCursorScreenPos(
+        ImVec2(
+            propertyHeaderPos.x+42.0f,
+            propertyHeaderPos.y
+        )
+    );
+
+    ImGui::TextDisabled(
+        gEditorShell.selectedEntity!=0
+            ? "INSPECTOR / OBJECT"
+            : "INSPECTOR / SCENE"
+    );
+
+    ImGui::SetCursorScreenPos(
+        ImVec2(
+            propertyHeaderPos.x+42.0f,
+            propertyHeaderPos.y+23.0f
+        )
+    );
+
+    ImGui::PushTextWrapPos(
+        ImGui::GetWindowPos().x+
+        ImGui::GetWindowContentRegionMax().x
+    );
 
     ImGui::Text(
         "%s",
         gEditorShell.selectedEntity!=0
             ? selectedEntityName()
-            : "Scene"
+            : "Scene Settings"
     );
 
-    editorContextSeparator();
+    ImGui::PopTextWrapPos();
 
-    ImGui::TextDisabled(
-        gEditorShell.selectedEntity!=0
-            ? "Object Properties"
-            : "No object selected"
-    );
-
-    endEditorContextHeader();
+    endSurface();
+    ImGui::Spacing();
     drawDeepPropertiesInspectorBody();
     // SOVEREIGN_PROPERTIES_LEGACY_CLEANED_V1
     // Deep Properties V3 is now the single inspector body.
@@ -17081,6 +17279,7 @@ if (rubik) ImGui::PopFont();
     // Tool icon textures are owned by the OpenGL context.
 // They are released automatically when the context is destroyed.
 // Do not place ImGui shutdown inside the icon loop.
+    roadsafe::shutdownAssetLibraryPreviewRenderer();
     gRoadSafeRenderer.shutdown();
 
     ImGui_ImplOpenGL3_Shutdown();

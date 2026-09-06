@@ -1,20 +1,26 @@
 ﻿// ROADSAFE_ASSET_LIBRARY_V1
+// ROADSAFE_ASSET_LIBRARY_V2
 
 #include "roadsafe_asset_library.h"
 
 #include "imgui.h"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <cstdio>
 #include <fstream>
+#include <initializer_list>
 #include <sstream>
 #include <system_error>
+#include <vector>
 
 namespace roadsafe
 {
 namespace
 {
+
+RoadSafeRenderer gAssetPreviewRenderer;
 
 static std::string trim(
     const std::string& value)
@@ -66,6 +72,82 @@ static std::string lower(
     return value;
 }
 
+static std::string normalizedWords(
+    const std::string& value)
+{
+    std::string result;
+    result.reserve(
+        value.size()+2
+    );
+
+    result.push_back(' ');
+
+    bool previousWasSpace=true;
+
+    for (unsigned char c : value)
+    {
+        if (std::isalnum(c))
+        {
+            result.push_back(
+                static_cast<char>(
+                    std::tolower(c)
+                )
+            );
+
+            previousWasSpace=false;
+        }
+        else if (!previousWasSpace)
+        {
+            result.push_back(' ');
+            previousWasSpace=true;
+        }
+    }
+
+    if (result.empty() ||
+        result.back()!=' ')
+    {
+        result.push_back(' ');
+    }
+
+    return result;
+}
+
+static bool containsPhrase(
+    const std::string& normalizedText,
+    const char* phrase)
+{
+    if (!phrase || !phrase[0])
+        return false;
+
+    const std::string needle=
+        normalizedWords(
+            phrase
+        );
+
+    return
+        normalizedText.find(
+            needle
+        )!=
+        std::string::npos;
+}
+
+static bool containsAnyPhrase(
+    const std::string& normalizedText,
+    std::initializer_list<const char*> phrases)
+{
+    for (const char* phrase : phrases)
+    {
+        if (containsPhrase(
+                normalizedText,
+                phrase))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 static bool parseBool(
     const std::string& value,
     bool fallback)
@@ -113,8 +195,11 @@ static std::string titleFromStem(
 {
     for (char& c : value)
     {
-        if (c=='_' || c=='-')
+        if (c=='_' ||
+            c=='-')
+        {
             c=' ';
+        }
     }
 
     bool uppercaseNext=true;
@@ -132,7 +217,9 @@ static std::string titleFromStem(
             c=
                 static_cast<char>(
                     std::toupper(
-                        static_cast<unsigned char>(c)
+                        static_cast<
+                            unsigned char
+                        >(c)
                     )
                 );
 
@@ -143,27 +230,6 @@ static std::string titleFromStem(
     return value;
 }
 
-static std::string categoryFromFolder(
-    const std::filesystem::path& relative)
-{
-    const auto parent=
-        relative.parent_path();
-
-    if (parent.empty())
-        return "Imported";
-
-    auto iterator=
-        parent.begin();
-
-    if (iterator==parent.end())
-        return "Imported";
-
-    return
-        titleFromStem(
-            iterator->string()
-        );
-}
-
 static std::string normalizedRelativePath(
     const std::filesystem::path& path)
 {
@@ -171,17 +237,427 @@ static std::string normalizedRelativePath(
         path.generic_string();
 }
 
-static bool entryMatchesSearch(
-    const AssetLibraryEntry& entry,
-    const char* search)
+static std::string canonicalCategory(
+    const std::string& value)
 {
-    if (!search || !search[0])
-        return true;
+    const std::string normalized=
+        normalizedWords(
+            value
+        );
 
-    const std::string query=
-        lower(search);
+    if (containsAnyPhrase(
+            normalized,
+            {
+                "vehicle",
+                "vehicles"
+            }))
+    {
+        return "Vehicles";
+    }
 
-    const std::string haystack=
+    if (containsAnyPhrase(
+            normalized,
+            {
+                "people",
+                "person",
+                "persons",
+                "human",
+                "humans"
+            }))
+    {
+        return "People";
+    }
+
+    if (containsAnyPhrase(
+            normalized,
+            {
+                "road infrastructure",
+                "infrastructure",
+                "roads"
+            }))
+    {
+        return "Road Infrastructure";
+    }
+
+    if (containsAnyPhrase(
+            normalized,
+            {
+                "environment",
+                "nature",
+                "terrain"
+            }))
+    {
+        return "Environment";
+    }
+
+    if (containsAnyPhrase(
+            normalized,
+            {
+                "building",
+                "buildings",
+                "architecture"
+            }))
+    {
+        return "Buildings";
+    }
+
+    if (containsPhrase(
+            normalized,
+            "evidence"))
+    {
+        return "Evidence";
+    }
+
+    if (containsPhrase(
+            normalized,
+            "street furniture"))
+    {
+        return "Street Furniture";
+    }
+
+    if (containsPhrase(
+            normalized,
+            "forensic marker"))
+    {
+        return "Forensic Markers";
+    }
+
+    if (containsAnyPhrase(
+            normalized,
+            {
+                "props",
+                "misc",
+                "miscellaneous"
+            }))
+    {
+        return "Props / Misc";
+    }
+
+    if (containsPhrase(
+            normalized,
+            "imported"))
+    {
+        return "Imported";
+    }
+
+    return "";
+}
+
+static std::string classifyStrongText(
+    const std::string& normalizedText)
+{
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "human",
+                "person",
+                "people",
+                "pedestrian",
+                "character",
+                "male",
+                "female",
+                "woman",
+                "man",
+                "child",
+                "worker",
+                "survivor",
+                "cyclist"
+            }))
+    {
+        return "People";
+    }
+
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "sedan",
+                "suv",
+                "hatchback",
+                "car",
+                "vehicle",
+                "truck",
+                "firetruck",
+                "fire truck",
+                "haulage",
+                "lorry",
+                "tanker",
+                "tractor",
+                "trailer",
+                "pickup",
+                "bus",
+                "coach",
+                "minibus",
+                "kombi",
+                "van",
+                "ambulance",
+                "taxi",
+                "motorcycle",
+                "motorbike",
+                "bicycle",
+                "bike",
+                "scooter",
+                "kart"
+            }))
+    {
+        return "Vehicles";
+    }
+
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "evidence marker",
+                "scene marker",
+                "survey marker",
+                "forensic marker",
+                "scale marker"
+            }))
+    {
+        return "Forensic Markers";
+    }
+
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "debris",
+                "skid",
+                "tire",
+                "tyre",
+                "wheel rim",
+                "bumper",
+                "shard",
+                "broken glass",
+                "gouge"
+            }))
+    {
+        return "Evidence";
+    }
+
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "road",
+                "street",
+                "asphalt",
+                "tar road",
+                "dirt road",
+                "gravel road",
+                "intersection",
+                "crosswalk",
+                "pedestrian crossing",
+                "curb",
+                "kerb",
+                "sidewalk",
+                "bridge",
+                "highway",
+                "guardrail",
+                "guard rail",
+                "barrier",
+                "bollard",
+                "traffic",
+                "lane",
+                "road sign",
+                "traffic sign",
+                "traffic cone"
+            }))
+    {
+        return "Road Infrastructure";
+    }
+
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "tree",
+                "bush",
+                "plant",
+                "grass",
+                "forest",
+                "nature",
+                "rock",
+                "stone",
+                "terrain",
+                "ground",
+                "soil",
+                "sand",
+                "mud",
+                "mountain",
+                "hill",
+                "hedge",
+                "flower",
+                "water",
+                "river"
+            }))
+    {
+        return "Environment";
+    }
+
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "building",
+                "house",
+                "apartment",
+                "office",
+                "shop",
+                "store",
+                "warehouse",
+                "factory",
+                "garage",
+                "hangar",
+                "school",
+                "hospital",
+                "church",
+                "tower"
+            }))
+    {
+        return "Buildings";
+    }
+
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "bench",
+                "street lamp",
+                "lamp post",
+                "lamppost",
+                "hydrant",
+                "mailbox",
+                "trash bin",
+                "garbage bin",
+                "street light",
+                "streetlight",
+                "parking meter"
+            }))
+    {
+        return "Street Furniture";
+    }
+
+    if (containsAnyPhrase(
+            normalizedText,
+            {
+                "barrel",
+                "crate",
+                "box",
+                "pallet",
+                "container",
+                "table",
+                "chair",
+                "fence",
+                "tool",
+                "prop",
+                "furniture"
+            }))
+    {
+        return "Props / Misc";
+    }
+
+    return "";
+}
+
+static std::string inferAssetCategory(
+    const AssetLibraryEntry& entry)
+{
+    const std::string modelText=
+        normalizedWords(
+            entry.displayName
+        );
+
+    const std::string pathText=
+        normalizedWords(
+            entry.relativePath
+        );
+
+    // Model names are the strongest signal. This prevents a tree inside
+    // a city pack from being classified as a building, for example.
+    const std::string modelCategory=
+        classifyStrongText(
+            modelText
+        );
+
+    if (!modelCategory.empty())
+        return modelCategory;
+
+    const std::string pathCategory=
+        classifyStrongText(
+            pathText
+        );
+
+    if (!pathCategory.empty())
+        return pathCategory;
+
+    // Pack-level hints are intentionally weaker than model-name hints.
+    if (containsAnyPhrase(
+            pathText,
+            {
+                "nature kit",
+                "nature",
+                "forest",
+                "terrain"
+            }))
+    {
+        return "Environment";
+    }
+
+    if (containsAnyPhrase(
+            pathText,
+            {
+                "road kit",
+                "city roads",
+                "traffic"
+            }))
+    {
+        return "Road Infrastructure";
+    }
+
+    if (containsAnyPhrase(
+            pathText,
+            {
+                "car kit",
+                "vehicle",
+                "racing kit"
+            }))
+    {
+        return "Vehicles";
+    }
+
+    if (containsAnyPhrase(
+            pathText,
+            {
+                "character",
+                "human",
+                "people"
+            }))
+    {
+        return "People";
+    }
+
+    if (containsAnyPhrase(
+            pathText,
+            {
+                "city kit",
+                "suburban",
+                "industrial",
+                "commercial",
+                "building"
+            }))
+    {
+        return "Buildings";
+    }
+
+    const std::string sidecarCategory=
+        canonicalCategory(
+            entry.category
+        );
+
+    if (!sidecarCategory.empty())
+        return sidecarCategory;
+
+    return "Props / Misc";
+}
+
+static void buildSearchText(
+    AssetLibraryEntry& entry)
+{
+    entry.searchText=
         lower(
             entry.displayName+
             " "+
@@ -193,40 +669,161 @@ static bool entryMatchesSearch(
             " "+
             entry.materialProfile+
             " "+
-            entry.relativePath
+            entry.relativePath+
+            " "+
+            entry.format+
+            " "+
+            entry.sourceUrl
         );
+}
+
+static bool searchTokenMatches(
+    const AssetLibraryEntry& entry,
+    const std::string& token)
+{
+    const std::size_t separator=
+        token.find(':');
+
+    if (separator!=
+        std::string::npos)
+    {
+        const std::string field=
+            token.substr(
+                0,
+                separator
+            );
+
+        const std::string value=
+            token.substr(
+                separator+1
+            );
+
+        if (value.empty())
+            return true;
+
+        if (field=="category" ||
+            field=="cat")
+        {
+            return
+                lower(entry.category).
+                    find(value)!=
+                std::string::npos;
+        }
+
+        if (field=="license" ||
+            field=="licence")
+        {
+            return
+                lower(entry.licenseName).
+                    find(value)!=
+                std::string::npos;
+        }
+
+        if (field=="author")
+        {
+            return
+                lower(entry.author).
+                    find(value)!=
+                std::string::npos;
+        }
+
+        if (field=="format")
+        {
+            return
+                lower(entry.format).
+                    find(value)!=
+                std::string::npos;
+        }
+
+        if (field=="source")
+        {
+            return
+                lower(entry.sourceUrl).
+                    find(value)!=
+                std::string::npos;
+        }
+    }
 
     return
-        haystack.find(query)!=
+        entry.searchText.find(token)!=
         std::string::npos;
 }
 
-static const char* categoryFilterName(
-    int index)
+static bool entryMatchesSearch(
+    const AssetLibraryEntry& entry,
+    const char* search)
 {
-    static const char* names[]={
-        "All",
-        "Vehicles",
-        "Road Infrastructure",
-        "Evidence",
-        "Environment",
-        "People",
-        "Street Furniture",
-        "Forensic Markers",
-        "Imported"
-    };
+    if (!search ||
+        !search[0])
+    {
+        return true;
+    }
 
-    index=
-        std::max(
-            0,
-            std::min(
-                8,
-                index
-            )
-        );
+    std::istringstream stream(
+        lower(search)
+    );
 
-    return names[index];
+    std::string token;
+
+    while (stream>>token)
+    {
+        if (!searchTokenMatches(
+                entry,
+                token))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
+
+static constexpr std::array<
+    const char*,
+    11
+> kCategories={
+    "All",
+    "Vehicles",
+    "People",
+    "Road Infrastructure",
+    "Environment",
+    "Buildings",
+    "Evidence",
+    "Street Furniture",
+    "Forensic Markers",
+    "Props / Misc",
+    "Imported"
+};
+
+static constexpr std::array<
+    const char*,
+    5
+> kLicenseFilters={
+    "All licences",
+    "CC0",
+    "CC BY",
+    "Other licensed",
+    "Unspecified"
+};
+
+static constexpr std::array<
+    const char*,
+    3
+> kFormatFilters={
+    "All formats",
+    "GLB",
+    "glTF"
+};
+
+static constexpr std::array<
+    const char*,
+    4
+> kSortModes={
+    "Name A-Z",
+    "Category",
+    "Size: largest",
+    "Size: smallest"
+};
 
 static bool entryMatchesCategory(
     const AssetLibraryEntry& entry,
@@ -235,13 +832,102 @@ static bool entryMatchesCategory(
     if (categoryIndex<=0)
         return true;
 
-    return
-        lower(entry.category)==
-        lower(
-            categoryFilterName(
+    categoryIndex=
+        std::max(
+            0,
+            std::min(
+                static_cast<int>(
+                    kCategories.size()
+                )-1,
                 categoryIndex
             )
         );
+
+    return
+        entry.category==
+        kCategories[
+            static_cast<std::size_t>(
+                categoryIndex
+            )
+        ];
+}
+
+static bool entryMatchesLicense(
+    const AssetLibraryEntry& entry,
+    int licenseIndex)
+{
+    if (licenseIndex<=0)
+        return true;
+
+    const std::string license=
+        lower(
+            entry.licenseName
+        );
+
+    const bool unspecified=
+        trim(license).empty() ||
+        license=="unspecified";
+
+    const bool cc0=
+        license.find("cc0")!=
+            std::string::npos ||
+        license.find(
+            "creative commons zero"
+        )!=
+            std::string::npos;
+
+    const bool ccBy=
+        !cc0 &&
+        (
+            license.find("cc by")!=
+                std::string::npos ||
+            license.find(
+                "creative commons attribution"
+            )!=
+                std::string::npos
+        );
+
+    switch (licenseIndex)
+    {
+        case 1:
+            return cc0;
+
+        case 2:
+            return ccBy;
+
+        case 3:
+            return
+                !unspecified &&
+                !cc0 &&
+                !ccBy;
+
+        case 4:
+            return unspecified;
+
+        default:
+            return true;
+    }
+}
+
+static bool entryMatchesFormat(
+    const AssetLibraryEntry& entry,
+    int formatIndex)
+{
+    if (formatIndex<=0)
+        return true;
+
+    const std::string format=
+        lower(
+            entry.format
+        );
+
+    if (formatIndex==1)
+        return format=="glb";
+
+    if (formatIndex==2)
+        return format=="gltf";
+
+    return true;
 }
 
 static const char* kindName(
@@ -269,27 +955,30 @@ static bool categoryRecommendedFor(
     const AssetLibraryEntry& entry,
     SceneEntityKind kind)
 {
-    const std::string category=
-        lower(entry.category);
+    const std::string& category=
+        entry.category;
 
     switch (kind)
     {
         case SceneEntityKind::Vehicle:
             return
-                category=="vehicles";
+                category=="Vehicles";
 
         case SceneEntityKind::Evidence:
             return
-                category=="evidence" ||
-                category=="forensic markers";
+                category=="Evidence" ||
+                category=="Forensic Markers" ||
+                category=="Props / Misc";
 
         case SceneEntityKind::Environment:
             return
-                category=="road infrastructure" ||
-                category=="environment" ||
-                category=="street furniture" ||
-                category=="people" ||
-                category=="imported";
+                category=="Road Infrastructure" ||
+                category=="Environment" ||
+                category=="Buildings" ||
+                category=="Street Furniture" ||
+                category=="People" ||
+                category=="Props / Misc" ||
+                category=="Imported";
 
         case SceneEntityKind::Measurement:
             return false;
@@ -365,7 +1054,9 @@ static void loadSidecar(
 
     std::string line;
 
-    while (std::getline(input,line))
+    while (std::getline(
+        input,
+        line))
     {
         line=trim(line);
 
@@ -440,6 +1131,359 @@ static std::filesystem::path libraryRoot(
         "library";
 }
 
+static bool entryPassesFilters(
+    const AssetLibraryEntry& entry,
+    const AssetLibraryState& state,
+    const SceneEntityRecord* selectedEntity)
+{
+    if (!entryMatchesSearch(
+            entry,
+            state.search))
+    {
+        return false;
+    }
+
+    if (!entryMatchesCategory(
+            entry,
+            state.categoryIndex))
+    {
+        return false;
+    }
+
+    if (!entryMatchesLicense(
+            entry,
+            state.licenseIndex))
+    {
+        return false;
+    }
+
+    if (!entryMatchesFormat(
+            entry,
+            state.formatIndex))
+    {
+        return false;
+    }
+
+    if (state.compatibleOnly)
+    {
+        if (!selectedEntity)
+            return false;
+
+        if (!categoryRecommendedFor(
+                entry,
+                selectedEntity->kind))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static void sortVisibleIndices(
+    std::vector<int>& indices,
+    const std::vector<AssetLibraryEntry>& entries,
+    int sortIndex)
+{
+    std::sort(
+        indices.begin(),
+        indices.end(),
+        [&](int left,
+            int right)
+        {
+            const auto& a=
+                entries[
+                    static_cast<
+                        std::size_t
+                    >(left)
+                ];
+
+            const auto& b=
+                entries[
+                    static_cast<
+                        std::size_t
+                    >(right)
+                ];
+
+            switch (sortIndex)
+            {
+                case 1:
+                    if (a.category!=b.category)
+                        return
+                            a.category<
+                            b.category;
+
+                    return
+                        a.displayName<
+                        b.displayName;
+
+                case 2:
+                    if (a.fileSizeBytes!=
+                        b.fileSizeBytes)
+                    {
+                        return
+                            a.fileSizeBytes>
+                            b.fileSizeBytes;
+                    }
+
+                    return
+                        a.displayName<
+                        b.displayName;
+
+                case 3:
+                    if (a.fileSizeBytes!=
+                        b.fileSizeBytes)
+                    {
+                        return
+                            a.fileSizeBytes<
+                            b.fileSizeBytes;
+                    }
+
+                    return
+                        a.displayName<
+                        b.displayName;
+
+                default:
+                    return
+                        a.displayName<
+                        b.displayName;
+            }
+        }
+    );
+}
+
+static std::size_t categoryCount(
+    const std::vector<AssetLibraryEntry>& entries,
+    const char* category)
+{
+    if (!category ||
+        std::string(category)=="All")
+    {
+        return entries.size();
+    }
+
+    return
+        static_cast<std::size_t>(
+            std::count_if(
+                entries.begin(),
+                entries.end(),
+                [&](const AssetLibraryEntry& entry)
+                {
+                    return
+                        entry.category==
+                        category;
+                }
+            )
+        );
+}
+
+static void drawCategoryCombo(
+    AssetLibraryState& state)
+{
+    state.categoryIndex=
+        std::max(
+            0,
+            std::min(
+                static_cast<int>(
+                    kCategories.size()
+                )-1,
+                state.categoryIndex
+            )
+        );
+
+    const char* preview=
+        kCategories[
+            static_cast<std::size_t>(
+                state.categoryIndex
+            )
+        ];
+
+    if (ImGui::BeginCombo(
+            "##AssetCategory",
+            preview))
+    {
+        for (std::size_t i=0;
+             i<kCategories.size();
+             ++i)
+        {
+            const bool selected=
+                state.categoryIndex==
+                static_cast<int>(i);
+
+            const std::size_t count=
+                categoryCount(
+                    state.entries,
+                    kCategories[i]
+                );
+
+            char label[96]{};
+
+            std::snprintf(
+                label,
+                sizeof(label),
+                "%s (%zu)",
+                kCategories[i],
+                count
+            );
+
+            if (ImGui::Selectable(
+                    label,
+                    selected))
+            {
+                state.categoryIndex=
+                    static_cast<int>(i);
+            }
+
+            if (selected)
+                ImGui::SetItemDefaultFocus();
+        }
+
+        ImGui::EndCombo();
+    }
+}
+
+static void drawPreview(
+    AssetLibraryState& state,
+    const AssetLibraryEntry& entry,
+    const std::filesystem::path& assetRoot)
+{
+    ImGui::TextDisabled(
+        "MODEL PREVIEW"
+    );
+
+    const float previewWidth=
+        std::max(
+            180.0f,
+            ImGui::GetContentRegionAvail().x
+        );
+
+    const float previewHeight=
+        std::max(
+            170.0f,
+            std::min(
+                260.0f,
+                previewWidth*0.62f
+            )
+        );
+
+    ImGui::BeginChild(
+        "##AssetModelPreview",
+        ImVec2(
+            previewWidth,
+            previewHeight
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse
+    );
+
+    if (!state.autoPreview)
+    {
+        ImGui::TextDisabled(
+            "Preview paused."
+        );
+
+        ImGui::EndChild();
+        return;
+    }
+
+    if (state.previewAssetId!=
+        entry.assetId)
+    {
+        gAssetPreviewRenderer.
+            clearAssetCache();
+
+        state.previewAssetId=
+            entry.assetId;
+    }
+
+    RoadSafeCase previewCase;
+
+    SceneEntityRecord previewEntity;
+    previewEntity.id=
+        "ASSET-PREVIEW";
+    previewEntity.legacyId=1;
+    previewEntity.kind=
+        SceneEntityKind::Environment;
+    previewEntity.recordIndex=-1;
+    previewEntity.name=
+        entry.displayName;
+    previewEntity.asset.assetId=
+        entry.assetId;
+    previewEntity.asset.sourcePath=
+        entry.relativePath;
+    previewEntity.asset.materialProfile=
+        entry.materialProfile;
+    previewEntity.asset.metersPerUnit=
+        entry.metersPerUnit;
+    previewEntity.asset.pbrEnabled=true;
+    previewEntity.asset.arReady=
+        entry.arReady;
+    previewEntity.active=true;
+    previewEntity.visible=true;
+    previewEntity.locked=false;
+
+    previewCase.sceneEntities.push_back(
+        previewEntity
+    );
+
+    RenderSettings settings;
+    settings.width=
+        std::max(
+            1,
+            static_cast<int>(
+                previewWidth-2.0f
+            )
+        );
+    settings.height=
+        std::max(
+            1,
+            static_cast<int>(
+                previewHeight-2.0f
+            )
+        );
+    settings.fovDegrees=48.0f;
+    settings.viewPreset=0;
+    settings.renderMode=0;
+    settings.selectedEntityId=0;
+
+    const bool rendered=
+        gAssetPreviewRenderer.render(
+            previewCase,
+            settings,
+            assetRoot
+        );
+
+    const GLuint texture=
+        rendered
+            ? gAssetPreviewRenderer.
+                colorTexture()
+            : 0;
+
+    if (texture!=0)
+    {
+        ImGui::Image(
+            (ImTextureID)(intptr_t)texture,
+            ImVec2(
+                previewWidth-2.0f,
+                previewHeight-2.0f
+            ),
+            ImVec2(0.0f,1.0f),
+            ImVec2(1.0f,0.0f)
+        );
+    }
+    else
+    {
+        ImGui::TextWrapped(
+            "Preview unavailable: %s",
+            gAssetPreviewRenderer.
+                status().c_str()
+        );
+    }
+
+    ImGui::EndChild();
+}
+
 } // namespace
 
 void refreshAssetLibrary(
@@ -448,6 +1492,10 @@ void refreshAssetLibrary(
 {
     state.entries.clear();
     state.selectedIndex=-1;
+    state.previewAssetId.clear();
+
+    gAssetPreviewRenderer.
+        clearAssetCache();
 
     const auto root=
         libraryRoot(
@@ -460,10 +1508,11 @@ void refreshAssetLibrary(
             root,
             error))
     {
-        std::filesystem::create_directories(
-            root,
-            error
-        );
+        std::filesystem::
+            create_directories(
+                root,
+                error
+            );
     }
 
     if (error)
@@ -476,28 +1525,37 @@ void refreshAssetLibrary(
         return;
     }
 
-    std::filesystem::recursive_directory_iterator iterator(
-        root,
-        std::filesystem::directory_options::
-            skip_permission_denied,
-        error
-    );
+    std::filesystem::
+        recursive_directory_iterator iterator(
+            root,
+            std::filesystem::
+                directory_options::
+                skip_permission_denied,
+            error
+        );
 
-    const std::filesystem::recursive_directory_iterator end;
+    const std::filesystem::
+        recursive_directory_iterator end;
 
     for (;
-         !error && iterator!=end;
+         !error &&
+         iterator!=end;
          iterator.increment(error))
     {
-        if (!iterator->is_regular_file(error))
+        if (!iterator->
+                is_regular_file(error))
+        {
             continue;
+        }
 
         const auto filePath=
             iterator->path();
 
         const std::string extension=
             lower(
-                filePath.extension().string()
+                filePath.
+                    extension().
+                    string()
             );
 
         if (extension!=".glb" &&
@@ -530,23 +1588,13 @@ void refreshAssetLibrary(
 
         entry.displayName=
             titleFromStem(
-                filePath.stem().string()
+                filePath.
+                    stem().
+                    string()
             );
 
         entry.category=
-            categoryFromFolder(
-                std::filesystem::relative(
-                    filePath,
-                    root,
-                    error
-                )
-            );
-
-        if (error)
-        {
-            error.clear();
-            entry.category="Imported";
-        }
+            "";
 
         entry.assetId=
             "local:"+
@@ -555,11 +1603,17 @@ void refreshAssetLibrary(
         entry.materialProfile=
             "Metallic-Roughness PBR";
 
+        entry.format=
+            extension==".glb"
+                ? "GLB"
+                : "glTF";
+
         entry.fileSizeBytes=
-            std::filesystem::file_size(
-                filePath,
-                error
-            );
+            std::filesystem::
+                file_size(
+                    filePath,
+                    error
+                );
 
         if (error)
         {
@@ -568,12 +1622,25 @@ void refreshAssetLibrary(
         }
 
         auto sidecar=filePath;
+
         sidecar.replace_extension(
             ".roadsafeasset"
         );
 
         loadSidecar(
             sidecar,
+            entry
+        );
+
+        // Do not blindly trust bulk-generated sidecar categories.
+        // Model/path inference fixes tree/building/road/etc. assets that
+        // were previously shown as Vehicles.
+        entry.category=
+            inferAssetCategory(
+                entry
+            );
+
+        buildSearchText(
             entry
         );
 
@@ -588,11 +1655,6 @@ void refreshAssetLibrary(
         [](const AssetLibraryEntry& a,
            const AssetLibraryEntry& b)
         {
-            if (a.category!=b.category)
-                return
-                    a.category<
-                    b.category;
-
             return
                 a.displayName<
                 b.displayName;
@@ -634,8 +1696,8 @@ void drawAssetLibrary(
 
     ImGui::SetNextWindowSize(
         ImVec2(
-            1080.0f,
-            650.0f
+            1180.0f,
+            720.0f
         ),
         ImGuiCond_FirstUseEver
     );
@@ -648,6 +1710,11 @@ void drawAssetLibrary(
         ImGui::End();
         return;
     }
+
+    SceneEntityRecord* selectedEntity=
+        caseData.findSceneEntity(
+            selectedEntityId
+        );
 
     ImGui::TextDisabled(
         "ROADSAFE ASSET LIBRARY"
@@ -665,14 +1732,17 @@ void drawAssetLibrary(
     ImGui::SameLine();
 
     ImGui::TextDisabled(
-        "| Free/licensed assets keep source + licence metadata"
+        "| native GLB/glTF preview + provenance-aware assignment"
     );
 
     ImGui::Separator();
 
     if (ImGui::Button(
             "REFRESH",
-            ImVec2(82.0f,28.0f)))
+            ImVec2(
+                88.0f,
+                30.0f
+            )))
     {
         refreshAssetLibrary(
             state,
@@ -685,70 +1755,222 @@ void drawAssetLibrary(
     ImGui::SameLine();
 
     ImGui::SetNextItemWidth(
-        300.0f
+        std::max(
+            220.0f,
+            ImGui::GetContentRegionAvail().x-
+                98.0f
+        )
     );
 
     ImGui::InputTextWithHint(
         "##AssetLibrarySearch",
-        "Search models, categories, licence...",
+        "Search all fields...  e.g. tree  category:environment  license:cc0  author:kenney  format:glb",
         state.search,
         sizeof(state.search)
+    );
+
+    ImGui::Spacing();
+
+    ImGui::SetNextItemWidth(
+        190.0f
+    );
+    drawCategoryCombo(
+        state
     );
 
     ImGui::SameLine();
 
     ImGui::SetNextItemWidth(
-        190.0f
+        145.0f
     );
-
-    const char* categories[]={
-        "All",
-        "Vehicles",
-        "Road Infrastructure",
-        "Evidence",
-        "Environment",
-        "People",
-        "Street Furniture",
-        "Forensic Markers",
-        "Imported"
-    };
-
     ImGui::Combo(
-        "##AssetCategory",
-        &state.categoryIndex,
-        categories,
-        9
+        "##AssetLicenseFilter",
+        &state.licenseIndex,
+        kLicenseFilters.data(),
+        static_cast<int>(
+            kLicenseFilters.size()
+        )
     );
 
     ImGui::SameLine();
 
+    ImGui::SetNextItemWidth(
+        125.0f
+    );
+    ImGui::Combo(
+        "##AssetFormatFilter",
+        &state.formatIndex,
+        kFormatFilters.data(),
+        static_cast<int>(
+            kFormatFilters.size()
+        )
+    );
+
+    ImGui::SameLine();
+
+    ImGui::SetNextItemWidth(
+        145.0f
+    );
+    ImGui::Combo(
+        "##AssetSortMode",
+        &state.sortIndex,
+        kSortModes.data(),
+        static_cast<int>(
+            kSortModes.size()
+        )
+    );
+
+    ImGui::SameLine();
+
+    ImGui::BeginDisabled(
+        selectedEntity==nullptr
+    );
+
+    ImGui::Checkbox(
+        "Compatible only",
+        &state.compatibleOnly
+    );
+
+    ImGui::EndDisabled();
+
+    ImGui::SameLine();
+
+    if (ImGui::Button(
+            "CLEAR FILTERS",
+            ImVec2(
+                116.0f,
+                28.0f
+            )))
+    {
+        state.search[0]=0;
+        state.categoryIndex=0;
+        state.licenseIndex=0;
+        state.formatIndex=0;
+        state.sortIndex=0;
+        state.compatibleOnly=false;
+    }
+
+    std::vector<int> visibleIndices;
+    visibleIndices.reserve(
+        state.entries.size()
+    );
+
+    for (std::size_t index=0;
+         index<state.entries.size();
+         ++index)
+    {
+        if (entryPassesFilters(
+                state.entries[index],
+                state,
+                selectedEntity))
+        {
+            visibleIndices.push_back(
+                static_cast<int>(
+                    index
+                )
+            );
+        }
+    }
+
+    sortVisibleIndices(
+        visibleIndices,
+        state.entries,
+        state.sortIndex
+    );
+
+    const bool selectedVisible=
+        state.selectedIndex>=0 &&
+        std::find(
+            visibleIndices.begin(),
+            visibleIndices.end(),
+            state.selectedIndex
+        )!=
+        visibleIndices.end();
+
+    if (!selectedVisible)
+    {
+        state.selectedIndex=
+            visibleIndices.empty()
+                ? -1
+                : visibleIndices.front();
+
+        state.previewAssetId.clear();
+    }
+
+    ImGui::Spacing();
+
     ImGui::TextDisabled(
-        "%s",
+        "%zu shown / %zu installed",
+        visibleIndices.size(),
+        state.entries.size()
+    );
+
+    if (state.compatibleOnly &&
+        selectedEntity)
+    {
+        ImGui::SameLine();
+
+        ImGui::TextDisabled(
+            "| compatible with %s (%s)",
+            selectedEntity->
+                name.c_str(),
+            kindName(
+                selectedEntity->kind
+            )
+        );
+    }
+
+    ImGui::SameLine();
+
+    ImGui::TextDisabled(
+        "| %s",
         state.status.c_str()
     );
 
     ImGui::Spacing();
 
+    const float totalWidth=
+        ImGui::GetContentRegionAvail().x;
+
     const float detailsWidth=
         std::min(
-            390.0f,
+            430.0f,
             std::max(
-                300.0f,
-                ImGui::GetContentRegionAvail().x*
-                0.36f
+                340.0f,
+                totalWidth*0.38f
             )
+        );
+
+    const float browserWidth=
+        std::max(
+            360.0f,
+            totalWidth-
+            detailsWidth-
+            8.0f
         );
 
     ImGui::BeginChild(
         "##AssetLibraryBrowser",
         ImVec2(
-            -detailsWidth-8.0f,
+            browserWidth,
             0.0f
         ),
         true
     );
 
-    if (ImGui::BeginTable(
+    if (visibleIndices.empty())
+    {
+        ImGui::TextDisabled(
+            "No assets match the current filters."
+        );
+
+        ImGui::Spacing();
+
+        ImGui::TextWrapped(
+            "Try clearing filters or searching fewer terms."
+        );
+    }
+    else if (ImGui::BeginTable(
         "##AssetLibraryTable",
         5,
         ImGuiTableFlags_RowBg |
@@ -756,7 +1978,10 @@ void drawAssetLibrary(
         ImGuiTableFlags_ScrollY |
         ImGuiTableFlags_Resizable |
         ImGuiTableFlags_SizingStretchProp,
-        ImVec2(0.0f,0.0f)))
+        ImVec2(
+            0.0f,
+            0.0f
+        )))
     {
         ImGui::TableSetupScrollFreeze(
             0,
@@ -766,7 +1991,7 @@ void drawAssetLibrary(
         ImGui::TableSetupColumn(
             "NAME",
             ImGuiTableColumnFlags_WidthStretch,
-            2.2f
+            2.1f
         );
 
         ImGui::TableSetupColumn(
@@ -778,13 +2003,13 @@ void drawAssetLibrary(
         ImGui::TableSetupColumn(
             "LICENCE",
             ImGuiTableColumnFlags_WidthStretch,
-            1.2f
+            1.1f
         );
 
         ImGui::TableSetupColumn(
             "FORMAT",
             ImGuiTableColumnFlags_WidthFixed,
-            65.0f
+            64.0f
         );
 
         ImGui::TableSetupColumn(
@@ -795,33 +2020,28 @@ void drawAssetLibrary(
 
         ImGui::TableHeadersRow();
 
-        for (std::size_t index=0;
-             index<state.entries.size();
-             ++index)
+        for (int index :
+             visibleIndices)
         {
             const auto& entry=
-                state.entries[index];
-
-            if (!entryMatchesSearch(
-                    entry,
-                    state.search) ||
-                !entryMatchesCategory(
-                    entry,
-                    state.categoryIndex))
-            {
-                continue;
-            }
+                state.entries[
+                    static_cast<
+                        std::size_t
+                    >(index)
+                ];
 
             ImGui::TableNextRow();
 
-            ImGui::TableSetColumnIndex(0);
+            ImGui::TableSetColumnIndex(
+                0
+            );
 
             const bool selected=
                 state.selectedIndex==
-                static_cast<int>(index);
+                index;
 
             ImGui::PushID(
-                static_cast<int>(index)
+                index
             );
 
             if (ImGui::Selectable(
@@ -829,20 +2049,30 @@ void drawAssetLibrary(
                     selected,
                     ImGuiSelectableFlags_SpanAllColumns))
             {
-                state.selectedIndex=
-                    static_cast<int>(
-                        index
-                    );
+                if (state.selectedIndex!=
+                    index)
+                {
+                    state.selectedIndex=
+                        index;
+
+                    state.previewAssetId.
+                        clear();
+                }
             }
 
             ImGui::PopID();
 
-            ImGui::TableSetColumnIndex(1);
+            ImGui::TableSetColumnIndex(
+                1
+            );
+
             ImGui::TextUnformatted(
                 entry.category.c_str()
             );
 
-            ImGui::TableSetColumnIndex(2);
+            ImGui::TableSetColumnIndex(
+                2
+            );
 
             ImGui::TextUnformatted(
                 entry.licenseName.empty()
@@ -850,18 +2080,17 @@ void drawAssetLibrary(
                     : entry.licenseName.c_str()
             );
 
-            ImGui::TableSetColumnIndex(3);
-
-            const std::filesystem::path source(
-                entry.relativePath
+            ImGui::TableSetColumnIndex(
+                3
             );
 
             ImGui::TextUnformatted(
-                source.extension().string().
-                    c_str()
+                entry.format.c_str()
             );
 
-            ImGui::TableSetColumnIndex(4);
+            ImGui::TableSetColumnIndex(
+                4
+            );
 
             const std::string sizeText=
                 formatBytes(
@@ -889,11 +2118,6 @@ void drawAssetLibrary(
         true
     );
 
-    SceneEntityRecord* selectedEntity=
-        caseData.findSceneEntity(
-            selectedEntityId
-        );
-
     ImGui::TextDisabled(
         "ASSIGNMENT TARGET"
     );
@@ -902,7 +2126,8 @@ void drawAssetLibrary(
     {
         ImGui::Text(
             "%s",
-            selectedEntity->name.c_str()
+            selectedEntity->
+                name.c_str()
         );
 
         ImGui::SameLine();
@@ -936,8 +2161,8 @@ void drawAssetLibrary(
         ImGui::Spacing();
 
         ImGui::TextWrapped(
-            "RoadSafe scans assets/library recursively for .glb and .gltf files. "
-            "Optional .roadsafeasset sidecars provide licence, source, scale and attribution metadata."
+            "Search is case-insensitive and supports multiple terms. "
+            "Field filters are also available: category:, license:, author:, format:, source:."
         );
 
         ImGui::EndChild();
@@ -947,10 +2172,23 @@ void drawAssetLibrary(
 
     const auto& entry=
         state.entries[
-            static_cast<std::size_t>(
-                state.selectedIndex
-            )
+            static_cast<
+                std::size_t
+            >(state.selectedIndex)
         ];
+
+    ImGui::Checkbox(
+        "Live preview",
+        &state.autoPreview
+    );
+
+    drawPreview(
+        state,
+        entry,
+        assetRoot
+    );
+
+    ImGui::Spacing();
 
     ImGui::Text(
         "%s",
@@ -964,14 +2202,18 @@ void drawAssetLibrary(
 
     ImGui::Spacing();
 
-    ImGui::TextDisabled("Category");
+    ImGui::TextDisabled(
+        "Category"
+    );
     ImGui::SameLine();
     ImGui::Text(
         "%s",
         entry.category.c_str()
     );
 
-    ImGui::TextDisabled("Licence");
+    ImGui::TextDisabled(
+        "Licence"
+    );
     ImGui::SameLine();
     ImGui::Text(
         "%s",
@@ -980,7 +2222,9 @@ void drawAssetLibrary(
             : entry.licenseName.c_str()
     );
 
-    ImGui::TextDisabled("Author");
+    ImGui::TextDisabled(
+        "Author"
+    );
     ImGui::SameLine();
     ImGui::Text(
         "%s",
@@ -989,7 +2233,18 @@ void drawAssetLibrary(
             : entry.author.c_str()
     );
 
-    ImGui::TextDisabled("Material");
+    ImGui::TextDisabled(
+        "Format"
+    );
+    ImGui::SameLine();
+    ImGui::Text(
+        "%s",
+        entry.format.c_str()
+    );
+
+    ImGui::TextDisabled(
+        "Material"
+    );
     ImGui::SameLine();
     ImGui::Text(
         "%s",
@@ -998,14 +2253,18 @@ void drawAssetLibrary(
             : entry.materialProfile.c_str()
     );
 
-    ImGui::TextDisabled("Metric scale");
+    ImGui::TextDisabled(
+        "Metric scale"
+    );
     ImGui::SameLine();
     ImGui::Text(
         "%.4f m/unit",
         entry.metersPerUnit
     );
 
-    ImGui::TextDisabled("AR");
+    ImGui::TextDisabled(
+        "AR"
+    );
     ImGui::SameLine();
     ImGui::Text(
         "%s",
@@ -1017,6 +2276,7 @@ void drawAssetLibrary(
     if (!entry.sourceUrl.empty())
     {
         ImGui::Spacing();
+
         ImGui::TextDisabled(
             "Source URL"
         );
@@ -1028,7 +2288,10 @@ void drawAssetLibrary(
 
         if (ImGui::Button(
                 "COPY SOURCE URL",
-                ImVec2(148.0f,28.0f)))
+                ImVec2(
+                    148.0f,
+                    28.0f
+                )))
         {
             ImGui::SetClipboardText(
                 entry.sourceUrl.c_str()
@@ -1042,6 +2305,7 @@ void drawAssetLibrary(
     if (!entry.attribution.empty())
     {
         ImGui::Spacing();
+
         ImGui::TextDisabled(
             "Attribution"
         );
@@ -1066,36 +2330,49 @@ void drawAssetLibrary(
 
     if (ImGui::Button(
             "ASSIGN TO SELECTED",
-            ImVec2(174.0f,32.0f)))
+            ImVec2(
+                180.0f,
+                32.0f
+            )))
     {
-        selectedEntity->asset.assetId=
+        selectedEntity->
+            asset.assetId=
             entry.assetId;
 
-        selectedEntity->asset.sourcePath=
+        selectedEntity->
+            asset.sourcePath=
             entry.relativePath;
 
-        selectedEntity->asset.materialProfile=
+        selectedEntity->
+            asset.materialProfile=
             entry.materialProfile;
 
-        selectedEntity->asset.sourceUrl=
+        selectedEntity->
+            asset.sourceUrl=
             entry.sourceUrl;
 
-        selectedEntity->asset.author=
+        selectedEntity->
+            asset.author=
             entry.author;
 
-        selectedEntity->asset.licenseName=
+        selectedEntity->
+            asset.licenseName=
             entry.licenseName;
 
-        selectedEntity->asset.attribution=
+        selectedEntity->
+            asset.attribution=
             entry.attribution;
 
-        selectedEntity->asset.metersPerUnit=
+        selectedEntity->
+            asset.metersPerUnit=
             entry.metersPerUnit;
 
-        selectedEntity->asset.arReady=
+        selectedEntity->
+            asset.arReady=
             entry.arReady;
 
-        selectedEntity->asset.pbrEnabled=true;
+        selectedEntity->
+            asset.pbrEnabled=true;
 
         caseData.touch();
         renderer.clearAssetCache();
@@ -1118,7 +2395,7 @@ void drawAssetLibrary(
                 selectedEntity->kind
             );
 
-        ImGui::Spacing();
+        ImGui::SameLine();
 
         if (recommended)
         {
@@ -1129,7 +2406,7 @@ void drawAssetLibrary(
                     0.56f,
                     1.0f
                 ),
-                "Recommended category match"
+                "TYPE MATCH"
             );
         }
         else
@@ -1141,7 +2418,7 @@ void drawAssetLibrary(
                     0.24f,
                     1.0f
                 ),
-                "Category differs from selected scene type"
+                "TYPE MISMATCH"
             );
         }
 
@@ -1163,7 +2440,10 @@ void drawAssetLibrary(
 
             if (ImGui::Button(
                     "CLEAR ASSIGNMENT",
-                    ImVec2(148.0f,28.0f)))
+                    ImVec2(
+                        154.0f,
+                        28.0f
+                    )))
             {
                 selectedEntity->asset=
                     AssetReference{};
@@ -1179,6 +2459,11 @@ void drawAssetLibrary(
 
     ImGui::EndChild();
     ImGui::End();
+}
+
+void shutdownAssetLibraryPreviewRenderer()
+{
+    gAssetPreviewRenderer.shutdown();
 }
 
 } // namespace roadsafe

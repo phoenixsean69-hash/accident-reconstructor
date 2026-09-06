@@ -1,7 +1,10 @@
 ﻿#pragma once
 
 // ROADSAFE_ASSET_LIBRARY_V1
+// ROADSAFE_ASSET_LIBRARY_V2
 
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -25,6 +28,9 @@ struct AssetLibraryEntry
     std::string attribution;
     std::string materialProfile;
 
+    std::string format;
+    std::string searchText;
+
     float metersPerUnit=1.0f;
     bool arReady=true;
 
@@ -37,12 +43,20 @@ struct AssetLibraryState
     bool requestFocus=false;
     bool initialized=false;
 
+    bool compatibleOnly=false;
+    bool autoPreview=true;
+
     int selectedIndex=-1;
     int categoryIndex=0;
+    int licenseIndex=0;
+    int formatIndex=0;
+    int sortIndex=0;
 
-    char search[128]{};
+    char search[192]{};
 
     std::vector<AssetLibraryEntry> entries;
+
+    std::string previewAssetId;
 
     std::string status=
         "Asset Library ready";
@@ -58,5 +72,7 @@ void drawAssetLibrary(
     int selectedEntityId,
     RoadSafeRenderer& renderer,
     const std::filesystem::path& assetRoot);
+
+void shutdownAssetLibraryPreviewRenderer();
 
 } // namespace roadsafe
