@@ -2230,11 +2230,6 @@ static void drawEditorModeStrip();
 static bool gViewportFullscreen=false;
 static void drawViewportView()
 {
-    static bool viewportFullscreenRestorePending=false;
-    static bool viewportFullscreenRestoreWasDocked=false;
-    static ImGuiID viewportFullscreenRestoreDockId=0;
-    static ImVec2 viewportFullscreenRestorePos(0.0f,0.0f);
-    static ImVec2 viewportFullscreenRestoreSize(0.0f,0.0f);
     static int viewportMode=0;    // 0 = 2D, 1 = 3D, 2 = AR
     static int orthoView=0;       // 0 = Top, 1 = Front, 2 = Right
     static int renderMode=0;      // 0 = Lit, 1 = Wireframe, 2 = Analysis
@@ -2271,34 +2266,22 @@ static void drawViewportView()
     static int arDeviceProfile=0;
     static int selectedTool=0;
     static bool showGrid=true, showAxes=true;
-    if (viewportFullscreenRestorePending &&
-        !gViewportFullscreen)
-    {
-        if (viewportFullscreenRestoreWasDocked &&
-            viewportFullscreenRestoreDockId!=0)
-        {
-            ImGui::SetNextWindowDockID(
-                viewportFullscreenRestoreDockId,
-                ImGuiCond_Always
-            );
-        }
-        else
-        {
-            ImGui::SetNextWindowPos(
-                viewportFullscreenRestorePos,
-                ImGuiCond_Always
-            );
-
-            ImGui::SetNextWindowSize(
-                viewportFullscreenRestoreSize,
-                ImGuiCond_Always
-            );
-        }
-
-        viewportFullscreenRestorePending=false;
-    }
-
+        // SOVEREIGN_VIEWPORT_FULLSCREEN_REPAIR_V2
+    // Keep the original docked Viewport window registered.
+    // Full screen is a separate temporary window, so the dock tab
+    // is never removed from Case View / Evidence / Analysis.
     if (gViewportFullscreen)
+    {
+        ImGui::Begin(
+            "Viewport",
+            nullptr,
+            ImGuiWindowFlags_NoInputs |
+            ImGuiWindowFlags_NoBringToFrontOnFocus
+        );
+
+        ImGui::End();
+    }
+if (gViewportFullscreen)
     {
         const ImGuiViewport* mainViewport=
             ImGui::GetMainViewport();
@@ -2333,8 +2316,13 @@ static void drawViewportView()
               )
             : ImGuiWindowFlags_None;
 
+    const char* viewportWindowName=
+        gViewportFullscreen
+            ? "Viewport Full Screen###SovereignViewportFullscreen"
+            : "Viewport";
+
     ImGui::Begin(
-        "Viewport",
+        viewportWindowName,
         nullptr,
         viewportWindowFlags
     );
@@ -2345,36 +2333,10 @@ static void drawViewportView()
             if (enable==gViewportFullscreen)
                 return;
 
-            if (enable)
-            {
-                viewportFullscreenRestoreDockId=
-                    ImGui::GetWindowDockID();
-
-                viewportFullscreenRestoreWasDocked=
-                    viewportFullscreenRestoreDockId!=0;
-
-                viewportFullscreenRestorePos=
-                    ImGui::GetWindowPos();
-
-                viewportFullscreenRestoreSize=
-                    ImGui::GetWindowSize();
-
-                if (viewportFullscreenRestoreWasDocked)
-                {
-                    ImGui::DockContextQueueUndockWindow(
-                        ImGui::GetCurrentContext(),
-                        ImGui::GetCurrentWindow()
-                    );
-                }
-
-                gViewportFullscreen=true;
-                ImGui::SetWindowFocus("Viewport");
-            }
-            else
-            {
-                gViewportFullscreen=false;
-                viewportFullscreenRestorePending=true;
-            }
+            // Never undock the real Viewport.
+            // We only switch between the docked window and a
+            // separate fullscreen presentation window.
+            gViewportFullscreen=enable;
         };
 
     if (ImGui::IsKeyPressed(ImGuiKey_F11))
@@ -2388,6 +2350,58 @@ static void drawViewportView()
         ImGui::IsKeyPressed(ImGuiKey_Escape))
     {
         setViewportFullscreen(false);
+    }
+    if (gViewportFullscreen)
+    {
+        const ImVec2 savedCursor=
+            ImGui::GetCursorScreenPos();
+
+        const ImVec2 fullscreenWindowPos=
+            ImGui::GetWindowPos();
+
+        const ImVec2 fullscreenWindowSize=
+            ImGui::GetWindowSize();
+
+        constexpr float exitFullscreenWidth=
+            166.0f;
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                fullscreenWindowPos.x+
+                    fullscreenWindowSize.x-
+                    exitFullscreenWidth-
+                    14.0f,
+                fullscreenWindowPos.y+
+                    12.0f
+            )
+        );
+
+        if (editorButton(
+            "EXIT FULL SCREEN",
+            exitFullscreenWidth,
+            true,
+            true))
+        {
+            setViewportFullscreen(false);
+        }
+
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip(
+                "Exit %s full screen | F11 or Esc",
+                viewportMode==0
+                    ? "2D Plan"
+                    : (
+                        viewportMode==1
+                            ? "3D Scene"
+                            : "AR Preview"
+                      )
+            );
+        }
+
+        ImGui::SetCursorScreenPos(
+            savedCursor
+        );
     }
     if (!gViewportFullscreen)
     {beginEditorContextHeader(
@@ -3197,6 +3211,8 @@ static void drawViewportView()
     {
         ImGui::OpenPopup("##ViewportOverlaysPopup");
     }
+    if (!gViewportFullscreen)
+    {
     ImGui::SameLine(0.0f,10.0f);
 
     const char* viewportFullscreenButtonLabel=
@@ -3229,6 +3245,7 @@ static void drawViewportView()
                         : "AR Preview full screen"
                   )
         );
+    }
     }
 
     if (ImGui::BeginPopup("##ViewportOverlaysPopup"))
@@ -14618,6 +14635,7 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
+
 
 
 
