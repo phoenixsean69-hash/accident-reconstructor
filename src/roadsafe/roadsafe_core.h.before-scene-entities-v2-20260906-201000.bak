@@ -377,63 +377,10 @@ struct FootageRecord
     };
 };
 
-// ROADSAFE_SCENE_ENTITY_MODEL_V2
-enum class SceneEntityKind
-{
-    Environment=0,
-    Vehicle,
-    Evidence,
-    Measurement
-};
-
-struct SceneEntityRecord
-{
-    // Stable RoadSafe scene identity.
-    std::string id;
-
-    // Temporary compatibility ID for the current editor shell.
-    // IDs 1..9 map to the existing starter scene until the
-    // Outliner becomes fully dynamic.
-    int legacyId=0;
-
-    SceneEntityKind kind=SceneEntityKind::Environment;
-
-    // Index into the corresponding RoadSafe domain collection:
-    // vehicles / evidence / measurements. Environment entities
-    // use -1.
-    int recordIndex=-1;
-
-    std::string name;
-
-    std::array<float,3> position{
-        0.0f,
-        0.0f,
-        0.0f
-    };
-
-    std::array<float,3> rotationDegrees{
-        0.0f,
-        0.0f,
-        0.0f
-    };
-
-    std::array<float,3> scale{
-        1.0f,
-        1.0f,
-        1.0f
-    };
-
-    bool active=true;
-    bool visible=true;
-    bool locked=false;
-};
 struct RoadSafeCase
 {
     CaseIdentity identity;
     SceneIntake scene;
-
-    // Scene graph / Outliner records.
-    std::vector<SceneEntityRecord> sceneEntities;
 
     std::vector<SourceArchiveRecord> sourceArchive;
     std::vector<EvidenceRecord> evidence;
@@ -452,35 +399,6 @@ struct RoadSafeCase
     std::uint64_t revision=0;
     std::uint64_t nextSequence=1;
 
-    SceneEntityRecord* findSceneEntity(
-        int legacyEntityId)
-    {
-        for (auto& entity : sceneEntities)
-        {
-            if (entity.active &&
-                entity.legacyId==legacyEntityId)
-            {
-                return &entity;
-            }
-        }
-
-        return nullptr;
-    }
-
-    const SceneEntityRecord* findSceneEntity(
-        int legacyEntityId) const
-    {
-        for (const auto& entity : sceneEntities)
-        {
-            if (entity.active &&
-                entity.legacyId==legacyEntityId)
-            {
-                return &entity;
-            }
-        }
-
-        return nullptr;
-    }
     void touch()
     {
         ++revision;
@@ -516,5 +434,4 @@ inline const char* textOr(
 }
 
 } // namespace roadsafe
-
 

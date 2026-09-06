@@ -198,104 +198,6 @@ static void initializeRoadSafeEditorRecords()
     gRoadSafeCase.measurements.push_back(distance);
     gRoadSafeCase.measurements.push_back(angle);
 
-    // ROADSAFE_SCENE_ENTITY_BINDING_V2
-    if (gRoadSafeCase.sceneEntities.empty())
-    {
-        const auto addSceneEntity=
-            [](
-                int legacyId,
-                const char* id,
-                roadsafe::SceneEntityKind kind,
-                int recordIndex,
-                const char* name,
-                bool locked=false)
-            {
-                roadsafe::SceneEntityRecord entity;
-                entity.id=id;
-                entity.legacyId=legacyId;
-                entity.kind=kind;
-                entity.recordIndex=recordIndex;
-                entity.name=name;
-                entity.locked=locked;
-
-                gRoadSafeCase.sceneEntities.push_back(
-                    entity
-                );
-            };
-
-        addSceneEntity(
-            1,
-            "SCN-0001",
-            roadsafe::SceneEntityKind::Environment,
-            -1,
-            "Ground Plane"
-        );
-
-        addSceneEntity(
-            2,
-            "SCN-0002",
-            roadsafe::SceneEntityKind::Environment,
-            -1,
-            "Road Surface",
-            true
-        );
-
-        addSceneEntity(
-            3,
-            "SCN-0003",
-            roadsafe::SceneEntityKind::Vehicle,
-            0,
-            "Vehicle A"
-        );
-
-        addSceneEntity(
-            4,
-            "SCN-0004",
-            roadsafe::SceneEntityKind::Vehicle,
-            1,
-            "Vehicle B"
-        );
-
-        addSceneEntity(
-            5,
-            "SCN-0005",
-            roadsafe::SceneEntityKind::Evidence,
-            0,
-            "Skid Mark 01"
-        );
-
-        addSceneEntity(
-            6,
-            "SCN-0006",
-            roadsafe::SceneEntityKind::Evidence,
-            1,
-            "Marker 01"
-        );
-
-        addSceneEntity(
-            7,
-            "SCN-0007",
-            roadsafe::SceneEntityKind::Evidence,
-            2,
-            "Debris Field 01"
-        );
-
-        addSceneEntity(
-            8,
-            "SCN-0008",
-            roadsafe::SceneEntityKind::Measurement,
-            0,
-            "Distance 01"
-        );
-
-        addSceneEntity(
-            9,
-            "SCN-0009",
-            roadsafe::SceneEntityKind::Measurement,
-            1,
-            "Angle 01"
-        );
-    }
     // Keep generated IDs safely beyond the seeded records.
     gRoadSafeCase.nextSequence=
         std::max<std::uint64_t>(
@@ -5613,146 +5515,22 @@ static bool gSovereignEntityLocked[10]=
     false  // Angle 01
 };
 
-static roadsafe::SceneEntityRecord* roadSafeSceneEntity(
-    int entityId)
-{
-    return
-        gRoadSafeCase.findSceneEntity(
-            entityId
-        );
-}
-
-static const roadsafe::SceneEntityRecord*
-roadSafeSceneEntityConst(
-    int entityId)
-{
-    return
-        gRoadSafeCase.findSceneEntity(
-            entityId
-        );
-}
-
-static bool* roadSafeEntityVisiblePtr(
-    int entityId)
-{
-    if (auto* entity=
-            roadSafeSceneEntity(entityId))
-    {
-        return &entity->visible;
-    }
-
-    return
-        &gSovereignEntityVisible[
-            std::max(
-                0,
-                std::min(9,entityId)
-            )
-        ];
-}
-
-static bool* roadSafeEntityLockedPtr(
-    int entityId)
-{
-    if (auto* entity=
-            roadSafeSceneEntity(entityId))
-    {
-        return &entity->locked;
-    }
-
-    return
-        &gSovereignEntityLocked[
-            std::max(
-                0,
-                std::min(9,entityId)
-            )
-        ];
-}
-
-static float* roadSafeEntityPositionPtr(
-    int entityId)
-{
-    static std::array<float,3> fallback{
-        0.0f,0.0f,0.0f
-    };
-
-    if (auto* entity=
-            roadSafeSceneEntity(entityId))
-    {
-        return entity->position.data();
-    }
-
-    return fallback.data();
-}
-
-static float* roadSafeEntityRotationPtr(
-    int entityId)
-{
-    static std::array<float,3> fallback{
-        0.0f,0.0f,0.0f
-    };
-
-    if (auto* entity=
-            roadSafeSceneEntity(entityId))
-    {
-        return entity->rotationDegrees.data();
-    }
-
-    return fallback.data();
-}
-
-static float* roadSafeEntityScalePtr(
-    int entityId)
-{
-    static std::array<float,3> fallback{
-        1.0f,1.0f,1.0f
-    };
-
-    if (auto* entity=
-            roadSafeSceneEntity(entityId))
-    {
-        return entity->scale.data();
-    }
-
-    return fallback.data();
-}
-
-static std::size_t roadSafeActiveSceneEntityCount()
-{
-    std::size_t count=0;
-
-    for (const auto& entity :
-         gRoadSafeCase.sceneEntities)
-    {
-        if (entity.active)
-            ++count;
-    }
-
-    return count;
-}
 static bool sovereignEntityVisible(
     int entityId)
 {
-    const auto* entity=
-        roadSafeSceneEntityConst(
-            entityId
-        );
-
     return
-        entity &&
-        entity->visible;
+        entityId>=1 &&
+        entityId<=9 &&
+        gSovereignEntityVisible[entityId];
 }
 
 static bool sovereignEntityLocked(
     int entityId)
 {
-    const auto* entity=
-        roadSafeSceneEntityConst(
-            entityId
-        );
-
     return
-        entity &&
-        entity->locked;
+        entityId>=1 &&
+        entityId<=9 &&
+        gSovereignEntityLocked[entityId];
 }
 static int gSovereignRenameEntityId=0;
 static char gSovereignRenameBuffer[64]{};
@@ -5760,16 +5538,9 @@ static char gSovereignRenameBuffer[64]{};
 static const char* sovereignEntityName(
     int entityId)
 {
-    if (const auto* entity=
-            roadSafeSceneEntityConst(entityId))
-    {
-        return entity->name.c_str();
-    }
-
     if (entityId<1 || entityId>9)
         return "Nothing selected";
 
-    // Temporary fallback during migration.
     return gSovereignEntityNames[entityId];
 }
 
@@ -5873,17 +5644,6 @@ static void drawSovereignRenamePopup()
                 "%s",
                 gSovereignRenameBuffer
             );
-
-            if (auto* sceneEntity=
-                    roadSafeSceneEntity(
-                        gSovereignRenameEntityId
-                    ))
-            {
-                sceneEntity->name=
-                    gSovereignRenameBuffer;
-
-                gRoadSafeCase.touch();
-            }
 
             ImGui::CloseCurrentPopup();
             gSovereignRenameEntityId=0;
@@ -6348,7 +6108,7 @@ static void drawDeepPropertiesInspectorBody()
     }
 
         const bool entityEditLocked=
-        sovereignEntityLocked(entity);
+        gSovereignEntityLocked[entity];
 
     if (entityEditLocked)
     {
@@ -6390,7 +6150,7 @@ if (section("TRANSFORM"))
 
         ImGui::DragFloat3(
             "Position",
-            roadSafeEntityPositionPtr(entity),
+            objectPosition[entity],
             0.01f,
             -10000.0f,
             10000.0f,
@@ -6406,7 +6166,7 @@ if (section("TRANSFORM"))
 
         ImGui::DragFloat3(
             "Rotation",
-            roadSafeEntityRotationPtr(entity),
+            objectRotation[entity],
             0.25f,
             -360.0f,
             360.0f,
@@ -6422,7 +6182,7 @@ if (section("TRANSFORM"))
 
         ImGui::DragFloat3(
             "Scale",
-            roadSafeEntityScalePtr(entity),
+            objectScale[entity],
             0.01f,
             0.001f,
             1000.0f,
@@ -6953,19 +6713,19 @@ if (section("VISIBILITY"))
     {
         ImGui::Checkbox(
             "Visible",
-            roadSafeEntityVisiblePtr(entity)
+            &gSovereignEntityVisible[entity]
         );
 
         ImGui::Checkbox(
             "Locked",
-            roadSafeEntityLockedPtr(entity)
+            &gSovereignEntityLocked[entity]
         );
 
         ImGui::TextDisabled("Selectable");
         ImGui::SameLine();
 
         ImGui::TextUnformatted(
-            sovereignEntityLocked(entity)
+            gSovereignEntityLocked[entity]
                 ? "No"
                 : "Yes"
         );
@@ -7651,10 +7411,7 @@ static void drawOutliner()
 
     editorContextSeparator();
 
-    ImGui::Text(
-        "%zu objects",
-        roadSafeActiveSceneEntityCount()
-    );
+    ImGui::Text("9 objects");
 
     editorContextSeparator();
 
@@ -7824,16 +7581,16 @@ static void drawOutliner()
                     sovereignEntityName(1),
                     UiGlyph::Folder,
                     1,
-                    roadSafeEntityVisiblePtr(1),
-                    roadSafeEntityLockedPtr(1)
+                    &gSovereignEntityVisible[1],
+                    &gSovereignEntityLocked[1]
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(2),
                     UiGlyph::Folder,
                     2,
-                    roadSafeEntityVisiblePtr(2),
-                    roadSafeEntityLockedPtr(2)
+                    &gSovereignEntityVisible[2],
+                    &gSovereignEntityLocked[2]
                 );
 
                 ImGui::TreePop();
@@ -7861,16 +7618,16 @@ static void drawOutliner()
                     sovereignEntityName(3),
                     UiGlyph::Cube,
                     3,
-                    roadSafeEntityVisiblePtr(3),
-                    roadSafeEntityLockedPtr(3)
+                    &gSovereignEntityVisible[3],
+                    &gSovereignEntityLocked[3]
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(4),
                     UiGlyph::Cube,
                     4,
-                    roadSafeEntityVisiblePtr(4),
-                    roadSafeEntityLockedPtr(4)
+                    &gSovereignEntityVisible[4],
+                    &gSovereignEntityLocked[4]
                 );
 
                 ImGui::TreePop();
@@ -7899,24 +7656,24 @@ static void drawOutliner()
                     sovereignEntityName(5),
                     UiGlyph::Document,
                     5,
-                    roadSafeEntityVisiblePtr(5),
-                    roadSafeEntityLockedPtr(5)
+                    &gSovereignEntityVisible[5],
+                    &gSovereignEntityLocked[5]
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(6),
                     UiGlyph::Marker,
                     6,
-                    roadSafeEntityVisiblePtr(6),
-                    roadSafeEntityLockedPtr(6)
+                    &gSovereignEntityVisible[6],
+                    &gSovereignEntityLocked[6]
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(7),
                     UiGlyph::Document,
                     7,
-                    roadSafeEntityVisiblePtr(7),
-                    roadSafeEntityLockedPtr(7)
+                    &gSovereignEntityVisible[7],
+                    &gSovereignEntityLocked[7]
                 );
 
                 ImGui::TreePop();
@@ -7944,16 +7701,16 @@ static void drawOutliner()
                     sovereignEntityName(8),
                     UiGlyph::Ruler,
                     8,
-                    roadSafeEntityVisiblePtr(8),
-                    roadSafeEntityLockedPtr(8)
+                    &gSovereignEntityVisible[8],
+                    &gSovereignEntityLocked[8]
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(9),
                     UiGlyph::Ruler,
                     9,
-                    roadSafeEntityVisiblePtr(9),
-                    roadSafeEntityLockedPtr(9)
+                    &gSovereignEntityVisible[9],
+                    &gSovereignEntityLocked[9]
                 );
 
                 ImGui::TreePop();
@@ -15189,9 +14946,8 @@ static void drawSovereignStatusBar()
         ImGui::SameLine(0.0f,5.0f);
 
         ImGui::Text(
-        "%zu objects",
-        roadSafeActiveSceneEntityCount()
-    );
+            "9 objects"
+        );
 
         separator();
 
@@ -16049,7 +15805,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 
