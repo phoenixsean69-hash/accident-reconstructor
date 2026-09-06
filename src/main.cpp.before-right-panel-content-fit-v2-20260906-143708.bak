@@ -52,8 +52,8 @@
 
 constexpr int WINDOW_WIDTH = 1600;
 constexpr int WINDOW_HEIGHT = 900;
-constexpr float RIGHT_PANEL_MIN_WIDTH = 360.0f;
-constexpr float RIGHT_PANEL_MAX_WIDTH = 520.0f;
+constexpr float RIGHT_PANEL_MIN_WIDTH = 340.0f;
+constexpr float RIGHT_PANEL_MAX_WIDTH = 500.0f;
 #ifdef _WIN32
 static void applyNativeWindowTheme(GLFWwindow* window)
 {
@@ -683,11 +683,10 @@ static void drawUnifiedButtonLabel(
     bool enabled);
 static bool editorButton(
     const char* label,
-    float width=0.0f,
+    float width,
     bool active=false,
     bool enabled=true)
 {
-    // SOVEREIGN_RESPONSIVE_BUTTONS_V1
     ImGuiWindow* window=
         ImGui::GetCurrentWindow();
 
@@ -697,128 +696,59 @@ static bool editorButton(
     const ButtonVisualSpec spec=
         getButtonVisualSpec(label);
 
+    const char* visibleLabel=
+        spec.iconOnly ? "" : spec.visibleLabel;
+
     const ImGuiStyle& style=
         ImGui::GetStyle();
 
-    const char* fullLabel=
-        spec.visibleLabel
-            ? spec.visibleLabel
-            : "";
-
-    const ImVec2 fullTextSize=
-        fullLabel[0]
-            ? ImGui::CalcTextSize(fullLabel)
+    const ImVec2 textSize=
+        (visibleLabel && visibleLabel[0])
+            ? ImGui::CalcTextSize(visibleLabel)
             : ImVec2(0.0f,0.0f);
 
-    const float iconLayoutWidth=
-        spec.hasIcon
-            ? 18.0f
-            : 0.0f;
+    const float iconSize=
+        spec.hasIcon ? 15.5f : 0.0f;
 
     const float contentGap=
-        (spec.hasIcon &&
-         !spec.iconOnly &&
-         fullTextSize.x>0.0f)
+        (spec.hasIcon && !spec.iconOnly && textSize.x>0.0f)
             ? 6.0f
             : 0.0f;
 
-    const float normalContentWidth=
-        iconLayoutWidth+
+    const float contentWidth=
+        (spec.hasIcon ? iconSize : 0.0f) +
         (spec.iconOnly
             ? 0.0f
-            : contentGap+fullTextSize.x);
+            : ((textSize.x>0.0f)
+                ? ((spec.hasIcon ? contentGap : 0.0f)+textSize.x)
+                : 0.0f));
 
     const float autoWidth=
         spec.iconOnly
             ? 42.0f
-            : normalContentWidth+
-                style.FramePadding.x*2.0f+
-                22.0f;
-
-    const float availableWidth=
-        std::max(
-            1.0f,
-            ImGui::GetContentRegionAvail().x
-        );
-
-    const float requestedWidth=
-        width>0.0f
-            ? std::max(width,autoWidth)
-            : autoWidth;
-
-    // Never allow an editor button to extend beyond the remaining
-    // content region. This is what stops controls disappearing
-    // underneath the right-hand dock.
-    const float finalWidth=
-        std::max(
-            1.0f,
-            std::min(
-                requestedWidth,
-                availableWidth
-            )
-        );
-
-    // Icon+text actions collapse gracefully when the panel gets
-    // narrow rather than clipping their text under another dock.
-    const bool compactIconOnly=
-        spec.hasIcon &&
-        (
-            spec.iconOnly ||
-            finalWidth<
-                std::min(
-                    autoWidth-6.0f,
-                    96.0f
-                )
-        );
-
-    const char* visibleLabel=
-        compactIconOnly
-            ? ""
-            : fullLabel;
-
-    const ImVec2 textSize=
-        visibleLabel[0]
-            ? ImGui::CalcTextSize(visibleLabel)
-            : ImVec2(0.0f,0.0f);
-
-    const float renderedContentWidth=
-        spec.hasIcon
-            ? (
-                compactIconOnly
-                    ? iconLayoutWidth
-                    : iconLayoutWidth+
-                        (textSize.x>0.0f
-                            ? contentGap+textSize.x
-                            : 0.0f)
-              )
-            : textSize.x;
+            : contentWidth+style.FramePadding.x*2.0f+26.0f;
 
     const float buttonHeight=
-        std::max(
+        ImMax(
             ImGui::GetFrameHeight()+2.0f,
-            std::max(
-                textSize.y+
-                    style.FramePadding.y*2.0f+
-                    2.0f,
+            ImMax(
+                textSize.y+style.FramePadding.y*2.0f+2.0f,
                 30.0f
             )
         );
 
-    const ImVec2 size(
-        finalWidth,
+    ImVec2 size(
+        width>0.0f
+            ? ImMax(width,autoWidth)
+            : autoWidth,
         buttonHeight
     );
 
     const ImVec2 pos=
         ImGui::GetCursorScreenPos();
 
-    ImGui::PushID(
-        static_cast<int>(pos.x)
-    );
-
-    ImGui::PushID(
-        static_cast<int>(pos.y)
-    );
+    ImGui::PushID(static_cast<int>(pos.x));
+    ImGui::PushID(static_cast<int>(pos.y));
 
     if (!enabled)
         ImGui::BeginDisabled();
@@ -893,41 +823,29 @@ static bool editorButton(
 
     const float rounding=4.0f;
 
-    const ImVec2 maxPos(
-        pos.x+size.x,
-        pos.y+size.y
-    );
-
     drawList->AddRectFilled(
         pos,
-        maxPos,
+        ImVec2(pos.x+size.x,pos.y+size.y),
         ImGui::ColorConvertFloat4ToU32(bg),
         rounding
     );
 
     drawList->AddRect(
         pos,
-        maxPos,
+        ImVec2(pos.x+size.x,pos.y+size.y),
         ImGui::ColorConvertFloat4ToU32(border),
         rounding,
         0,
         1.0f
     );
 
-    // Hard clipping guarantees no icon or text can paint outside
-    // the button body even in extremely narrow layouts.
-    drawList->PushClipRect(
-        ImVec2(pos.x+2.0f,pos.y+1.0f),
-        ImVec2(maxPos.x-2.0f,maxPos.y-1.0f),
-        true
-    );
-
-    float cursorX=
-        pos.x+
-        (size.x-renderedContentWidth)*0.5f;
+    const float startX=
+        pos.x+(size.x-contentWidth)*0.5f;
 
     const float centerY=
         pos.y+size.y*0.5f;
+
+    float cursorX=startX;
 
     if (spec.hasIcon)
     {
@@ -935,36 +853,30 @@ static bool editorButton(
             drawList,
             spec.glyph,
             ImVec2(
-                cursorX+
-                    iconLayoutWidth*0.5f,
+                cursorX+iconSize*0.5f,
                 centerY+0.25f
             ),
             18.0f,
-            ImGui::ColorConvertFloat4ToU32(
-                textColor
-            )
+            ImGui::ColorConvertFloat4ToU32(textColor)
         );
 
-        cursorX+=iconLayoutWidth;
+        cursorX+=iconSize;
     }
 
-    if (visibleLabel[0])
+    if (!spec.iconOnly && visibleLabel && visibleLabel[0])
     {
         if (spec.hasIcon)
             cursorX+=contentGap;
 
         const ImVec2 textPos(
             cursorX,
-            pos.y+
-                (size.y-textSize.y)*0.5f-
-                0.5f
+            pos.y+(size.y-textSize.y)*0.5f-0.5f
         );
 
         const ImU32 textU32=
-            ImGui::ColorConvertFloat4ToU32(
-                textColor
-            );
+            ImGui::ColorConvertFloat4ToU32(textColor);
 
+        // Slightly bolder label rendering.
         drawList->AddText(
             textPos,
             textU32,
@@ -972,30 +884,20 @@ static bool editorButton(
         );
 
         drawList->AddText(
-            ImVec2(
-                textPos.x+0.7f,
-                textPos.y
-            ),
+            ImVec2(textPos.x+0.7f,textPos.y),
             textU32,
             visibleLabel
         );
     }
 
-    drawList->PopClipRect();
-
-    if (hovered &&
-        spec.tooltip &&
-        spec.tooltip[0] &&
-        (
-            compactIconOnly ||
-            finalWidth<autoWidth
-        ))
+    if (hovered && spec.tooltip && spec.tooltip[0])
     {
-        ImGui::BeginTooltip();
-        ImGui::TextUnformatted(
-            spec.tooltip
-        );
-        ImGui::EndTooltip();
+        if (spec.iconOnly || (spec.tooltip != spec.visibleLabel))
+        {
+            ImGui::BeginTooltip();
+            ImGui::TextUnformatted(spec.tooltip);
+            ImGui::EndTooltip();
+        }
     }
 
     return enabled && pressed;
@@ -1097,7 +999,7 @@ static void drawCaseView()
     beginSurface("IncidentSummary",ImVec2(0.0f,82.0f),false,ImGuiWindowFlags_NoScrollbar);
     {
         const ImVec2 p=ImGui::GetCursorScreenPos();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
 
         drawIconBadge(UiGlyph::Document,p,40.0f,false);
 
@@ -1204,7 +1106,7 @@ static void drawCaseView()
     {
         const ImVec2 p=ImGui::GetCursorScreenPos();
         ImDrawList* dl=ImGui::GetWindowDrawList();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
 
         drawIconBadge(UiGlyph::Bars,p,38.0f,false);
 
@@ -1250,7 +1152,7 @@ static void drawCaseView()
     {
         const ImVec2 p=ImGui::GetCursorScreenPos();
         ImDrawList* dl=ImGui::GetWindowDrawList();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
 
         drawIconBadge(UiGlyph::Info,p,38.0f,false);
 
@@ -1403,7 +1305,7 @@ static void drawAnalysisView()
     beginSurface("AnalysisHeader",ImVec2(0.0f,76.0f),false,ImGuiWindowFlags_NoScrollbar);
     {
         const ImVec2 p=ImGui::GetCursorScreenPos();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
+        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
 
         drawIconBadge(UiGlyph::Bars,p,42.0f,true);
 
@@ -1507,7 +1409,7 @@ static void drawAnalysisView()
             beginSurface("OverviewNextStep",ImVec2(0.0f,118.0f),false,ImGuiWindowFlags_NoScrollbar);
             {
                 const ImVec2 p=ImGui::GetCursorScreenPos();
-                const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
+                const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x;
 
                 drawIconBadge(UiGlyph::Info,p,40.0f,false);
 
@@ -4350,7 +4252,6 @@ static bool sharedSelectionIsMeasurement()
         gEditorShell.selectedEntity<=9;
 }
 
-// SOVEREIGN_RIGHT_PANEL_CONTENT_FIT_V2
 static void drawDeepPropertiesInspectorBody()
 {
     static float objectPosition[10][3]{};
@@ -4502,17 +4403,15 @@ static void drawDeepPropertiesInspectorBody()
             ImGui::SameLine();
             ImGui::TextUnformatted("World");
 
-            ImGui::TextDisabled("Snap increment");
-
             ImGui::SetNextItemWidth(
-                std::min(
-                    ImGui::GetContentRegionAvail().x,
-                    180.0f
+                std::max(
+                    118.0f,
+                    ImGui::GetContentRegionAvail().x*0.52f
                 )
             );
 
             ImGui::DragFloat(
-                "##SnapIncrement",
+                "Snap increment",
                 &gEditorShell.snapValue,
                 0.01f,
                 0.01f,
@@ -11485,10 +11384,10 @@ static void enforceRightPanelBounds(ImGuiID rightNodeId)
     {
         rightNode->SizeRef.x=
             std::max(
-                330.0f,
+                300.0f,
                 std::min(
                     RIGHT_PANEL_MAX_WIDTH,
-                    screenWidth*0.33f
+                    screenWidth*0.34f
                 )
             );
     }
@@ -12886,8 +12785,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
-
 
 
 
