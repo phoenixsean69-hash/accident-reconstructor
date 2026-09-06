@@ -4534,162 +4534,21 @@ struct EditorShellState
 
 static EditorShellState gEditorShell;
 
-// SOVEREIGN_REAL_ENTITY_RENAME_V1
-static char gSovereignEntityNames[10][64]=
-{
-    "",
-    "Ground Plane",
-    "Road Surface",
-    "Vehicle A",
-    "Vehicle B",
-    "Skid Mark 01",
-    "Marker 01",
-    "Debris Field 01",
-    "Distance 01",
-    "Angle 01"
-};
-
-static int gSovereignRenameEntityId=0;
-static char gSovereignRenameBuffer[64]{};
-
-static const char* sovereignEntityName(
-    int entityId)
-{
-    if (entityId<1 || entityId>9)
-        return "Nothing selected";
-
-    return gSovereignEntityNames[entityId];
-}
-
-static void beginSovereignEntityRename(
-    int entityId)
-{
-    if (entityId<1 || entityId>9)
-        return;
-
-    gSovereignRenameEntityId=entityId;
-
-    std::snprintf(
-        gSovereignRenameBuffer,
-        sizeof(gSovereignRenameBuffer),
-        "%s",
-        sovereignEntityName(entityId)
-    );
-
-    ImGui::OpenPopup("Rename Entity");
-}
-
-static void drawSovereignRenamePopup()
-{
-    if (gSovereignRenameEntityId==0)
-        return;
-
-    bool keepOpen=true;
-
-    ImGui::SetNextWindowSize(
-        ImVec2(420.0f,0.0f),
-        ImGuiCond_Appearing
-    );
-
-    if (ImGui::BeginPopupModal(
-        "Rename Entity",
-        &keepOpen,
-        ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        if (ImGui::IsWindowAppearing())
-            ImGui::SetKeyboardFocusHere();
-
-        ImGui::TextDisabled("ENTITY");
-
-        ImGui::Text(
-            "%s",
-            sovereignEntityName(
-                gSovereignRenameEntityId
-            )
-        );
-
-        ImGui::Spacing();
-
-        const bool submitted=
-            ImGui::InputText(
-                "##RenameEntityInput",
-                gSovereignRenameBuffer,
-                sizeof(gSovereignRenameBuffer),
-                ImGuiInputTextFlags_EnterReturnsTrue |
-                ImGuiInputTextFlags_AutoSelectAll
-            );
-
-        ImGui::Spacing();
-        ImGui::Separator();
-        ImGui::Spacing();
-
-        const bool validName=
-            gSovereignRenameBuffer[0]!=0;
-
-        if (!validName)
-            ImGui::BeginDisabled();
-
-        const bool renamePressed=
-            ImGui::Button(
-                "Rename",
-                ImVec2(92.0f,0.0f)
-            );
-
-        if (!validName)
-            ImGui::EndDisabled();
-
-        ImGui::SameLine();
-
-        const bool cancelPressed=
-            ImGui::Button(
-                "Cancel",
-                ImVec2(92.0f,0.0f)
-            );
-
-        if ((submitted || renamePressed) &&
-            validName)
-        {
-            std::snprintf(
-                gSovereignEntityNames[
-                    gSovereignRenameEntityId
-                ],
-                sizeof(
-                    gSovereignEntityNames[
-                        gSovereignRenameEntityId
-                    ]
-                ),
-                "%s",
-                gSovereignRenameBuffer
-            );
-
-            ImGui::CloseCurrentPopup();
-            gSovereignRenameEntityId=0;
-            gSovereignRenameBuffer[0]=0;
-        }
-        else if (cancelPressed ||
-                 ImGui::IsKeyPressed(
-                     ImGuiKey_Escape))
-        {
-            ImGui::CloseCurrentPopup();
-            gSovereignRenameEntityId=0;
-            gSovereignRenameBuffer[0]=0;
-        }
-
-        ImGui::EndPopup();
-    }
-
-    if (!keepOpen)
-    {
-        gSovereignRenameEntityId=0;
-        gSovereignRenameBuffer[0]=0;
-    }
-}
-
 static const char* selectedEntityName()
 {
-    return sovereignEntityName(
-        gEditorShell.selectedEntity
-    );
+    switch (gEditorShell.selectedEntity)
+    {
+        case 1: return "Ground Plane";
+        case 2: return "Road Surface";
+        case 3: return "Vehicle A";
+        case 4: return "Vehicle B";
+        case 5: return "Skid Mark 01";
+        case 6: return "Marker 01";
+        case 7: return "Debris Field 01";
+        case 8: return "Distance 01";
+        case 9: return "Angle 01";
+        default: return "Nothing selected";
+    }
 }
 // SOVEREIGN_EDITOR_MODE_SYSTEM_V1
 enum class SovereignEditorMode
@@ -6185,8 +6044,7 @@ static void outlinerLeafRow(
         ImGui::TextDisabled("%s",label);
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Rename","F2"))
-            beginSovereignEntityRename(entityId);
+        ImGui::MenuItem("Rename","F2");
         ImGui::MenuItem("Duplicate","Ctrl+D");
 
         if (ImGui::MenuItem("Focus in Viewport","F"))
@@ -6280,8 +6138,7 @@ static void outlinerLeafRow(
         ImGui::TextDisabled("%s",label);
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Rename","F2"))
-            beginSovereignEntityRename(entityId);
+        ImGui::MenuItem("Rename","F2");
         ImGui::MenuItem("Duplicate","Ctrl+D");
 
         if (ImGui::MenuItem("Focus in Viewport","F"))
@@ -6540,7 +6397,7 @@ static void drawOutliner()
             if (open)
             {
                 outlinerLeafRow(
-                    sovereignEntityName(1),
+                    "Ground Plane",
                     UiGlyph::Folder,
                     1,
                     &groundVisible,
@@ -6548,7 +6405,7 @@ static void drawOutliner()
                 );
 
                 outlinerLeafRow(
-                    sovereignEntityName(2),
+                    "Road Surface",
                     UiGlyph::Folder,
                     2,
                     &roadVisible,
@@ -6577,7 +6434,7 @@ static void drawOutliner()
             if (open)
             {
                 outlinerLeafRow(
-                    sovereignEntityName(3),
+                    "Vehicle A",
                     UiGlyph::Cube,
                     3,
                     &vehicleAVisible,
@@ -6585,7 +6442,7 @@ static void drawOutliner()
                 );
 
                 outlinerLeafRow(
-                    sovereignEntityName(4),
+                    "Vehicle B",
                     UiGlyph::Cube,
                     4,
                     &vehicleBVisible,
@@ -6615,7 +6472,7 @@ static void drawOutliner()
             if (open)
             {
                 outlinerLeafRow(
-                    sovereignEntityName(5),
+                    "Skid Mark 01",
                     UiGlyph::Document,
                     5,
                     &skidVisible,
@@ -6623,7 +6480,7 @@ static void drawOutliner()
                 );
 
                 outlinerLeafRow(
-                    sovereignEntityName(6),
+                    "Marker 01",
                     UiGlyph::Marker,
                     6,
                     &markerVisible,
@@ -6631,7 +6488,7 @@ static void drawOutliner()
                 );
 
                 outlinerLeafRow(
-                    sovereignEntityName(7),
+                    "Debris Field 01",
                     UiGlyph::Document,
                     7,
                     &debrisVisible,
@@ -6660,7 +6517,7 @@ static void drawOutliner()
             if (open)
             {
                 outlinerLeafRow(
-                    sovereignEntityName(8),
+                    "Distance 01",
                     UiGlyph::Ruler,
                     8,
                     &distanceVisible,
@@ -6668,7 +6525,7 @@ static void drawOutliner()
                 );
 
                 outlinerLeafRow(
-                    sovereignEntityName(9),
+                    "Angle 01",
                     UiGlyph::Ruler,
                     9,
                     &angleVisible,
@@ -6692,20 +6549,7 @@ static void drawOutliner()
     else
         ImGui::Text("%s",selectedEntityName());
 
-    
-    // Real entity rename.
-    if (gEditorShell.selectedEntity!=0 &&
-        ImGui::IsWindowFocused(
-            ImGuiFocusedFlags_RootAndChildWindows) &&
-        ImGui::IsKeyPressed(ImGuiKey_F2))
-    {
-        beginSovereignEntityRename(
-            gEditorShell.selectedEntity
-        );
-    }
-
-    drawSovereignRenamePopup();
-ImGui::End();
+    ImGui::End();
 }
 
 static void drawProperties()
@@ -14431,7 +14275,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 
