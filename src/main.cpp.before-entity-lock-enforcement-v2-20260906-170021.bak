@@ -2225,8 +2225,6 @@ static void endEditorContextHeader()
 static bool shellSnapEnabled();
 static float shellSnapValue();
 static const char* shellSelectedEntityName();
-// SOVEREIGN_ENTITY_LOCK_ENFORCEMENT_V2
-static bool shellSelectedEntityLocked();
 static void drawEditorModeStrip();
 // SOVEREIGN_VIEWPORT_FULLSCREEN_V1
 // SOVEREIGN_NODE_FULLSCREEN_V1
@@ -2270,16 +2268,6 @@ static void drawViewportView()
     static bool arRecording=false;
     static int arDeviceProfile=0;
     static int selectedTool=0;
-
-    const bool viewportSelectionLocked=
-        shellSelectedEntityLocked();
-
-    if (viewportSelectionLocked &&
-        selectedTool>=1 &&
-        selectedTool<=3)
-    {
-        selectedTool=0;
-    }
     static bool showGrid=true, showAxes=true;
         // SOVEREIGN_VIEWPORT_FULLSCREEN_REPAIR_V2
     // Keep the original docked Viewport window registered.
@@ -2492,13 +2480,13 @@ if (gViewportFullscreen)
                 if (key(ImGuiKey_Q))
                     selectedTool=0;
 
-                if (!viewportSelectionLocked && key(ImGuiKey_W))
+                if (key(ImGuiKey_W))
                     selectedTool=1;
 
-                if (!viewportSelectionLocked && key(ImGuiKey_E))
+                if (key(ImGuiKey_E))
                     selectedTool=2;
 
-                if (!viewportSelectionLocked && key(ImGuiKey_R))
+                if (key(ImGuiKey_R))
                     selectedTool=3;
 
                 // Common overlays.
@@ -3521,17 +3509,9 @@ ImGui::EndChild();
         ImGuiWindowFlags_NoScrollWithMouse);
     bool clicked=false;
     drawRailButton("select","SELECT",0,selectedTool==0,&clicked); if (clicked) selectedTool=0;
-    ImGui::BeginDisabled(viewportSelectionLocked);
-    drawRailButton("move","MOVE",1,selectedTool==1,&clicked);
-    if (clicked)
-        selectedTool=1;
-    drawRailButton("rotate","ROTATE",2,selectedTool==2,&clicked);
-    if (clicked)
-        selectedTool=2;
-    drawRailButton("scale","SCALE",3,selectedTool==3,&clicked);
-    if (clicked)
-        selectedTool=3;
-    ImGui::EndDisabled();
+    drawRailButton("move","MOVE",1,selectedTool==1,&clicked); if (clicked) selectedTool=1;
+    drawRailButton("rotate","ROTATE",2,selectedTool==2,&clicked); if (clicked) selectedTool=2;
+    drawRailButton("scale","SCALE",3,selectedTool==3,&clicked); if (clicked) selectedTool=3;
     ImGui::Separator();
     drawRailButton("vehicle","VEHICLE",4,false,&clicked);
     drawRailButton("evidence","EVIDENCE",5,false,&clicked);
@@ -5513,23 +5493,7 @@ static void drawDeepPropertiesInspectorBody()
         return;
     }
 
-        const bool entityEditLocked=
-        gSovereignEntityLocked[entity];
-
-    if (entityEditLocked)
-    {
-        ImGui::TextColored(
-            colorAccent(),
-            "LOCKED"
-        );
-
-        ImGui::SameLine(0.0f,8.0f);
-        ImGui::TextDisabled(
-            "Unlock in Visibility to edit."
-        );
-        ImGui::Spacing();
-    }
-ImGui::Text(
+    ImGui::Text(
         "%s",
         selectedEntityName()
     );
@@ -5541,11 +5505,7 @@ ImGui::Text(
         entity
     );
 
-    if (entityEditLocked)
-    {
-        ImGui::BeginDisabled();
-    }
-if (section("TRANSFORM"))
+    if (section("TRANSFORM"))
     {
         ImGui::SetNextItemWidth(
                 std::max(
@@ -6107,11 +6067,7 @@ if (section("TRANSFORM"))
         }
     }
 
-    if (entityEditLocked)
-    {
-        ImGui::EndDisabled();
-    }
-if (section("VISIBILITY"))
+    if (section("VISIBILITY"))
     {
         ImGui::Checkbox(
             "Visible",
@@ -6127,7 +6083,7 @@ if (section("VISIBILITY"))
         ImGui::SameLine();
 
         ImGui::TextUnformatted(
-            gSovereignEntityLocked[entity]
+            objectLocked[entity]
                 ? "No"
                 : "Yes"
         );
@@ -6192,16 +6148,6 @@ static const char* shellSelectedEntityName()
     return selectedEntityName();
 }
 
-static bool shellSelectedEntityLocked()
-{
-    const int entity=
-        gEditorShell.selectedEntity;
-
-    return
-        entity>=1 &&
-        entity<=9 &&
-        sovereignEntityLocked(entity);
-}
 static UiGlyph selectedEntityGlyph()
 {
     switch (gEditorShell.selectedEntity)
@@ -6405,17 +6351,6 @@ static void drawEditorToolbar()
         "Scale"
     };
 
-    const bool globalSelectionLocked=
-        shellSelectedEntityLocked();
-
-    if (globalSelectionLocked &&
-        gEditorShell.transformMode!=0)
-    {
-        gEditorShell.transformMode=0;
-    }
-
-    ImGui::BeginDisabled(globalSelectionLocked);
-
     ImGui::SetNextItemWidth(92.0f);
     ImGui::Combo(
         "##GlobalTransformMode",
@@ -6423,8 +6358,6 @@ static void drawEditorToolbar()
         transformModes,
         4
     );
-
-    ImGui::EndDisabled();
 
     ImGui::SameLine();
     ImGui::Checkbox("Snap",&gEditorShell.snapEnabled);
@@ -15171,7 +15104,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 
