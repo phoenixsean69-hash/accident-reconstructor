@@ -12867,9 +12867,6 @@ static void drawUnifiedButtonLabel(
     );
 }static constexpr float SOVEREIGN_STATUS_BAR_HEIGHT=30.0f;
 
-// SOVEREIGN_STATUS_DIAGNOSTICS_V1
-static int sovereignProblemErrorCount();
-static int sovereignProblemWarningCount();
 static void drawSovereignStatusBar()
 {
     const ImGuiViewport* viewport=
@@ -13040,10 +13037,8 @@ static void drawSovereignStatusBar()
         std::snprintf(
             rightText,
             sizeof(rightText),
-            "%.0f FPS  |  %dE %dW  |  F1 Shortcuts",
-            fps,
-            sovereignProblemErrorCount(),
-            sovereignProblemWarningCount()
+            "%.0f FPS    |    F1 Shortcuts",
+            fps
         );
 
         const float rightWidth=
@@ -13336,39 +13331,6 @@ static void drawOutputPanel()
     ImGui::End();
 }
 
-static int sovereignProblemErrorCount()
-{
-    int count=0;
-
-    for (const SovereignProblemEntry& entry:
-         gSovereignProblemEntries)
-    {
-        if (entry.level==
-            SovereignDiagnosticLevel::Error)
-        {
-            count++;
-        }
-    }
-
-    return count;
-}
-
-static int sovereignProblemWarningCount()
-{
-    int count=0;
-
-    for (const SovereignProblemEntry& entry:
-         gSovereignProblemEntries)
-    {
-        if (entry.level==
-            SovereignDiagnosticLevel::Warning)
-        {
-            count++;
-        }
-    }
-
-    return count;
-}
 static void drawProblemsPanel()
 {
     ImGui::Begin(
@@ -13798,7 +13760,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 
