@@ -213,15 +213,13 @@ static void applySovereignTheme()
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
 
-    // SOVEREIGN_REAL_DOCK_TABS_V1
-
     style.WindowRounding = 2.0f;
     style.ChildRounding = 3.0f;
     style.FrameRounding = 2.0f;
     style.PopupRounding = 3.0f;
     style.ScrollbarRounding = 2.0f;
     style.GrabRounding = 2.0f;
-    style.TabRounding = 1.5f;
+    style.TabRounding = 2.0f;
     style.WindowBorderSize = 1.0f;
     style.ChildBorderSize = 1.0f;
     style.FrameBorderSize = 1.0f;
@@ -259,11 +257,11 @@ static void applySovereignTheme()
     c[ImGuiCol_CheckMark] = colorAccent();
     c[ImGuiCol_SliderGrab] = ImVec4(0.70f,0.48f,0.07f,1.0f);
     c[ImGuiCol_SliderGrabActive] = colorAccent();
-    c[ImGuiCol_Tab] = ImVec4(0.070f, 0.074f, 0.082f, 1.0f);
-    c[ImGuiCol_TabHovered] = ImVec4(0.120f, 0.126f, 0.140f, 1.0f);
-    c[ImGuiCol_TabActive] = ImVec4(0.185f, 0.194f, 0.214f, 1.0f);
-    c[ImGuiCol_TabUnfocused] = ImVec4(0.058f, 0.061f, 0.068f, 1.0f);
-    c[ImGuiCol_TabUnfocusedActive] = ImVec4(0.145f, 0.151f, 0.166f, 1.0f);
+    c[ImGuiCol_Tab] = ImVec4(0.105f, 0.112f, 0.122f, 1.0f);
+    c[ImGuiCol_TabHovered] = ImVec4(0.195f, 0.205f, 0.224f, 1.0f);
+    c[ImGuiCol_TabActive] = ImVec4(0.158f, 0.168f, 0.184f, 1.0f);
+    c[ImGuiCol_TabUnfocused] = ImVec4(0.090f, 0.095f, 0.105f, 1.0f);
+    c[ImGuiCol_TabUnfocusedActive] = ImVec4(0.125f, 0.133f, 0.145f, 1.0f);
     c[ImGuiCol_TableHeaderBg] = ImVec4(0.160f, 0.170f, 0.185f, 1.0f);
     c[ImGuiCol_TableRowBgAlt] = ImVec4(0.090f, 0.095f, 0.105f, 1.0f);
     c[ImGuiCol_DockingPreview] = ImVec4(0.94f,0.64f,0.06f,0.28f);
@@ -683,41 +681,13 @@ static void drawUnifiedButtonLabel(
     const char* label,
     const ImVec4& textColor,
     bool enabled);
-// SOVEREIGN_VS_ACTIVE_TAB_STYLE_V1
-static bool isEditorTabVisualLabel(
-    const char* label)
-{
-    if (!label || !label[0])
-        return false;
-
-    return
-        // Main workspace/editor tabs.
-        strcmp(label,"Case View")==0 ||
-        strcmp(label,"Evidence")==0 ||
-        strcmp(label,"Analysis")==0 ||
-        strcmp(label,"Viewport")==0 ||
-        strcmp(label,"Timeline")==0 ||
-        strcmp(label,"Node Editor")==0 ||
-
-        // View-mode tabs.
-        strcmp(label,"2D PLAN")==0 ||
-        strcmp(label,"3D SCENE")==0 ||
-        strcmp(label,"AR PREVIEW")==0 ||
-
-        // Workstation mode tabs.
-        strcmp(label,"SCENE")==0 ||
-        strcmp(label,"EVIDENCE")==0 ||
-        strcmp(label,"MEASURE")==0 ||
-        strcmp(label,"RECONSTRUCT")==0 ||
-        strcmp(label,"REVIEW")==0;
-}
 static bool editorButton(
     const char* label,
     float width=0.0f,
     bool active=false,
     bool enabled=true)
 {
-    // SOVEREIGN_CHROME_CONTOUR_TABS_V1
+    // SOVEREIGN_RESPONSIVE_BUTTONS_V1
     ImGuiWindow* window=
         ImGui::GetCurrentWindow();
 
@@ -734,9 +704,6 @@ static bool editorButton(
         spec.visibleLabel
             ? spec.visibleLabel
             : "";
-
-    const bool tabVisual=
-        isEditorTabVisualLabel(fullLabel);
 
     const ImVec2 fullTextSize=
         fullLabel[0]
@@ -761,21 +728,12 @@ static bool editorButton(
             ? 0.0f
             : contentGap+fullTextSize.x);
 
-    float autoWidth=
+    const float autoWidth=
         spec.iconOnly
             ? 42.0f
             : normalContentWidth+
                 style.FramePadding.x*2.0f+
                 22.0f;
-
-    if (tabVisual)
-    {
-        autoWidth=
-            std::max(
-                autoWidth,
-                fullTextSize.x+30.0f
-            );
-    }
 
     const float availableWidth=
         std::max(
@@ -788,6 +746,9 @@ static bool editorButton(
             ? std::max(width,autoWidth)
             : autoWidth;
 
+    // Never allow an editor button to extend beyond the remaining
+    // content region. This is what stops controls disappearing
+    // underneath the right-hand dock.
     const float finalWidth=
         std::max(
             1.0f,
@@ -797,8 +758,9 @@ static bool editorButton(
             )
         );
 
+    // Icon+text actions collapse gracefully when the panel gets
+    // narrow rather than clipping their text under another dock.
     const bool compactIconOnly=
-        !tabVisual &&
         spec.hasIcon &&
         (
             spec.iconOnly ||
@@ -832,17 +794,15 @@ static bool editorButton(
             : textSize.x;
 
     const float buttonHeight=
-        tabVisual
-            ? 35.0f
-            : std::max(
-                ImGui::GetFrameHeight()+2.0f,
-                std::max(
-                    textSize.y+
-                        style.FramePadding.y*2.0f+
-                        2.0f,
-                    30.0f
-                )
-            );
+        std::max(
+            ImGui::GetFrameHeight()+2.0f,
+            std::max(
+                textSize.y+
+                    style.FramePadding.y*2.0f+
+                    2.0f,
+                30.0f
+            )
+        );
 
     const ImVec2 size(
         finalWidth,
@@ -884,290 +844,81 @@ static bool editorButton(
     ImDrawList* drawList=
         ImGui::GetWindowDrawList();
 
+    ImVec4 bg=
+        active
+            ? ImVec4(0.12f,0.42f,0.78f,1.0f)
+            : ImVec4(0.19f,0.20f,0.22f,1.0f);
+
+    ImVec4 border=
+        active
+            ? ImVec4(0.34f,0.61f,0.95f,1.0f)
+            : ImVec4(0.35f,0.37f,0.41f,1.0f);
+
+    ImVec4 textColor=
+        enabled
+            ? ImVec4(0.97f,0.98f,1.0f,1.0f)
+            : ImVec4(0.72f,0.74f,0.78f,1.0f);
+
+    if (!enabled)
+    {
+        bg=ImVec4(0.16f,0.17f,0.18f,1.0f);
+        border=ImVec4(0.26f,0.27f,0.29f,1.0f);
+    }
+    else if (held)
+    {
+        if (active)
+        {
+            bg=ImVec4(0.10f,0.36f,0.69f,1.0f);
+            border=ImVec4(0.29f,0.54f,0.88f,1.0f);
+        }
+        else
+        {
+            bg=ImVec4(0.15f,0.16f,0.18f,1.0f);
+            border=ImVec4(0.43f,0.46f,0.51f,1.0f);
+        }
+    }
+    else if (hovered)
+    {
+        if (active)
+        {
+            bg=ImVec4(0.15f,0.47f,0.84f,1.0f);
+            border=ImVec4(0.48f,0.73f,1.0f,1.0f);
+        }
+        else
+        {
+            bg=ImVec4(0.23f,0.24f,0.27f,1.0f);
+            border=ImVec4(0.50f,0.53f,0.58f,1.0f);
+        }
+    }
+
+    const float rounding=4.0f;
+
     const ImVec2 maxPos(
         pos.x+size.x,
         pos.y+size.y
     );
 
-    ImVec4 textColor=
-        enabled
-            ? ImVec4(0.96f,0.97f,0.99f,1.0f)
-            : ImVec4(0.58f,0.60f,0.64f,1.0f);
+    drawList->AddRectFilled(
+        pos,
+        maxPos,
+        ImGui::ColorConvertFloat4ToU32(bg),
+        rounding
+    );
 
-    if (tabVisual)
-    {
-        // Chrome-like tab semantics:
-        // selected tab is physically joined to the content below.
-        // inactive tabs are flatter, darker and visually recessed.
-        if (active)
-        {
-            ImVec4 activeBg=
-                held
-                    ? ImVec4(0.165f,0.172f,0.190f,1.0f)
-                    : hovered
-                        ? ImVec4(0.205f,0.214f,0.235f,1.0f)
-                        : ImVec4(0.185f,0.194f,0.214f,1.0f);
+    drawList->AddRect(
+        pos,
+        maxPos,
+        ImGui::ColorConvertFloat4ToU32(border),
+        rounding,
+        0,
+        1.0f
+    );
 
-            const ImU32 fillCol=
-                ImGui::ColorConvertFloat4ToU32(
-                    activeBg
-                );
-
-            const ImU32 contourCol=
-                ImGui::ColorConvertFloat4ToU32(
-                    ImVec4(
-                        0.42f,
-                        0.44f,
-                        0.49f,
-                        1.0f
-                    )
-                );
-
-            const float top=
-                pos.y+1.0f;
-
-            const float bottom=
-                maxPos.y;
-
-            const float shoulder=
-                std::max(
-                    7.0f,
-                    std::min(
-                        13.0f,
-                        size.x*0.14f
-                    )
-                );
-
-            // Fill silhouette: bottom baseline -> curved left
-            // shoulder -> top -> curved right shoulder -> baseline.
-            drawList->PathLineTo(
-                ImVec2(
-                    pos.x,
-                    bottom
-                )
-            );
-
-            drawList->PathBezierCubicCurveTo(
-                ImVec2(
-                    pos.x+shoulder*0.28f,
-                    bottom
-                ),
-                ImVec2(
-                    pos.x+shoulder*0.32f,
-                    top
-                ),
-                ImVec2(
-                    pos.x+shoulder,
-                    top
-                )
-            );
-
-            drawList->PathLineTo(
-                ImVec2(
-                    maxPos.x-shoulder,
-                    top
-                )
-            );
-
-            drawList->PathBezierCubicCurveTo(
-                ImVec2(
-                    maxPos.x-shoulder*0.32f,
-                    top
-                ),
-                ImVec2(
-                    maxPos.x-shoulder*0.28f,
-                    bottom
-                ),
-                ImVec2(
-                    maxPos.x,
-                    bottom
-                )
-            );
-
-            drawList->PathLineTo(
-                ImVec2(
-                    pos.x,
-                    bottom
-                )
-            );
-
-            drawList->PathFillConvex(
-                fillCol
-            );
-
-            // Top/shoulder contour only.
-            // No bottom line: it must merge into the content.
-            drawList->PathLineTo(
-                ImVec2(
-                    pos.x,
-                    bottom
-                )
-            );
-
-            drawList->PathBezierCubicCurveTo(
-                ImVec2(
-                    pos.x+shoulder*0.28f,
-                    bottom
-                ),
-                ImVec2(
-                    pos.x+shoulder*0.32f,
-                    top
-                ),
-                ImVec2(
-                    pos.x+shoulder,
-                    top
-                )
-            );
-
-            drawList->PathLineTo(
-                ImVec2(
-                    maxPos.x-shoulder,
-                    top
-                )
-            );
-
-            drawList->PathBezierCubicCurveTo(
-                ImVec2(
-                    maxPos.x-shoulder*0.32f,
-                    top
-                ),
-                ImVec2(
-                    maxPos.x-shoulder*0.28f,
-                    bottom
-                ),
-                ImVec2(
-                    maxPos.x,
-                    bottom
-                )
-            );
-
-            drawList->PathStroke(
-                contourCol,
-                0,
-                1.0f
-            );
-
-            textColor=
-                ImVec4(
-                    0.99f,
-                    0.99f,
-                    1.0f,
-                    1.0f
-                );
-        }
-        else
-        {
-            ImVec4 inactiveBg=
-                hovered
-                    ? ImVec4(0.115f,0.120f,0.132f,1.0f)
-                    : ImVec4(0.075f,0.079f,0.088f,1.0f);
-
-            drawList->AddRectFilled(
-                pos,
-                maxPos,
-                ImGui::ColorConvertFloat4ToU32(
-                    inactiveBg
-                ),
-                1.5f
-            );
-
-            // Quiet separator instead of a button border.
-            drawList->AddLine(
-                ImVec2(
-                    maxPos.x-0.5f,
-                    pos.y+7.0f
-                ),
-                ImVec2(
-                    maxPos.x-0.5f,
-                    maxPos.y-7.0f
-                ),
-                ImGui::ColorConvertFloat4ToU32(
-                    ImVec4(
-                        0.20f,
-                        0.21f,
-                        0.23f,
-                        1.0f
-                    )
-                ),
-                1.0f
-            );
-
-            textColor=
-                hovered
-                    ? ImVec4(0.88f,0.90f,0.93f,1.0f)
-                    : ImVec4(0.70f,0.72f,0.76f,1.0f);
-        }
-    }
-    else
-    {
-        ImVec4 bg=
-            active
-                ? ImVec4(0.12f,0.42f,0.78f,1.0f)
-                : ImVec4(0.19f,0.20f,0.22f,1.0f);
-
-        ImVec4 border=
-            active
-                ? ImVec4(0.34f,0.61f,0.95f,1.0f)
-                : ImVec4(0.35f,0.37f,0.41f,1.0f);
-
-        if (!enabled)
-        {
-            bg=ImVec4(0.16f,0.17f,0.18f,1.0f);
-            border=ImVec4(0.26f,0.27f,0.29f,1.0f);
-        }
-        else if (held)
-        {
-            if (active)
-            {
-                bg=ImVec4(0.10f,0.36f,0.69f,1.0f);
-                border=ImVec4(0.29f,0.54f,0.88f,1.0f);
-            }
-            else
-            {
-                bg=ImVec4(0.15f,0.16f,0.18f,1.0f);
-                border=ImVec4(0.43f,0.46f,0.51f,1.0f);
-            }
-        }
-        else if (hovered)
-        {
-            if (active)
-            {
-                bg=ImVec4(0.15f,0.47f,0.84f,1.0f);
-                border=ImVec4(0.48f,0.73f,1.0f,1.0f);
-            }
-            else
-            {
-                bg=ImVec4(0.23f,0.24f,0.27f,1.0f);
-                border=ImVec4(0.50f,0.53f,0.58f,1.0f);
-            }
-        }
-
-        drawList->AddRectFilled(
-            pos,
-            maxPos,
-            ImGui::ColorConvertFloat4ToU32(bg),
-            4.0f
-        );
-
-        drawList->AddRect(
-            pos,
-            maxPos,
-            ImGui::ColorConvertFloat4ToU32(border),
-            4.0f,
-            0,
-            1.0f
-        );
-    }
-
+    // Hard clipping guarantees no icon or text can paint outside
+    // the button body even in extremely narrow layouts.
     drawList->PushClipRect(
-        ImVec2(
-            pos.x+2.0f,
-            pos.y+1.0f
-        ),
-        ImVec2(
-            maxPos.x-2.0f,
-            maxPos.y-1.0f
-        ),
+        ImVec2(pos.x+2.0f,pos.y+1.0f),
+        ImVec2(maxPos.x-2.0f,maxPos.y-1.0f),
         true
     );
 
@@ -1220,28 +971,14 @@ static bool editorButton(
             visibleLabel
         );
 
-        if (tabVisual && active)
-        {
-            drawList->AddText(
-                ImVec2(
-                    textPos.x+0.55f,
-                    textPos.y
-                ),
-                textU32,
-                visibleLabel
-            );
-        }
-        else if (!tabVisual)
-        {
-            drawList->AddText(
-                ImVec2(
-                    textPos.x+0.70f,
-                    textPos.y
-                ),
-                textU32,
-                visibleLabel
-            );
-        }
+        drawList->AddText(
+            ImVec2(
+                textPos.x+0.7f,
+                textPos.y
+            ),
+            textU32,
+            visibleLabel
+        );
     }
 
     drawList->PopClipRect();
@@ -13336,9 +13073,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
-
-
 
 
 

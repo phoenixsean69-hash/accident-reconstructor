@@ -3311,19 +3311,114 @@ static void drawViewportView()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2(7.0f,7.0f));
     ImGui::BeginChild("ViewportToolRail",ImVec2(112.0f,0.0f),true,ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoScrollWithMouse);
-    bool clicked=false;
-    drawRailButton("select","SELECT",0,selectedTool==0,&clicked); if (clicked) selectedTool=0;
-    drawRailButton("move","MOVE",1,selectedTool==1,&clicked); if (clicked) selectedTool=1;
-    drawRailButton("rotate","ROTATE",2,selectedTool==2,&clicked); if (clicked) selectedTool=2;
-    drawRailButton("scale","SCALE",3,selectedTool==3,&clicked); if (clicked) selectedTool=3;
+// SOVEREIGN_MODE_TOOL_RAIL_V3
+    ImGui::TextDisabled("MODE");
+    ImGui::SameLine(0.0f,6.0f);
+
+    ImGui::Text(
+        "%s",
+        sovereignEditorModeName(
+            gSovereignEditorMode
+        )
+    );
+
+    ImGui::Spacing();
     ImGui::Separator();
-    drawRailButton("vehicle","VEHICLE",4,false,&clicked);
-    drawRailButton("evidence","EVIDENCE",5,false,&clicked);
-    drawRailButton("measure","MEASURE",6,false,&clicked);
+
+    switch (gSovereignEditorMode)
+    {
+        case SovereignEditorMode::Scene:
+        {
+            if (selectedTool<0 || selectedTool>4)
+                selectedTool=0;
+            ImGui::TextDisabled("TRANSFORM");
+
+            drawRailButton("select","SELECT",0,selectedTool==0,&clicked);
+            drawRailButton("move","MOVE",1,selectedTool==1,&clicked);
+            drawRailButton("rotate","ROTATE",2,selectedTool==2,&clicked);
+            drawRailButton("scale","SCALE",3,selectedTool==3,&clicked);
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::TextDisabled("CREATE");
+
+            drawRailButton("vehicle","VEHICLE",4,false,&clicked);
+
+            break;
+        }
+
+        case SovereignEditorMode::Evidence:
+        {
+            if (selectedTool!=0 && selectedTool!=5)
+                selectedTool=0;
+            ImGui::TextDisabled("EVIDENCE");
+
+            drawRailButton("select","SELECT",0,selectedTool==0,&clicked);
+            drawRailButton("evidence","EVIDENCE",5,false,&clicked);
+
+            ImGui::Spacing();
+            ImGui::TextDisabled(
+                "Place / inspect evidence."
+            );
+
+            break;
+        }
+
+        case SovereignEditorMode::Measure:
+        {
+            if (selectedTool!=0 && selectedTool!=6)
+                selectedTool=0;
+            ImGui::TextDisabled("MEASURE");
+
+            drawRailButton("select","SELECT",0,selectedTool==0,&clicked);
+            drawRailButton("measure","MEASURE",6,false,&clicked);
+
+            ImGui::Spacing();
+            ImGui::TextDisabled(
+                "Distance / angle tools."
+            );
+
+            break;
+        }
+
+        case SovereignEditorMode::Reconstruct:
+        {
+            selectedTool=0;
+            ImGui::TextDisabled("RECONSTRUCT");
+
+            drawRailButton("select","SELECT",0,selectedTool==0,&clicked);
+
+            ImGui::Spacing();
+            ImGui::TextDisabled(
+                "Timeline + Node Editor"
+            );
+            ImGui::TextDisabled(
+                "drive reconstruction."
+            );
+
+            break;
+        }
+
+        case SovereignEditorMode::Review:
+        {
+            selectedTool=0;
+            ImGui::TextDisabled("REVIEW");
+
+            drawRailButton("select","SELECT",0,selectedTool==0,&clicked);
+
+            ImGui::Spacing();
+            ImGui::TextDisabled(
+                "Review without edits."
+            );
+
+            break;
+        }
+    }
+
     ImGui::Separator();
     drawRailButton("grid","GRID",7,showGrid,&clicked); if (clicked) showGrid=!showGrid;
     drawRailButton("axes","AXES",8,showAxes,&clicked); if (clicked) showAxes=!showAxes;
-    ImGui::EndChild();
+ImGui::EndChild();
 
     ImGui::SameLine(0.0f,6.0f);
     ImGui::BeginChild("SceneCanvas",ImGui::GetContentRegionAvail(),true,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
@@ -13336,6 +13431,7 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
+
 
 
 
