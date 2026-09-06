@@ -4870,54 +4870,6 @@ static char gSovereignEntityNames[10][64]=
     "Angle 01"
 };
 
-// SOVEREIGN_SHARED_ENTITY_STATE_V2
-// One source of truth for entity visibility / lock state.
-// Entity IDs 1..9 map directly to the current scene objects.
-static bool gSovereignEntityVisible[10]=
-{
-    false,
-    true,  // Ground Plane
-    true,  // Road Surface
-    true,  // Vehicle A
-    true,  // Vehicle B
-    true,  // Skid Mark 01
-    true,  // Marker 01
-    true,  // Debris Field 01
-    true,  // Distance 01
-    true   // Angle 01
-};
-
-static bool gSovereignEntityLocked[10]=
-{
-    false,
-    false, // Ground Plane
-    true,  // Road Surface
-    false, // Vehicle A
-    false, // Vehicle B
-    false, // Skid Mark 01
-    false, // Marker 01
-    false, // Debris Field 01
-    false, // Distance 01
-    false  // Angle 01
-};
-
-static bool sovereignEntityVisible(
-    int entityId)
-{
-    return
-        entityId>=1 &&
-        entityId<=9 &&
-        gSovereignEntityVisible[entityId];
-}
-
-static bool sovereignEntityLocked(
-    int entityId)
-{
-    return
-        entityId>=1 &&
-        entityId<=9 &&
-        gSovereignEntityLocked[entityId];
-}
 static int gSovereignRenameEntityId=0;
 static char gSovereignRenameBuffer[64]{};
 
@@ -6071,12 +6023,12 @@ static void drawDeepPropertiesInspectorBody()
     {
         ImGui::Checkbox(
             "Visible",
-            &gSovereignEntityVisible[entity]
+            &objectVisible[entity]
         );
 
         ImGui::Checkbox(
             "Locked",
-            &gSovereignEntityLocked[entity]
+            &objectLocked[entity]
         );
 
         ImGui::TextDisabled("Selectable");
@@ -6658,17 +6610,13 @@ static void outlinerLeafRow(
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem(
-            *visible ? "Hide" : "Show"))
-        {
-            *visible=!*visible;
-        }
+        ImGui::MenuItem(
+            *visible ? "Hide" : "Show"
+        );
 
-        if (ImGui::MenuItem(
-            *locked ? "Unlock" : "Lock"))
-        {
-            *locked=!*locked;
-        }
+        ImGui::MenuItem(
+            *locked ? "Unlock" : "Lock"
+        );
 
         ImGui::Separator();
         ImGui::MenuItem("Delete","Del");
@@ -6916,16 +6864,16 @@ static void drawOutliner()
                     sovereignEntityName(1),
                     UiGlyph::Folder,
                     1,
-                    &gSovereignEntityVisible[1],
-                    &gSovereignEntityLocked[1]
+                    &groundVisible,
+                    &groundLocked
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(2),
                     UiGlyph::Folder,
                     2,
-                    &gSovereignEntityVisible[2],
-                    &gSovereignEntityLocked[2]
+                    &roadVisible,
+                    &roadLocked
                 );
 
                 ImGui::TreePop();
@@ -6953,16 +6901,16 @@ static void drawOutliner()
                     sovereignEntityName(3),
                     UiGlyph::Cube,
                     3,
-                    &gSovereignEntityVisible[3],
-                    &gSovereignEntityLocked[3]
+                    &vehicleAVisible,
+                    &vehicleALocked
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(4),
                     UiGlyph::Cube,
                     4,
-                    &gSovereignEntityVisible[4],
-                    &gSovereignEntityLocked[4]
+                    &vehicleBVisible,
+                    &vehicleBLocked
                 );
 
                 ImGui::TreePop();
@@ -6991,24 +6939,24 @@ static void drawOutliner()
                     sovereignEntityName(5),
                     UiGlyph::Document,
                     5,
-                    &gSovereignEntityVisible[5],
-                    &gSovereignEntityLocked[5]
+                    &skidVisible,
+                    &skidLocked
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(6),
                     UiGlyph::Marker,
                     6,
-                    &gSovereignEntityVisible[6],
-                    &gSovereignEntityLocked[6]
+                    &markerVisible,
+                    &markerLocked
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(7),
                     UiGlyph::Document,
                     7,
-                    &gSovereignEntityVisible[7],
-                    &gSovereignEntityLocked[7]
+                    &debrisVisible,
+                    &debrisLocked
                 );
 
                 ImGui::TreePop();
@@ -7036,16 +6984,16 @@ static void drawOutliner()
                     sovereignEntityName(8),
                     UiGlyph::Ruler,
                     8,
-                    &gSovereignEntityVisible[8],
-                    &gSovereignEntityLocked[8]
+                    &distanceVisible,
+                    &distanceLocked
                 );
 
                 outlinerLeafRow(
                     sovereignEntityName(9),
                     UiGlyph::Ruler,
                     9,
-                    &gSovereignEntityVisible[9],
-                    &gSovereignEntityLocked[9]
+                    &angleVisible,
+                    &angleLocked
                 );
 
                 ImGui::TreePop();
@@ -15104,7 +15052,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 
