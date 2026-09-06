@@ -140,7 +140,6 @@ struct SceneIntake
     std::string notes;
 };
 
-// ROADSAFE_EDITOR_RECORD_FIELDS_V2
 struct EvidenceRecord
 {
     std::string id;
@@ -150,18 +149,6 @@ struct EvidenceRecord
     bool hasPosition=false;
     std::string collectionStatus;
     std::string spatialInformation;
-
-    // Current native editor parameters.
-    // Type-specific fields are intentionally kept on the evidence
-    // record so the Properties panel edits the case itself.
-    float lengthMeters=0.0f;
-    float widthMeters=0.0f;
-    float frictionCoefficient=0.70f;
-    float fieldRadiusMeters=0.0f;
-    int estimatedPieceCount=0;
-    int categoryIndex=0;
-    float confidenceScore=0.0f;
-
     ProvenanceStamp lineage;
 };
 
@@ -169,15 +156,10 @@ struct MeasurementRecord
 {
     std::string id;
     std::string type;
-    float value=0.0f;
+    double value=0.0;
     std::string unit;
     std::string method;
     std::string sourceDescription;
-
-    // 0 = metric, 1 = imperial.
-    int unitSystem=0;
-    bool locked=false;
-
     ProvenanceStamp lineage;
 };
 
@@ -189,18 +171,7 @@ struct VehicleRecord
     std::string model;
     std::string vehicleType;
     Vec3 scenePosition;
-    float sceneHeadingDegrees=0.0f;
-
-    // Native reconstruction / physics parameters.
-    float massKg=0.0f;
-    float wheelbaseMeters=0.0f;
-    float cgHeightMeters=0.0f;
-    float initialSpeedMetersPerSecond=0.0f;
-    float steeringDegrees=0.0f;
-    float frictionCoefficient=0.70f;
-    float restitution=0.20f;
-    float crushDepthMeters=0.0f;
-
+    double sceneHeadingDegrees=0.0;
     std::string mechanicalFindings;
     std::string damageSummary;
     std::vector<std::string> damagePhotoIds;
@@ -434,4 +405,3 @@ inline const char* textOr(
 }
 
 } // namespace roadsafe
-

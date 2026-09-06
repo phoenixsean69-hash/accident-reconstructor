@@ -61,192 +61,6 @@ constexpr float RIGHT_PANEL_MAX_WIDTH = 520.0f;
 // Central RoadSafe AR investigation/case state.
 // Existing editor islands will be migrated into this model incrementally.
 static roadsafe::RoadSafeCase gRoadSafeCase{};
-// ROADSAFE_EDITOR_RECORD_BINDING_V2
-// Seed the existing reconstruction scene into the new case model.
-// This only runs for a completely empty case and will not overwrite
-// case data once real load/create workflows are connected.
-static void initializeRoadSafeEditorRecords()
-{
-    static bool attempted=false;
-
-    if (attempted)
-        return;
-
-    attempted=true;
-
-    if (!gRoadSafeCase.vehicles.empty() ||
-        !gRoadSafeCase.evidence.empty() ||
-        !gRoadSafeCase.measurements.empty())
-    {
-        return;
-    }
-
-    roadsafe::VehicleRecord vehicleA;
-    vehicleA.id="VEH-0001";
-    vehicleA.make="Vehicle A";
-    vehicleA.model="Unknown";
-    vehicleA.vehicleType="Vehicle";
-    vehicleA.massKg=1500.0f;
-    vehicleA.wheelbaseMeters=2.70f;
-    vehicleA.cgHeightMeters=0.55f;
-    vehicleA.initialSpeedMetersPerSecond=12.0f;
-    vehicleA.sceneHeadingDegrees=0.0f;
-    vehicleA.steeringDegrees=0.0f;
-    vehicleA.frictionCoefficient=0.70f;
-    vehicleA.restitution=0.20f;
-    vehicleA.crushDepthMeters=0.0f;
-    vehicleA.lineage.provenance=
-        roadsafe::Provenance::Observed;
-    vehicleA.lineage.confidence=
-        roadsafe::Confidence::Moderate;
-
-    roadsafe::VehicleRecord vehicleB;
-    vehicleB.id="VEH-0002";
-    vehicleB.make="Vehicle B";
-    vehicleB.model="Unknown";
-    vehicleB.vehicleType="Vehicle";
-    vehicleB.massKg=1250.0f;
-    vehicleB.wheelbaseMeters=2.60f;
-    vehicleB.cgHeightMeters=0.52f;
-    vehicleB.initialSpeedMetersPerSecond=-8.0f;
-    vehicleB.sceneHeadingDegrees=180.0f;
-    vehicleB.steeringDegrees=0.0f;
-    vehicleB.frictionCoefficient=0.70f;
-    vehicleB.restitution=0.20f;
-    vehicleB.crushDepthMeters=0.0f;
-    vehicleB.lineage.provenance=
-        roadsafe::Provenance::Observed;
-    vehicleB.lineage.confidence=
-        roadsafe::Confidence::Moderate;
-
-    gRoadSafeCase.vehicles.push_back(vehicleA);
-    gRoadSafeCase.vehicles.push_back(vehicleB);
-
-    roadsafe::EvidenceRecord skid;
-    skid.id="EV-0001";
-    skid.type="Skid Mark";
-    skid.description="Skid Mark 01";
-    skid.collectionStatus="Observed";
-    skid.lengthMeters=24.0f;
-    skid.widthMeters=0.18f;
-    skid.frictionCoefficient=0.70f;
-    skid.categoryIndex=0;
-    skid.confidenceScore=0.90f;
-    skid.lineage.provenance=
-        roadsafe::Provenance::Observed;
-    skid.lineage.confidence=
-        roadsafe::Confidence::High;
-    skid.lineage.sourceId="Scene survey";
-
-    roadsafe::EvidenceRecord marker;
-    marker.id="EV-0002";
-    marker.type="Scene Marker";
-    marker.description="Marker 01";
-    marker.collectionStatus="Observed";
-    marker.categoryIndex=0;
-    marker.confidenceScore=0.95f;
-    marker.lineage.provenance=
-        roadsafe::Provenance::Observed;
-    marker.lineage.confidence=
-        roadsafe::Confidence::High;
-    marker.lineage.sourceId="Scene survey";
-
-    roadsafe::EvidenceRecord debris;
-    debris.id="EV-0003";
-    debris.type="Debris Field";
-    debris.description="Debris Field 01";
-    debris.collectionStatus="Observed";
-    debris.fieldRadiusMeters=2.50f;
-    debris.estimatedPieceCount=12;
-    debris.confidenceScore=0.80f;
-    debris.lineage.provenance=
-        roadsafe::Provenance::Observed;
-    debris.lineage.confidence=
-        roadsafe::Confidence::Moderate;
-    debris.lineage.sourceId="Scene survey";
-
-    gRoadSafeCase.evidence.push_back(skid);
-    gRoadSafeCase.evidence.push_back(marker);
-    gRoadSafeCase.evidence.push_back(debris);
-
-    roadsafe::MeasurementRecord distance;
-    distance.id="M-0001";
-    distance.type="Distance";
-    distance.value=12.50f;
-    distance.unit="m";
-    distance.method="Scene measurement";
-    distance.sourceDescription="Scene survey";
-    distance.unitSystem=0;
-    distance.lineage.provenance=
-        roadsafe::Provenance::Measured;
-    distance.lineage.confidence=
-        roadsafe::Confidence::High;
-
-    roadsafe::MeasurementRecord angle;
-    angle.id="M-0002";
-    angle.type="Angle";
-    angle.value=32.0f;
-    angle.unit="deg";
-    angle.method="Scene measurement";
-    angle.sourceDescription="Scene survey";
-    angle.unitSystem=0;
-    angle.lineage.provenance=
-        roadsafe::Provenance::Measured;
-    angle.lineage.confidence=
-        roadsafe::Confidence::High;
-
-    gRoadSafeCase.measurements.push_back(distance);
-    gRoadSafeCase.measurements.push_back(angle);
-
-    // Keep generated IDs safely beyond the seeded records.
-    gRoadSafeCase.nextSequence=
-        std::max<std::uint64_t>(
-            gRoadSafeCase.nextSequence,
-            8
-        );
-
-    // Seeding the built-in starter scene is not a user edit.
-    gRoadSafeCase.revision=0;
-}
-
-static bool roadSafeInputText(
-    const char* label,
-    std::string& value,
-    std::size_t capacity=128)
-{
-    const std::size_t bufferSize=
-        std::max(
-            capacity,
-            value.size()+1
-        );
-
-    std::vector<char> buffer(
-        bufferSize,
-        0
-    );
-
-    std::snprintf(
-        buffer.data(),
-        buffer.size(),
-        "%s",
-        value.c_str()
-    );
-
-    const bool changed=
-        ImGui::InputText(
-            label,
-            buffer.data(),
-            buffer.size()
-        );
-
-    if (changed)
-    {
-        value=buffer.data();
-        gRoadSafeCase.touch();
-    }
-
-    return changed;
-}
 #ifdef _WIN32
 static void applyNativeWindowTheme(GLFWwindow* window)
 {
@@ -1962,68 +1776,10 @@ static void drawCaseView()
                 StatusTone tone;
             };
 
-            char vehicleCountText[16]{};
-            char evidenceCountText[16]{};
-            char measurementCountText[16]{};
-
-            std::snprintf(
-                vehicleCountText,
-                sizeof(vehicleCountText),
-                "%zu",
-                gRoadSafeCase.vehicles.size()
-            );
-
-            std::snprintf(
-                evidenceCountText,
-                sizeof(evidenceCountText),
-                "%zu",
-                gRoadSafeCase.evidence.size()
-            );
-
-            std::snprintf(
-                measurementCountText,
-                sizeof(measurementCountText),
-                "%zu",
-                gRoadSafeCase.measurements.size()
-            );
-
-            const bool hasVehicles=
-                !gRoadSafeCase.vehicles.empty();
-
-            const bool hasEvidence=
-                !gRoadSafeCase.evidence.empty();
-
-            const bool hasMeasurements=
-                !gRoadSafeCase.measurements.empty();
-
             const PremiumCaseRow rows[]={
-                {
-                    UiGlyph::Cube,
-                    "Vehicles",
-                    vehicleCountText,
-                    hasVehicles ? "READY" : "EMPTY",
-                    hasVehicles
-                        ? StatusTone::Success
-                        : StatusTone::Neutral
-                },
-                {
-                    UiGlyph::Document,
-                    "Evidence",
-                    evidenceCountText,
-                    hasEvidence ? "READY" : "EMPTY",
-                    hasEvidence
-                        ? StatusTone::Success
-                        : StatusTone::Neutral
-                },
-                {
-                    UiGlyph::Ruler,
-                    "Measurements",
-                    measurementCountText,
-                    hasMeasurements ? "READY" : "EMPTY",
-                    hasMeasurements
-                        ? StatusTone::Success
-                        : StatusTone::Neutral
-                }
+                {UiGlyph::Cube,"Vehicles","2","READY",StatusTone::Success},
+                {UiGlyph::Document,"Evidence","0","EMPTY",StatusTone::Neutral},
+                {UiGlyph::Ruler,"Measurements","0","EMPTY",StatusTone::Neutral}
             };
 
             for (const PremiumCaseRow& row:rows)
@@ -6257,10 +6013,6 @@ if (section("TRANSFORM"))
     if (entity==3 | entity==4)
     {
         const int i=entity-3;
-        auto& vehicle=
-            gRoadSafeCase.vehicles[
-                static_cast<std::size_t>(i)
-            ];
 
         if (section("VEHICLE PHYSICS"))
         {
@@ -6271,7 +6023,11 @@ if (section("TRANSFORM"))
                 )
             );
 
-            roadSafeInputText("Make / ID",vehicle.make,96);
+            ImGui::InputText(
+                "Make / ID",
+                vehicleMake[i],
+                sizeof(vehicleMake[i])
+            );
 
             ImGui::SetNextItemWidth(
                 std::max(
@@ -6280,7 +6036,11 @@ if (section("TRANSFORM"))
                 )
             );
 
-            roadSafeInputText("Model",vehicle.model,96);
+            ImGui::InputText(
+                "Model",
+                vehicleModel[i],
+                sizeof(vehicleModel[i])
+            );
 
             ImGui::SetNextItemWidth(
                 std::max(
@@ -6291,7 +6051,7 @@ if (section("TRANSFORM"))
 
             ImGui::DragFloat(
                 "Mass",
-                &vehicle.massKg,
+                &vehicleMass[i],
                 5.0f,
                 1.0f,
                 100000.0f,
@@ -6307,7 +6067,7 @@ if (section("TRANSFORM"))
 
             ImGui::DragFloat(
                 "Wheelbase",
-                &vehicle.wheelbaseMeters,
+                &vehicleWheelbase[i],
                 0.01f,
                 0.50f,
                 10.0f,
@@ -6323,7 +6083,7 @@ if (section("TRANSFORM"))
 
             ImGui::DragFloat(
                 "CG height",
-                &vehicle.cgHeightMeters,
+                &vehicleCgHeight[i],
                 0.01f,
                 0.05f,
                 5.0f,
@@ -6342,7 +6102,7 @@ if (section("TRANSFORM"))
 
             ImGui::DragFloat(
                 "Velocity",
-                &vehicle.initialSpeedMetersPerSecond,
+                &vehicleVelocity[i],
                 0.10f,
                 -200.0f,
                 200.0f,
@@ -6358,7 +6118,7 @@ if (section("TRANSFORM"))
 
             ImGui::DragFloat(
                 "Heading",
-                &vehicle.sceneHeadingDegrees,
+                &vehicleHeading[i],
                 0.25f,
                 -360.0f,
                 360.0f,
@@ -6374,7 +6134,7 @@ if (section("TRANSFORM"))
 
             ImGui::DragFloat(
                 "Steering",
-                &vehicle.steeringDegrees,
+                &vehicleSteering[i],
                 0.10f,
                 -60.0f,
                 60.0f,
@@ -6393,7 +6153,7 @@ if (section("TRANSFORM"))
 
             ImGui::SliderFloat(
                 "Friction coefficient",
-                &vehicle.frictionCoefficient,
+                &vehicleFriction[i],
                 0.05f,
                 1.50f,
                 "%.2f"
@@ -6411,7 +6171,7 @@ if (section("TRANSFORM"))
 
             ImGui::DragFloat(
                 "Crush depth",
-                &vehicle.crushDepthMeters,
+                &vehicleCrushDepth[i],
                 0.01f,
                 0.0f,
                 5.0f,
@@ -6427,7 +6187,7 @@ if (section("TRANSFORM"))
 
             ImGui::SliderFloat(
                 "Restitution",
-                &vehicle.restitution,
+                &vehicleRestitution[i],
                 0.0f,
                 1.0f,
                 "%.2f"
@@ -6438,12 +6198,6 @@ if (section("TRANSFORM"))
     // Evidence: Skid / Marker / Debris
     if (entity>=5 && entity<=7)
     {
-        auto& evidence=
-            gRoadSafeCase.evidence[
-                static_cast<std::size_t>(
-                    entity-5
-                )
-            ];
         if (section("EVIDENCE METADATA"))
         {
             ImGui::SetNextItemWidth(
@@ -6453,7 +6207,11 @@ if (section("TRANSFORM"))
                 )
             );
 
-            roadSafeInputText("Source",evidence.lineage.sourceId,128);
+            ImGui::InputText(
+                "Source",
+                evidenceSource,
+                sizeof(evidenceSource)
+            );
 
             if (entity==5)
             {
@@ -6473,7 +6231,7 @@ if (section("TRANSFORM"))
 
                 ImGui::Combo(
                     "Evidence type",
-                    &evidence.categoryIndex,
+                    &skidEvidenceType,
                     skidTypes,
                     4
                 );
@@ -6487,7 +6245,7 @@ if (section("TRANSFORM"))
 
                 ImGui::DragFloat(
                     "Length",
-                    &evidence.lengthMeters,
+                    &skidLength,
                     0.05f,
                     0.0f,
                     1000.0f,
@@ -6503,7 +6261,7 @@ if (section("TRANSFORM"))
 
                 ImGui::DragFloat(
                     "Width",
-                    &evidence.widthMeters,
+                    &skidWidth,
                     0.01f,
                     0.01f,
                     5.0f,
@@ -6519,7 +6277,7 @@ if (section("TRANSFORM"))
 
                 ImGui::SliderFloat(
                     "Friction coefficient",
-                    &evidence.frictionCoefficient,
+                    &skidFriction,
                     0.05f,
                     1.50f,
                     "%.2f"
@@ -6534,7 +6292,7 @@ if (section("TRANSFORM"))
 
                 ImGui::SliderFloat(
                     "Confidence",
-                    &evidence.confidenceScore,
+                    &skidConfidence,
                     0.0f,
                     1.0f,
                     "%.2f"
@@ -6558,7 +6316,7 @@ if (section("TRANSFORM"))
 
                 ImGui::Combo(
                     "Category",
-                    &evidence.categoryIndex,
+                    &markerCategory,
                     markerTypes,
                     4
                 );
@@ -6572,7 +6330,7 @@ if (section("TRANSFORM"))
 
                 ImGui::SliderFloat(
                     "Confidence",
-                    &evidence.confidenceScore,
+                    &markerConfidence,
                     0.0f,
                     1.0f,
                     "%.2f"
@@ -6589,7 +6347,7 @@ if (section("TRANSFORM"))
 
                 ImGui::DragFloat(
                     "Field radius",
-                    &evidence.fieldRadiusMeters,
+                    &debrisRadius,
                     0.05f,
                     0.0f,
                     100.0f,
@@ -6605,7 +6363,7 @@ if (section("TRANSFORM"))
 
                 ImGui::DragInt(
                     "Estimated pieces",
-                    &evidence.estimatedPieceCount,
+                    &debrisPieceCount,
                     1.0f,
                     0,
                     10000
@@ -6620,7 +6378,7 @@ if (section("TRANSFORM"))
 
                 ImGui::SliderFloat(
                     "Confidence",
-                    &evidence.confidenceScore,
+                    &debrisConfidence,
                     0.0f,
                     1.0f,
                     "%.2f"
@@ -6632,12 +6390,6 @@ if (section("TRANSFORM"))
     // Measurements: Distance / Angle
     if (entity==8 | entity==9)
     {
-        auto& measurement=
-            gRoadSafeCase.measurements[
-                static_cast<std::size_t>(
-                    entity-8
-                )
-            ];
         if (section("MEASUREMENT SETTINGS"))
         {
             const char* units[]={
@@ -6654,7 +6406,7 @@ if (section("TRANSFORM"))
 
             ImGui::Combo(
                 "Units",
-                &measurement.unitSystem,
+                &measurementUnits,
                 units,
                 2
             );
@@ -6670,11 +6422,11 @@ if (section("TRANSFORM"))
 
                 ImGui::DragFloat(
                     "Distance",
-                    &measurement.value,
+                    &measurementDistance,
                     0.01f,
                     0.0f,
                     100000.0f,
-                    measurement.unitSystem==0
+                    measurementUnits==0
                         ? "%.3f m"
                         : "%.3f ft"
                 );
@@ -6690,7 +6442,7 @@ if (section("TRANSFORM"))
 
                 ImGui::DragFloat(
                     "Angle",
-                    &measurement.value,
+                    &measurementAngle,
                     0.10f,
                     -360.0f,
                     360.0f,
@@ -6700,7 +6452,7 @@ if (section("TRANSFORM"))
 
             ImGui::Checkbox(
                 "Lock measurement",
-                &measurement.locked
+                &measurementLocked
             );
         }
     }
@@ -15497,8 +15249,7 @@ static void drawProblemsPanel()
 }
 static void drawInterface()
 {
-    initializeRoadSafeEditorRecords();
-static bool layoutBuilt=false;
+    static bool layoutBuilt=false;
     static ImGuiID rightDockNodeId=0;
 
     if (!gViewportFullscreen &&
@@ -15805,7 +15556,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 
