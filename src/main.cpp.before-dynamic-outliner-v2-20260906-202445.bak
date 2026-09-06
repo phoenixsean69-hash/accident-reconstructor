@@ -300,7 +300,7 @@ static void initializeRoadSafeEditorRecords()
     gRoadSafeCase.nextSequence=
         std::max<std::uint64_t>(
             gRoadSafeCase.nextSequence,
-            10
+            8
         );
 
     // Seeding the built-in starter scene is not a user edit.
@@ -344,49 +344,6 @@ static bool roadSafeInputText(
     }
 
     return changed;
-}
-
-// Active domain counts remain correct after non-destructive deletes.
-static std::size_t roadSafeActiveVehicleCount()
-{
-    return static_cast<std::size_t>(
-        std::count_if(
-            gRoadSafeCase.vehicles.begin(),
-            gRoadSafeCase.vehicles.end(),
-            [](const roadsafe::VehicleRecord& record)
-            {
-                return record.active;
-            }
-        )
-    );
-}
-
-static std::size_t roadSafeActiveEvidenceCount()
-{
-    return static_cast<std::size_t>(
-        std::count_if(
-            gRoadSafeCase.evidence.begin(),
-            gRoadSafeCase.evidence.end(),
-            [](const roadsafe::EvidenceRecord& record)
-            {
-                return record.active;
-            }
-        )
-    );
-}
-
-static std::size_t roadSafeActiveMeasurementCount()
-{
-    return static_cast<std::size_t>(
-        std::count_if(
-            gRoadSafeCase.measurements.begin(),
-            gRoadSafeCase.measurements.end(),
-            [](const roadsafe::MeasurementRecord& record)
-            {
-                return record.active;
-            }
-        )
-    );
 }
 #ifdef _WIN32
 static void applyNativeWindowTheme(GLFWwindow* window)
@@ -2111,31 +2068,31 @@ static void drawCaseView()
                 vehicleCountText,
                 sizeof(vehicleCountText),
                 "%zu",
-                roadSafeActiveVehicleCount()
+                gRoadSafeCase.vehicles.size()
             );
 
             std::snprintf(
                 evidenceCountText,
                 sizeof(evidenceCountText),
                 "%zu",
-                roadSafeActiveEvidenceCount()
+                gRoadSafeCase.evidence.size()
             );
 
             std::snprintf(
                 measurementCountText,
                 sizeof(measurementCountText),
                 "%zu",
-                roadSafeActiveMeasurementCount()
+                gRoadSafeCase.measurements.size()
             );
 
             const bool hasVehicles=
-                roadSafeActiveVehicleCount()>0;
+                !gRoadSafeCase.vehicles.empty();
 
             const bool hasEvidence=
-                roadSafeActiveEvidenceCount()>0;
+                !gRoadSafeCase.evidence.empty();
 
             const bool hasMeasurements=
-                roadSafeActiveMeasurementCount()>0;
+                !gRoadSafeCase.measurements.empty();
 
             const PremiumCaseRow rows[]={
                 {
@@ -5819,11 +5776,8 @@ static const char* sovereignEntityName(
 static void beginSovereignEntityRename(
     int entityId)
 {
-    if (entityId<1 ||
-        roadSafeSceneEntityConst(entityId)==nullptr)
-    {
+    if (entityId<1 || entityId>9)
         return;
-    }
 
     gSovereignRenameEntityId=entityId;
 
@@ -5907,24 +5861,18 @@ static void drawSovereignRenamePopup()
         if ((submitted || renamePressed) &&
             validName)
         {
-            // Preserve the old compatibility name table only for
-            // the original starter-scene IDs.
-            if (gSovereignRenameEntityId>=1 &&
-                gSovereignRenameEntityId<=9)
-            {
-                std::snprintf(
+            std::snprintf(
+                gSovereignEntityNames[
+                    gSovereignRenameEntityId
+                ],
+                sizeof(
                     gSovereignEntityNames[
                         gSovereignRenameEntityId
-                    ],
-                    sizeof(
-                        gSovereignEntityNames[
-                            gSovereignRenameEntityId
-                        ]
-                    ),
-                    "%s",
-                    gSovereignRenameBuffer
-                );
-            }
+                    ]
+                ),
+                "%s",
+                gSovereignRenameBuffer
+            );
 
             if (auto* sceneEntity=
                     roadSafeSceneEntity(
@@ -6165,11 +6113,14 @@ static void setSharedEntitySelection(
     int entity,
     const char* source)
 {
-    if (entity!=0 &&
-        roadSafeSceneEntityConst(entity)==nullptr)
-    {
-        entity=0;
-    }
+    entity=
+        std::max(
+            0,
+            std::min(
+                9,
+                entity
+            )
+        );
 
     if (gEditorShell.selectedEntity!=entity)
     {
@@ -6205,28 +6156,16 @@ static void clearSharedEntitySelection(
 
 static bool sharedSelectionIsEvidence()
 {
-    const auto* entity=
-        roadSafeSceneEntityConst(
-            gEditorShell.selectedEntity
-        );
-
     return
-        entity &&
-        entity->kind==
-            roadsafe::SceneEntityKind::Evidence;
+        gEditorShell.selectedEntity>=5 &&
+        gEditorShell.selectedEntity<=7;
 }
 
 static bool sharedSelectionIsMeasurement()
 {
-    const auto* entity=
-        roadSafeSceneEntityConst(
-            gEditorShell.selectedEntity
-        );
-
     return
-        entity &&
-        entity->kind==
-            roadsafe::SceneEntityKind::Measurement;
+        gEditorShell.selectedEntity>=8 &&
+        gEditorShell.selectedEntity<=9;
 }
 
 // SOVEREIGN_RIGHT_PANEL_CONTENT_FIT_V2
@@ -6336,20 +6275,13 @@ static void drawDeepPropertiesInspectorBody()
     static char objectNotes[256]="";
 
     const int entity=
-        gEditorShell.selectedEntity;
-
-    const auto* selectedSceneEntity=
-        entity!=0
-            ? roadSafeSceneEntityConst(entity)
-            : nullptr;
-
-    if (entity!=0 && !selectedSceneEntity)
-    {
-        ImGui::TextDisabled(
-            "Selected scene object is no longer available."
+        std::max(
+            0,
+            std::min(
+                9,
+                gEditorShell.selectedEntity
+            )
         );
-        return;
-    }
 
     auto section =
         [](const char* label)
@@ -7043,42 +6975,19 @@ if (section("VISIBILITY"))
     {
         ImGui::TextDisabled("Object ID");
         ImGui::SameLine();
-
-        if (selectedSceneEntity)
-            ImGui::Text("%s",selectedSceneEntity->id.c_str());
-        else
-            ImGui::TextUnformatted("-");
-
-        ImGui::TextDisabled("Editor ID");
-        ImGui::SameLine();
         ImGui::Text("%d",entity);
 
         ImGui::TextDisabled("Type");
         ImGui::SameLine();
 
-        const char* type="Unknown";
-
-        if (selectedSceneEntity)
-        {
-            switch (selectedSceneEntity->kind)
-            {
-                case roadsafe::SceneEntityKind::Environment:
-                    type="Environment";
-                    break;
-
-                case roadsafe::SceneEntityKind::Vehicle:
-                    type="Vehicle";
-                    break;
-
-                case roadsafe::SceneEntityKind::Evidence:
-                    type="Evidence";
-                    break;
-
-                case roadsafe::SceneEntityKind::Measurement:
-                    type="Measurement";
-                    break;
-            }
-        }
+        const char* type=
+            entity<=2
+                ? "Environment"
+                : (entity<=4
+                    ? "Vehicle"
+                    : (entity<=7
+                        ? "Evidence"
+                        : "Measurement"));
 
         ImGui::TextUnformatted(type);
 
@@ -7128,23 +7037,37 @@ static bool shellSelectedEntityLocked()
 
     return
         entity>=1 &&
+        entity<=9 &&
         sovereignEntityLocked(entity);
 }
-static UiGlyph roadSafeSceneEntityGlyph(
-    const roadsafe::SceneEntityRecord& entity);
-
 static UiGlyph selectedEntityGlyph()
 {
-    const auto* entity=
-        roadSafeSceneEntityConst(
-            gEditorShell.selectedEntity
-        );
+    switch (gEditorShell.selectedEntity)
+    {
+        case 1:
+        case 2:
+            return UiGlyph::Folder;
 
-    return
-        entity
-            ? roadSafeSceneEntityGlyph(*entity)
-            : UiGlyph::Info;
+        case 3:
+        case 4:
+            return UiGlyph::Cube;
+
+        case 5:
+        case 7:
+            return UiGlyph::Document;
+
+        case 6:
+            return UiGlyph::Marker;
+
+        case 8:
+        case 9:
+            return UiGlyph::Ruler;
+
+        default:
+            return UiGlyph::Info;
+    }
 }
+
 static bool shellLabelMatches(const char* label)
 {
     if (gEditorShell.outlinerSearch[0]=='\0')
@@ -7158,520 +7081,6 @@ static bool shellLabelMatches(const char* label)
     ) != nullptr;
 }
 
-// ROADSAFE_DYNAMIC_OUTLINER_LIFECYCLE_V2
-enum class RoadSafePendingSceneAction
-{
-    None=0,
-    AddVehicle,
-    AddEvidence,
-    AddMeasurement,
-    AddMarker,
-    Duplicate,
-    Delete
-};
-
-static RoadSafePendingSceneAction
-    gRoadSafePendingSceneAction=
-        RoadSafePendingSceneAction::None;
-
-static int gRoadSafePendingSceneEntityId=0;
-
-static int roadSafeNextSceneEntityId()
-{
-    int nextId=1;
-
-    for (const auto& entity :
-         gRoadSafeCase.sceneEntities)
-    {
-        nextId=
-            std::max(
-                nextId,
-                entity.legacyId+1
-            );
-    }
-
-    return nextId;
-}
-
-static UiGlyph roadSafeSceneEntityGlyph(
-    const roadsafe::SceneEntityRecord& entity)
-{
-    switch (entity.kind)
-    {
-        case roadsafe::SceneEntityKind::Environment:
-            return UiGlyph::Folder;
-
-        case roadsafe::SceneEntityKind::Vehicle:
-            return UiGlyph::Cube;
-
-        case roadsafe::SceneEntityKind::Measurement:
-            return UiGlyph::Ruler;
-
-        case roadsafe::SceneEntityKind::Evidence:
-        {
-            if (entity.recordIndex>=0 &&
-                static_cast<std::size_t>(
-                    entity.recordIndex
-                )<gRoadSafeCase.evidence.size())
-            {
-                const auto& evidence=
-                    gRoadSafeCase.evidence[
-                        static_cast<std::size_t>(
-                            entity.recordIndex
-                        )
-                    ];
-
-                if (evidence.type=="Scene Marker")
-                    return UiGlyph::Marker;
-            }
-
-            return UiGlyph::Document;
-        }
-    }
-
-    return UiGlyph::Info;
-}
-
-static void queueRoadSafeSceneAction(
-    RoadSafePendingSceneAction action,
-    int entityId=0)
-{
-    gRoadSafePendingSceneAction=action;
-    gRoadSafePendingSceneEntityId=entityId;
-}
-
-static void roadSafeAddSceneEntity(
-    RoadSafePendingSceneAction action)
-{
-    const int editorId=
-        roadSafeNextSceneEntityId();
-
-    roadsafe::SceneEntityRecord scene;
-    scene.id=
-        gRoadSafeCase.allocateId("SCN");
-    scene.legacyId=editorId;
-    scene.active=true;
-    scene.visible=true;
-    scene.locked=false;
-
-    char name[96]{};
-
-    switch (action)
-    {
-        case RoadSafePendingSceneAction::AddVehicle:
-        {
-            roadsafe::VehicleRecord record;
-            record.id=
-                gRoadSafeCase.allocateId("VEH");
-            record.active=true;
-            record.make="Vehicle";
-            record.model="Unknown";
-            record.vehicleType="Vehicle";
-            record.massKg=1500.0f;
-            record.wheelbaseMeters=2.70f;
-            record.cgHeightMeters=0.55f;
-            record.frictionCoefficient=0.70f;
-            record.restitution=0.20f;
-            record.lineage.provenance=
-                roadsafe::Provenance::InvestigatorAssumption;
-            record.lineage.confidence=
-                roadsafe::Confidence::Unverified;
-
-            scene.kind=
-                roadsafe::SceneEntityKind::Vehicle;
-            scene.recordIndex=
-                static_cast<int>(
-                    gRoadSafeCase.vehicles.size()
-                );
-
-            std::snprintf(
-                name,
-                sizeof(name),
-                "Vehicle %d",
-                editorId
-            );
-
-            record.make=name;
-
-            gRoadSafeCase.vehicles.push_back(
-                record
-            );
-            break;
-        }
-
-        case RoadSafePendingSceneAction::AddEvidence:
-        {
-            roadsafe::EvidenceRecord record;
-            record.id=
-                gRoadSafeCase.allocateId("EV");
-            record.active=true;
-            record.type="Evidence";
-            record.collectionStatus="Observed";
-            record.confidenceScore=0.50f;
-            record.lineage.provenance=
-                roadsafe::Provenance::Observed;
-            record.lineage.confidence=
-                roadsafe::Confidence::Unverified;
-
-            scene.kind=
-                roadsafe::SceneEntityKind::Evidence;
-            scene.recordIndex=
-                static_cast<int>(
-                    gRoadSafeCase.evidence.size()
-                );
-
-            std::snprintf(
-                name,
-                sizeof(name),
-                "Evidence %d",
-                editorId
-            );
-
-            record.description=name;
-
-            gRoadSafeCase.evidence.push_back(
-                record
-            );
-            break;
-        }
-
-        case RoadSafePendingSceneAction::AddMarker:
-        {
-            roadsafe::EvidenceRecord record;
-            record.id=
-                gRoadSafeCase.allocateId("EV");
-            record.active=true;
-            record.type="Scene Marker";
-            record.collectionStatus="Observed";
-            record.confidenceScore=0.50f;
-            record.lineage.provenance=
-                roadsafe::Provenance::Observed;
-            record.lineage.confidence=
-                roadsafe::Confidence::Unverified;
-
-            scene.kind=
-                roadsafe::SceneEntityKind::Evidence;
-            scene.recordIndex=
-                static_cast<int>(
-                    gRoadSafeCase.evidence.size()
-                );
-
-            std::snprintf(
-                name,
-                sizeof(name),
-                "Marker %d",
-                editorId
-            );
-
-            record.description=name;
-
-            gRoadSafeCase.evidence.push_back(
-                record
-            );
-            break;
-        }
-
-        case RoadSafePendingSceneAction::AddMeasurement:
-        {
-            roadsafe::MeasurementRecord record;
-            record.id=
-                gRoadSafeCase.allocateId("M");
-            record.active=true;
-            record.type="Distance";
-            record.unit="m";
-            record.method="Scene measurement";
-            record.lineage.provenance=
-                roadsafe::Provenance::Measured;
-            record.lineage.confidence=
-                roadsafe::Confidence::Unverified;
-
-            scene.kind=
-                roadsafe::SceneEntityKind::Measurement;
-            scene.recordIndex=
-                static_cast<int>(
-                    gRoadSafeCase.measurements.size()
-                );
-
-            std::snprintf(
-                name,
-                sizeof(name),
-                "Distance %d",
-                editorId
-            );
-
-            gRoadSafeCase.measurements.push_back(
-                record
-            );
-            break;
-        }
-
-        default:
-            return;
-    }
-
-    scene.name=name;
-
-    gRoadSafeCase.sceneEntities.push_back(
-        scene
-    );
-
-    gRoadSafeCase.touch();
-
-    setSharedEntitySelection(
-        editorId,
-        "Add"
-    );
-}
-
-static void roadSafeDuplicateSceneEntity(
-    int entityId)
-{
-    const auto* source=
-        roadSafeSceneEntityConst(entityId);
-
-    if (!source || !source->active)
-        return;
-
-    // Copy before any vector push_back can invalidate pointers.
-    roadsafe::SceneEntityRecord duplicate=
-        *source;
-
-    const int newEditorId=
-        roadSafeNextSceneEntityId();
-
-    duplicate.id=
-        gRoadSafeCase.allocateId("SCN");
-    duplicate.legacyId=newEditorId;
-    duplicate.active=true;
-    duplicate.locked=false;
-    duplicate.position[0]+=0.50f;
-    duplicate.name=
-        source->name+
-        " Copy";
-
-    switch (source->kind)
-    {
-        case roadsafe::SceneEntityKind::Vehicle:
-        {
-            if (source->recordIndex>=0 &&
-                static_cast<std::size_t>(
-                    source->recordIndex
-                )<gRoadSafeCase.vehicles.size())
-            {
-                auto record=
-                    gRoadSafeCase.vehicles[
-                        static_cast<std::size_t>(
-                            source->recordIndex
-                        )
-                    ];
-
-                record.id=
-                    gRoadSafeCase.allocateId("VEH");
-                record.active=true;
-
-                duplicate.recordIndex=
-                    static_cast<int>(
-                        gRoadSafeCase.vehicles.size()
-                    );
-
-                gRoadSafeCase.vehicles.push_back(
-                    record
-                );
-            }
-            break;
-        }
-
-        case roadsafe::SceneEntityKind::Evidence:
-        {
-            if (source->recordIndex>=0 &&
-                static_cast<std::size_t>(
-                    source->recordIndex
-                )<gRoadSafeCase.evidence.size())
-            {
-                auto record=
-                    gRoadSafeCase.evidence[
-                        static_cast<std::size_t>(
-                            source->recordIndex
-                        )
-                    ];
-
-                record.id=
-                    gRoadSafeCase.allocateId("EV");
-                record.active=true;
-
-                duplicate.recordIndex=
-                    static_cast<int>(
-                        gRoadSafeCase.evidence.size()
-                    );
-
-                gRoadSafeCase.evidence.push_back(
-                    record
-                );
-            }
-            break;
-        }
-
-        case roadsafe::SceneEntityKind::Measurement:
-        {
-            if (source->recordIndex>=0 &&
-                static_cast<std::size_t>(
-                    source->recordIndex
-                )<gRoadSafeCase.measurements.size())
-            {
-                auto record=
-                    gRoadSafeCase.measurements[
-                        static_cast<std::size_t>(
-                            source->recordIndex
-                        )
-                    ];
-
-                record.id=
-                    gRoadSafeCase.allocateId("M");
-                record.active=true;
-
-                duplicate.recordIndex=
-                    static_cast<int>(
-                        gRoadSafeCase.measurements.size()
-                    );
-
-                gRoadSafeCase.measurements.push_back(
-                    record
-                );
-            }
-            break;
-        }
-
-        case roadsafe::SceneEntityKind::Environment:
-            duplicate.recordIndex=-1;
-            break;
-    }
-
-    gRoadSafeCase.sceneEntities.push_back(
-        duplicate
-    );
-
-    gRoadSafeCase.touch();
-
-    setSharedEntitySelection(
-        newEditorId,
-        "Duplicate"
-    );
-}
-
-static void roadSafeDeleteSceneEntity(
-    int entityId)
-{
-    auto* scene=
-        roadSafeSceneEntity(entityId);
-
-    if (!scene ||
-        !scene->active ||
-        scene->locked)
-    {
-        return;
-    }
-
-    const auto kind=scene->kind;
-    const int recordIndex=
-        scene->recordIndex;
-
-    scene->active=false;
-
-    switch (kind)
-    {
-        case roadsafe::SceneEntityKind::Vehicle:
-            if (recordIndex>=0 &&
-                static_cast<std::size_t>(
-                    recordIndex
-                )<gRoadSafeCase.vehicles.size())
-            {
-                gRoadSafeCase.vehicles[
-                    static_cast<std::size_t>(
-                        recordIndex
-                    )
-                ].active=false;
-            }
-            break;
-
-        case roadsafe::SceneEntityKind::Evidence:
-            if (recordIndex>=0 &&
-                static_cast<std::size_t>(
-                    recordIndex
-                )<gRoadSafeCase.evidence.size())
-            {
-                gRoadSafeCase.evidence[
-                    static_cast<std::size_t>(
-                        recordIndex
-                    )
-                ].active=false;
-            }
-            break;
-
-        case roadsafe::SceneEntityKind::Measurement:
-            if (recordIndex>=0 &&
-                static_cast<std::size_t>(
-                    recordIndex
-                )<gRoadSafeCase.measurements.size())
-            {
-                gRoadSafeCase.measurements[
-                    static_cast<std::size_t>(
-                        recordIndex
-                    )
-                ].active=false;
-            }
-            break;
-
-        case roadsafe::SceneEntityKind::Environment:
-            break;
-    }
-
-    if (gEditorShell.selectedEntity==entityId)
-    {
-        clearSharedEntitySelection(
-            "Delete"
-        );
-    }
-
-    gRoadSafeCase.touch();
-}
-
-static void processRoadSafePendingSceneAction()
-{
-    const auto action=
-        gRoadSafePendingSceneAction;
-
-    const int entityId=
-        gRoadSafePendingSceneEntityId;
-
-    gRoadSafePendingSceneAction=
-        RoadSafePendingSceneAction::None;
-    gRoadSafePendingSceneEntityId=0;
-
-    switch (action)
-    {
-        case RoadSafePendingSceneAction::AddVehicle:
-        case RoadSafePendingSceneAction::AddEvidence:
-        case RoadSafePendingSceneAction::AddMeasurement:
-        case RoadSafePendingSceneAction::AddMarker:
-            roadSafeAddSceneEntity(action);
-            break;
-
-        case RoadSafePendingSceneAction::Duplicate:
-            roadSafeDuplicateSceneEntity(
-                entityId
-            );
-            break;
-
-        case RoadSafePendingSceneAction::Delete:
-            roadSafeDeleteSceneEntity(
-                entityId
-            );
-            break;
-
-        case RoadSafePendingSceneAction::None:
-            break;
-    }
-}
 static void toolbarSeparator()
 {
     const ImVec2 p=ImGui::GetCursorScreenPos();
@@ -7818,27 +7227,10 @@ static void drawEditorToolbar()
     {
         ImGui::TextDisabled("ADD TO SCENE");
         ImGui::Separator();
-
-        if (ImGui::MenuItem("Vehicle"))
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::AddVehicle
-            );
-
-        if (ImGui::MenuItem("Evidence"))
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::AddEvidence
-            );
-
-        if (ImGui::MenuItem("Measurement"))
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::AddMeasurement
-            );
-
-        if (ImGui::MenuItem("Scene Marker"))
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::AddMarker
-            );
-
+        ImGui::MenuItem("Vehicle");
+        ImGui::MenuItem("Evidence");
+        ImGui::MenuItem("Measurement");
+        ImGui::MenuItem("Scene Marker");
         ImGui::EndPopup();
     }
 
@@ -8069,29 +7461,13 @@ static void outlinerLeafRow(
 
         if (ImGui::MenuItem("Rename","F2"))
             beginSovereignEntityRename(entityId);
-        if (ImGui::MenuItem("Duplicate","Ctrl+D"))
-        {
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::Duplicate,
-                entityId
-            );
-        }
+        ImGui::MenuItem("Duplicate","Ctrl+D");
 
         if (ImGui::MenuItem("Focus in Viewport","F"))
             setSharedEntitySelection(entityId,"Outliner");
 
         ImGui::Separator();
-        ImGui::BeginDisabled(*locked);
-
-        if (ImGui::MenuItem("Delete","Del"))
-        {
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::Delete,
-                entityId
-            );
-        }
-
-        ImGui::EndDisabled();
+        ImGui::MenuItem("Delete","Del");
 
         ImGui::EndPopup();
     }
@@ -8114,7 +7490,6 @@ static void outlinerLeafRow(
             : "Hidden - click to show"))
     {
         *visible=!*visible;
-        gRoadSafeCase.touch();
     }
 
     // --------------------------------------------------------
@@ -8135,7 +7510,6 @@ static void outlinerLeafRow(
             : "Unlocked - click to lock"))
     {
         *locked=!*locked;
-        gRoadSafeCase.touch();
     }
 
     // --------------------------------------------------------
@@ -8182,13 +7556,7 @@ static void outlinerLeafRow(
 
         if (ImGui::MenuItem("Rename","F2"))
             beginSovereignEntityRename(entityId);
-        if (ImGui::MenuItem("Duplicate","Ctrl+D"))
-        {
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::Duplicate,
-                entityId
-            );
-        }
+        ImGui::MenuItem("Duplicate","Ctrl+D");
 
         if (ImGui::MenuItem("Focus in Viewport","F"))
             setSharedEntitySelection(entityId,"Outliner");
@@ -8199,28 +7567,16 @@ static void outlinerLeafRow(
             *visible ? "Hide" : "Show"))
         {
             *visible=!*visible;
-        gRoadSafeCase.touch();
         }
 
         if (ImGui::MenuItem(
             *locked ? "Unlock" : "Lock"))
         {
             *locked=!*locked;
-        gRoadSafeCase.touch();
         }
 
         ImGui::Separator();
-        ImGui::BeginDisabled(*locked);
-
-        if (ImGui::MenuItem("Delete","Del"))
-        {
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::Delete,
-                entityId
-            );
-        }
-
-        ImGui::EndDisabled();
+        ImGui::MenuItem("Delete","Del");
 
         ImGui::EndPopup();
     }
@@ -8333,27 +7689,10 @@ static void drawOutliner()
     {
         ImGui::TextDisabled("ADD OBJECT");
         ImGui::Separator();
-
-        if (ImGui::MenuItem("Vehicle"))
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::AddVehicle
-            );
-
-        if (ImGui::MenuItem("Evidence"))
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::AddEvidence
-            );
-
-        if (ImGui::MenuItem("Measurement"))
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::AddMeasurement
-            );
-
-        if (ImGui::MenuItem("Scene Marker"))
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::AddMarker
-            );
-
+        ImGui::MenuItem("Vehicle");
+        ImGui::MenuItem("Evidence");
+        ImGui::MenuItem("Measurement");
+        ImGui::MenuItem("Scene Marker");
         ImGui::EndPopup();
     }
 
@@ -8464,89 +7803,164 @@ static void drawOutliner()
             "More actions"
         );
 
+        const bool envMatches =
+            shellLabelMatches("Ground Plane") |
+            shellLabelMatches("Road Surface");
 
-        const auto groupHasMatches=
-            [](roadsafe::SceneEntityKind kind)
+        if (envMatches)
         {
-            for (const auto& entity :
-                 gRoadSafeCase.sceneEntities)
-            {
-                if (entity.active &&
-                    entity.kind==kind &&
-                    shellLabelMatches(
-                        entity.name.c_str()
-                    ))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        };
-
-        const auto drawSceneGroup=
-            [&](const char* label,
-                roadsafe::SceneEntityKind kind)
-        {
-            if (!groupHasMatches(kind))
-                return;
-
             ImGui::TableNextRow();
             ImGui::TableSetColumnIndex(0);
 
-            const bool open=
-                ImGui::TreeNodeEx(
-                    label,
-                    ImGuiTreeNodeFlags_DefaultOpen |
-                    ImGuiTreeNodeFlags_SpanAvailWidth
-                );
+            const bool open=ImGui::TreeNodeEx(
+                "Environment",
+                ImGuiTreeNodeFlags_DefaultOpen |
+                ImGuiTreeNodeFlags_SpanAvailWidth
+            );
 
-            if (!open)
-                return;
-
-            for (auto& entity :
-                 gRoadSafeCase.sceneEntities)
+            if (open)
             {
-                if (!entity.active ||
-                    entity.kind!=kind ||
-                    !shellLabelMatches(
-                        entity.name.c_str()
-                    ))
-                {
-                    continue;
-                }
+                outlinerLeafRow(
+                    sovereignEntityName(1),
+                    UiGlyph::Folder,
+                    1,
+                    roadSafeEntityVisiblePtr(1),
+                    roadSafeEntityLockedPtr(1)
+                );
 
                 outlinerLeafRow(
-                    entity.name.c_str(),
-                    roadSafeSceneEntityGlyph(entity),
-                    entity.legacyId,
-                    &entity.visible,
-                    &entity.locked
+                    sovereignEntityName(2),
+                    UiGlyph::Folder,
+                    2,
+                    roadSafeEntityVisiblePtr(2),
+                    roadSafeEntityLockedPtr(2)
                 );
+
+                ImGui::TreePop();
             }
+        }
 
-            ImGui::TreePop();
-        };
+        const bool vehicleMatches =
+            shellLabelMatches("Vehicle A") |
+            shellLabelMatches("Vehicle B");
 
-        drawSceneGroup(
-            "Environment",
-            roadsafe::SceneEntityKind::Environment
-        );
+        if (vehicleMatches)
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
 
-        drawSceneGroup(
-            "Vehicles",
-            roadsafe::SceneEntityKind::Vehicle
-        );
+            const bool open=ImGui::TreeNodeEx(
+                "Vehicles",
+                ImGuiTreeNodeFlags_DefaultOpen |
+                ImGuiTreeNodeFlags_SpanAvailWidth
+            );
 
-        drawSceneGroup(
-            "Evidence",
-            roadsafe::SceneEntityKind::Evidence
-        );
+            if (open)
+            {
+                outlinerLeafRow(
+                    sovereignEntityName(3),
+                    UiGlyph::Cube,
+                    3,
+                    roadSafeEntityVisiblePtr(3),
+                    roadSafeEntityLockedPtr(3)
+                );
 
-        drawSceneGroup(
-            "Measurements",
-            roadsafe::SceneEntityKind::Measurement
-        );        ImGui::EndTable();
+                outlinerLeafRow(
+                    sovereignEntityName(4),
+                    UiGlyph::Cube,
+                    4,
+                    roadSafeEntityVisiblePtr(4),
+                    roadSafeEntityLockedPtr(4)
+                );
+
+                ImGui::TreePop();
+            }
+        }
+
+        const bool evidenceMatches =
+            shellLabelMatches("Skid Mark 01") |
+            shellLabelMatches("Marker 01") |
+            shellLabelMatches("Debris Field 01");
+
+        if (evidenceMatches)
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+
+            const bool open=ImGui::TreeNodeEx(
+                "Evidence",
+                ImGuiTreeNodeFlags_DefaultOpen |
+                ImGuiTreeNodeFlags_SpanAvailWidth
+            );
+
+            if (open)
+            {
+                outlinerLeafRow(
+                    sovereignEntityName(5),
+                    UiGlyph::Document,
+                    5,
+                    roadSafeEntityVisiblePtr(5),
+                    roadSafeEntityLockedPtr(5)
+                );
+
+                outlinerLeafRow(
+                    sovereignEntityName(6),
+                    UiGlyph::Marker,
+                    6,
+                    roadSafeEntityVisiblePtr(6),
+                    roadSafeEntityLockedPtr(6)
+                );
+
+                outlinerLeafRow(
+                    sovereignEntityName(7),
+                    UiGlyph::Document,
+                    7,
+                    roadSafeEntityVisiblePtr(7),
+                    roadSafeEntityLockedPtr(7)
+                );
+
+                ImGui::TreePop();
+            }
+        }
+
+        const bool measurementMatches =
+            shellLabelMatches("Distance 01") |
+            shellLabelMatches("Angle 01");
+
+        if (measurementMatches)
+        {
+            ImGui::TableNextRow();
+            ImGui::TableSetColumnIndex(0);
+
+            const bool open=ImGui::TreeNodeEx(
+                "Measurements",
+                ImGuiTreeNodeFlags_DefaultOpen |
+                ImGuiTreeNodeFlags_SpanAvailWidth
+            );
+
+            if (open)
+            {
+                outlinerLeafRow(
+                    sovereignEntityName(8),
+                    UiGlyph::Ruler,
+                    8,
+                    roadSafeEntityVisiblePtr(8),
+                    roadSafeEntityLockedPtr(8)
+                );
+
+                outlinerLeafRow(
+                    sovereignEntityName(9),
+                    UiGlyph::Ruler,
+                    9,
+                    roadSafeEntityVisiblePtr(9),
+                    roadSafeEntityLockedPtr(9)
+                );
+
+                ImGui::TreePop();
+            }
+        }
+
+        ImGui::EndTable();
     }
 
     // Bottom selection summary.
@@ -8572,47 +7986,6 @@ static void drawOutliner()
     }
 
     drawSovereignRenamePopup();
-
-    const bool outlinerFocused=
-        ImGui::IsWindowFocused(
-            ImGuiFocusedFlags_RootAndChildWindows
-        );
-
-    const bool renameOpen=
-        ImGui::IsPopupOpen(
-            "Rename Entity"
-        );
-
-    if (outlinerFocused &&
-        !renameOpen &&
-        gEditorShell.selectedEntity!=0)
-    {
-        if (ImGui::GetIO().KeyCtrl &&
-            ImGui::IsKeyPressed(ImGuiKey_D))
-        {
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::Duplicate,
-                gEditorShell.selectedEntity
-            );
-        }
-
-        if (ImGui::IsKeyPressed(
-                ImGuiKey_Delete) &&
-            !sovereignEntityLocked(
-                gEditorShell.selectedEntity
-            ))
-        {
-            queueRoadSafeSceneAction(
-                RoadSafePendingSceneAction::Delete,
-                gEditorShell.selectedEntity
-            );
-        }
-    }
-
-    // Row/menu actions are deferred until all scene-vector pointers
-    // used by this frame have finished rendering.
-    processRoadSafePendingSceneAction();
-
 ImGui::End();
 }
 
@@ -16369,7 +15742,6 @@ static void drawProblemsPanel()
 static void drawInterface()
 {
     initializeRoadSafeEditorRecords();
-    processRoadSafePendingSceneAction();
 static bool layoutBuilt=false;
     static ImGuiID rightDockNodeId=0;
 
@@ -16677,7 +16049,6 @@ if (rubik) ImGui::PopFont();
     glfwTerminate();
     return 0;
 }
-
 
 
 

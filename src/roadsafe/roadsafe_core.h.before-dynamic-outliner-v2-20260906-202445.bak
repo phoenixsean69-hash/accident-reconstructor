@@ -141,10 +141,8 @@ struct SceneIntake
 };
 
 // ROADSAFE_EDITOR_RECORD_FIELDS_V2
-// ROADSAFE_DOMAIN_ACTIVE_STATE_V1
 struct EvidenceRecord
 {
-    bool active=true;
     std::string id;
     std::string type;
     std::string description;
@@ -169,7 +167,6 @@ struct EvidenceRecord
 
 struct MeasurementRecord
 {
-    bool active=true;
     std::string id;
     std::string type;
     float value=0.0f;
@@ -186,7 +183,6 @@ struct MeasurementRecord
 
 struct VehicleRecord
 {
-    bool active=true;
     std::string id;
     std::string registration;
     std::string make;
@@ -408,7 +404,6 @@ struct SceneEntityRecord
     int recordIndex=-1;
 
     std::string name;
-    std::string notes;
 
     std::array<float,3> position{
         0.0f,
@@ -521,6 +516,5 @@ inline const char* textOr(
 }
 
 } // namespace roadsafe
-
 
 
