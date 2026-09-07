@@ -3108,6 +3108,14 @@ static bool editorButton(
 
     return enabled && pressed;
 }
+// ROADSAFE_UI_DESIGN_SYSTEM_V22
+#include "roadsafe/ui/ui_tokens.inl"
+#include "roadsafe/ui/ui_theme.inl"
+#include "roadsafe/ui/ui_icons.inl"
+#include "roadsafe/ui/ui_typography.inl"
+#include "roadsafe/ui/ui_layout.inl"
+#include "roadsafe/ui/ui_widgets.inl"
+
 
 static void drawMetricTile(const char* id, UiGlyph glyph, const char* label, const char* value, const char* note, float width, float height=76.0f, bool accentIcon=false)
 {
