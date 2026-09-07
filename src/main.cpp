@@ -2478,8 +2478,8 @@ static ButtonVisualSpec getButtonVisualSpec(const char* label)
     if (key=="REDO") return {true,UiGlyph::Redo,false,"REDO","Redo"};
     if (key=="RUN GRAPH") return {true,UiGlyph::RunGraph,false,"RUN GRAPH","Run Graph"};
     if (key=="DELETE LINK") return {true,UiGlyph::DeleteLink,false,"DELETE LINK","Delete Link"};
-    if (key=="SET CASE DETAILS") return {true,UiGlyph::Edit,true,"SET CASE DETAILS","Set Case Details"};
-    if (key=="CASE DETAILS") return {true,UiGlyph::Edit,true,"CASE DETAILS","Case Details"};
+    if (key=="SET CASE DETAILS") return {true,UiGlyph::Edit,false,"SET CASE DETAILS","Set Case Details"};
+    if (key=="CASE DETAILS") return {true,UiGlyph::Edit,false,"CASE DETAILS","Case Details"};
     if (key=="ADD MEASUREMENTS") return {true,UiGlyph::Measurement,false,"ADD MEASUREMENTS","Add Measurements"};
     if (key=="REVIEW MODULES") return {true,UiGlyph::Module,false,"REVIEW MODULES","Review Modules"};
     if (key=="FIT") return {true,UiGlyph::FitScreen,false,"FIT","Fit"};
@@ -3376,9 +3376,10 @@ static void drawRoadSafePipelineBar()
         ImGui::GetWindowPos().x+
         ImGui::GetWindowContentRegionMax().x;
 
-    constexpr float prevW=66.0f;
+    // ROADSAFE_PIPELINE_ACTION_FIT_V23_2
+    constexpr float prevW=112.0f;
     constexpr float pipelineW=112.0f;
-    constexpr float nextW=66.0f;
+    constexpr float nextW=112.0f;
     constexpr float gap=6.0f;
 
     const float actionWidth=
@@ -3390,7 +3391,7 @@ static void drawRoadSafePipelineBar()
     const float actionX=
         right-
         actionWidth-
-        4.0f;
+        14.0f;
 
     if (actionX>
         p.x+430.0f)

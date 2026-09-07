@@ -1,270 +1,52 @@
 ﻿// ROADSAFE_UI_COMPONENT_V20
 // Component: Case View
 // Included from src/main.cpp so behavior/state linkage stays unchanged.
+// ROADSAFE_CASE_WEB_DASHBOARD_V23
 
 static void drawCaseView()
 {
-    ImGui::Begin("Case View");
+    // ROADSAFE_CASE_SPACING_V23_2
+    ImGui::PushStyleVar(
+        ImGuiStyleVar_WindowPadding,
+        ImVec2(
+            roadsafe::ui::token::Space16,
+            roadsafe::ui::token::Space12
+        )
+    );
+
+    ImGui::Begin(
+        "Case View",
+        nullptr,
+        ImGuiWindowFlags_AlwaysVerticalScrollbar
+    );
 
     drawRoadSafePipelineBar();
     ImGui::Spacing();
 
-    beginSurface("CaseHeader",ImVec2(0.0f,62.0f),false,ImGuiWindowFlags_NoScrollbar);
-    const ImVec2 h=ImGui::GetCursorScreenPos();
-    drawIconBadge(UiGlyph::Folder,h,40.0f,true);
+    const auto palette=
+        roadsafe::ui::currentPalette();
 
-    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+1.0f));
-    ImGui::Text("CASE OVERVIEW");
-
-    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+24.0f));
-    ImGui::TextDisabled("CASE COMMAND CENTER");
-    const float draftWidth=108.0f;
-    ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-draftWidth-12.0f,h.y+5.0f));
-    editorButton("DRAFT",draftWidth,true);
-    endSurface();
-    ImGui::Spacing();
-
-    const float w=ImGui::GetContentRegionAvail().x;
-    const float gap=7.0f;
-    const float mw=std::max(150.0f,(w-gap*3.0f)/4.0f);
-    drawMetricTile("CaseId",UiGlyph::Hash,"CASE ID",roadsafe::textOr(gRoadSafeCase.identity.caseNumber,"UNASSIGNED"),"",mw,64.0f);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseDate",UiGlyph::Calendar,"DATE",roadsafe::textOr(gRoadSafeCase.identity.accidentDateTime,"NOT SET"),"",mw,64.0f);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseLocation",UiGlyph::Pin,"LOCATION",roadsafe::textOr(gRoadSafeCase.identity.location,"NOT SET"),"",mw,64.0f);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseUpdated",UiGlyph::Clock,"UPDATED","JUST NOW","",mw,64.0f);
-    ImGui::Spacing();
-
-    ImGui::Text("CASE PIPELINE");
-    ImGui::Separator();
-
-    beginSurface(
-        "CasePipelineCompact",
-        ImVec2(0.0f,88.0f),
-        true,
-        ImGuiWindowFlags_NoScrollbar
-    );
-    {
-        const ImVec2 p=
-            ImGui::GetCursorScreenPos();
-
-        const float innerW=
-            ImGui::GetWindowContentRegionMax().x-
-            ImGui::GetWindowContentRegionMin().x;
-
-        const float stageGap=7.0f;
-        const float stageW=
-            std::max(
-                130.0f,
-                (innerW-stageGap*3.0f)/4.0f
-            );
-
-        ImDrawList* dl=
-            ImGui::GetWindowDrawList();
-
-        const auto stage=
-            [&](int index,
-                UiGlyph glyph,
-                const char* title,
-                const char* state,
-                float progress,
-                ImU32 stateColor)
-            {
-                const float x=
-                    p.x+
-                    index*(stageW+stageGap);
-
-                drawIconBadge(
-                    glyph,
-                    ImVec2(x,p.y+1.0f),
-                    32.0f,
-                    index<=1
-                );
-
-                ImGui::SetCursorScreenPos(
-                    ImVec2(
-                        x+42.0f,
-                        p.y+1.0f
-                    )
-                );
-
-                ImGui::Text(
-                    "%s",
-                    title
-                );
-
-                ImGui::SetCursorScreenPos(
-                    ImVec2(
-                        x+42.0f,
-                        p.y+24.0f
-                    )
-                );
-
-                ImGui::TextColored(
-                    ImGui::ColorConvertU32ToFloat4(
-                        stateColor
-                    ),
-                    "%s",
-                    state
-                );
-
-                const float barY=
-                    p.y+58.0f;
-
-                dl->AddRectFilled(
-                    ImVec2(x,barY),
-                    ImVec2(
-                        x+stageW-5.0f,
-                        barY+4.0f
-                    ),
-                    IM_COL32(
-                        55,
-                        59,
-                        66,
-                        255
-                    ),
-                    2.0f
-                );
-
-                dl->AddRectFilled(
-                    ImVec2(x,barY),
-                    ImVec2(
-                        x+
-                        (stageW-5.0f)*
-                        std::max(
-                            0.0f,
-                            std::min(
-                                1.0f,
-                                progress
-                            )
-                        ),
-                        barY+4.0f
-                    ),
-                    stateColor,
-                    2.0f
-                );
-
-                if (index<3)
-                {
-                    const float connectorX=
-                        x+stageW-1.0f;
-
-                    dl->AddLine(
-                        ImVec2(
-                            connectorX,
-                            p.y+17.0f
-                        ),
-                        ImVec2(
-                            connectorX+stageGap-2.0f,
-                            p.y+17.0f
-                        ),
-                        IM_COL32(
-                            75,
-                            81,
-                            90,
-                            255
-                        ),
-                        1.0f
-                    );
-                }
-            };
-
-        stage(
-            0,
-            UiGlyph::Folder,
-            "SCENE SETUP",
-            "READY",
-            1.0f,
-            IM_COL32(
-                92,
-                205,
-                112,
-                255
-            )
+    // ROADSAFE_CASE_ICON_REFRESH_V23_6_FIXED
+    // ROADSAFE_CASE_ICON_CONTAINMENT_V23_7
+    // Case dashboard icons use only RoadSafe blue or light gray.
+    const ImVec4 caseIconBlue=
+        ImVec4(
+            0.18f,
+            0.52f,
+            0.98f,
+            1.0f
         );
 
-        stage(
-            1,
-            UiGlyph::Evidence,
-            "EVIDENCE",
-            "IN PROGRESS",
-            0.32f,
-            IM_COL32(
-                37,
-                132,
-                229,
-                255
-            )
+    const ImVec4 caseIconLight=
+        ImVec4(
+            0.78f,
+            0.82f,
+            0.88f,
+            1.0f
         );
 
-        stage(
-            2,
-            UiGlyph::Bars,
-            "ANALYSIS",
-            "WAITING",
-            0.0f,
-            IM_COL32(
-                142,
-                149,
-                160,
-                255
-            )
-        );
-
-        stage(
-            3,
-            UiGlyph::Document,
-            "REPORT",
-            "DRAFT",
-            0.0f,
-            IM_COL32(
-                142,
-                149,
-                160,
-                255
-            )
-        );
-    }
-    endSurface();
-    ImGui::Spacing();
-    beginSurface("IncidentSummary",ImVec2(0.0f,70.0f),false,ImGuiWindowFlags_NoScrollbar);
-    {
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
-
-        drawIconBadge(UiGlyph::Document,p,40.0f,false);
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+3.0f));
-        ImGui::Text("INCIDENT SUMMARY");
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+29.0f));
-        ImGui::TextDisabled(
-            "No summary yet.");
-
-        const float editW=132.0f;
-        ImGui::SetCursorScreenPos(ImVec2(right-editW-12.0f,p.y+13.0f));
-        editorButton("EDIT SUMMARY",editW);
-    }
-    endSurface();
-    ImGui::Spacing();
-
-    const float dashboardW=
-        ImGui::GetContentRegionAvail().x;
-
-    const float dashboardGap=
-        8.0f;
-
-    const float sideW=
-        std::max(
-            330.0f,
-            dashboardW*0.31f
-        );
-
-    const float inventoryW=
-        std::max(
-            540.0f,
-            dashboardW-
-            sideW-
-            dashboardGap
-        );
+    const float contentW=
+        roadsafe::ui::availableWidth();
 
     const std::size_t vehicleCount=
         roadSafeActiveVehicleCount();
@@ -285,11 +67,50 @@ static void drawCaseView()
         !gRoadSafeCase.identity.accidentDateTime.empty() &&
         !gRoadSafeCase.identity.location.empty();
 
-    beginSurface(
-        "CaseInventoryDashboard",
+    int readiness=25;
+
+    if (caseDetailsReady)
+        readiness+=25;
+
+    if (evidenceCount>0)
+        readiness+=25;
+
+    if (measurementCount>0)
+        readiness+=25;
+
+    readiness=
+        std::max(
+            0,
+            std::min(
+                100,
+                readiness
+            )
+        );
+
+    const bool compact=
+        contentW<
+        roadsafe::ui::token::BreakpointCompact;
+
+    const bool wide=
+        contentW>=
+        roadsafe::ui::token::BreakpointWide;
+
+    const float cardGap=
+        roadsafe::ui::token::Space16;
+
+    // --------------------------------------------------------
+    // CASE HERO
+    // --------------------------------------------------------
+    const float heroHeight=
+        compact
+            ? 160.0f
+            : 116.0f;
+
+    roadsafe::ui::beginCard(
+        "CaseDashboardHero",
         ImVec2(
-            inventoryW,
-            202.0f
+            0.0f,
+            heroHeight
         ),
         true,
         ImGuiWindowFlags_NoScrollbar
@@ -298,262 +119,706 @@ static void drawCaseView()
         const ImVec2 p=
             ImGui::GetCursorScreenPos();
 
+        const float right=
+            ImGui::GetWindowPos().x+
+            ImGui::GetWindowContentRegionMax().x;
+
+        roadsafe::ui::drawIcon(
+            UiGlyph::Folder,
+            ImVec2(
+                p.x+28.0f,
+                p.y+28.0f
+            ),
+            38.0f,
+            caseIconBlue
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+56.0f,
+                p.y+1.0f
+            )
+        );
+
+        roadsafe::ui::overline(
+            "CASE MANAGEMENT"
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+56.0f,
+                p.y+25.0f
+            )
+        );
+
         ImGui::Text(
-            "CASE INVENTORY"
+            "%s",
+            roadsafe::textOr(
+                gRoadSafeCase.identity.caseNumber,
+                "UNTITLED CASE"
+            )
+        );
+
+        char metadata[512]{};
+
+        std::snprintf(
+            metadata,
+            sizeof(metadata),
+            "%s   /   %s",
+            roadsafe::textOr(
+                gRoadSafeCase.identity.location,
+                "Location not set"
+            ),
+            roadsafe::textOr(
+                gRoadSafeCase.identity.accidentDateTime,
+                "Date not set"
+            )
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+56.0f,
+                p.y+51.0f
+            )
+        );
+
+        roadsafe::ui::textMuted(
+            metadata
+        );
+
+        const char* statusText=
+            "DRAFT";
+
+        const ImVec2 statusSize=
+            ImGui::CalcTextSize(
+                statusText
+            );
+
+        const float pillW=
+            statusSize.x+24.0f;
+
+        const float pillH=
+            28.0f;
+
+        // ROADSAFE_CASE_DETAILS_FIT_V23_4
+        // editorButton() enforces its full icon+text auto width, so the
+        // hero action layout must reserve that full width before anchoring
+        // the button group to the right edge.
+        const float buttonW=
+            190.0f;
+
+        const float actionsW=
+            pillW+
+            roadsafe::ui::token::Space8+
+            buttonW;
+
+        if (!compact)
+        {
+            const float actionX=
+                right-actionsW;
+
+            const float actionY=
+                p.y+19.0f;
+
+            ImVec4 pillBg=
+                palette.accent;
+
+            pillBg.w=
+                0.16f;
+
+            ImDrawList* dl=
+                ImGui::GetWindowDrawList();
+
+            dl->AddRectFilled(
+                ImVec2(
+                    actionX,
+                    actionY
+                ),
+                ImVec2(
+                    actionX+pillW,
+                    actionY+pillH
+                ),
+                roadsafe::ui::rgba(
+                    pillBg
+                ),
+                roadsafe::ui::token::RadiusMd
+            );
+
+            dl->AddText(
+                ImVec2(
+                    actionX+12.0f,
+                    actionY+
+                    (
+                        pillH-
+                        ImGui::GetFontSize()
+                    )*0.5f
+                ),
+                roadsafe::ui::rgba(
+                    palette.accent
+                ),
+                statusText
+            );
+
+            ImGui::SetCursorScreenPos(
+                ImVec2(
+                    actionX+
+                    pillW+
+                    roadsafe::ui::token::Space8,
+                    actionY-3.0f
+                )
+            );
+
+            roadsafe::ui::button(
+                "CASE DETAILS",
+                buttonW
+            );
+        }
+        else
+        {
+            ImGui::SetCursorScreenPos(
+                ImVec2(
+                    p.x,
+                    p.y+84.0f
+                )
+            );
+
+            roadsafe::ui::button(
+                "CASE DETAILS",
+                roadsafe::ui::ButtonWidth::Fill
+            );
+        }
+    }
+    roadsafe::ui::endCard();
+
+    ImGui::Spacing();
+
+    // --------------------------------------------------------
+    // KPI CARDS
+    // --------------------------------------------------------
+    int metricColumns=1;
+
+    if (contentW>=980.0f)
+        metricColumns=4;
+    else if (contentW>=560.0f)
+        metricColumns=2;
+
+    const float metricW=
+        (
+            contentW-
+            cardGap*
+            static_cast<float>(
+                metricColumns-1
+            )
+        )/
+        static_cast<float>(
+            metricColumns
+        );
+
+    const auto metricCard=
+        [&](const char* id,
+            UiGlyph glyph,
+            const char* label,
+            const char* value,
+            const char* detail,
+            bool accent)
+        {
+            roadsafe::ui::beginCard(
+                id,
+                ImVec2(
+                    metricW,
+                    112.0f
+                ),
+                true,
+                ImGuiWindowFlags_NoScrollbar
+            );
+
+            const ImVec2 p=
+                ImGui::GetCursorScreenPos();
+
+            // ROADSAFE_CASE_ALIGNMENT_KPI_V23_5
+            const ImVec4 metricIconColor=
+                accent
+                    ? caseIconBlue
+                    : caseIconLight;
+
+            roadsafe::ui::drawIcon(
+                glyph,
+                ImVec2(
+                    p.x+30.0f,
+                    p.y+28.0f
+                ),
+                40.0f,
+                metricIconColor
+            );
+
+            ImDrawList* dl=
+                ImGui::GetWindowDrawList();
+
+            dl->AddText(
+                ImGui::GetFont(),
+                ImGui::GetFontSize()*1.42f,
+                ImVec2(
+                    p.x+56.0f,
+                    p.y-1.0f
+                ),
+                roadsafe::ui::rgba(
+                    palette.text
+                ),
+                value
+            );
+
+            ImGui::SetCursorScreenPos(
+                ImVec2(
+                    p.x+56.0f,
+                    p.y+30.0f
+                )
+            );
+
+            roadsafe::ui::textSecondary(
+                label
+            );
+
+            ImGui::SetCursorScreenPos(
+                ImVec2(
+                    p.x,
+                    p.y+59.0f
+                )
+            );
+
+            roadsafe::ui::textMuted(
+                detail
+            );
+
+            roadsafe::ui::endCard();
+        };
+
+    char vehiclesValue[32]{};
+    char evidenceValue[32]{};
+    char measurementsValue[32]{};
+    char readinessValue[32]{};
+
+    std::snprintf(
+        vehiclesValue,
+        sizeof(vehiclesValue),
+        "%zu",
+        vehicleCount
+    );
+
+    std::snprintf(
+        evidenceValue,
+        sizeof(evidenceValue),
+        "%zu",
+        evidenceCount
+    );
+
+    std::snprintf(
+        measurementsValue,
+        sizeof(measurementsValue),
+        "%zu",
+        measurementCount
+    );
+
+    std::snprintf(
+        readinessValue,
+        sizeof(readinessValue),
+        "%d%%",
+        readiness
+    );
+
+    metricCard(
+        "CaseMetricVehicles",
+        UiGlyph::Vehicle,
+        "Vehicles",
+        vehiclesValue,
+        vehicleCount>0
+            ? "Active scene vehicles"
+            : "No vehicles added",
+        vehicleCount>0
+    );
+
+    if (metricColumns>1)
+        ImGui::SameLine(
+            0.0f,
+            cardGap
+        );
+
+    metricCard(
+        "CaseMetricEvidence",
+        UiGlyph::Evidence,
+        "Evidence",
+        evidenceValue,
+        evidenceCount>0
+            ? "Documented evidence"
+            : "No evidence added",
+        evidenceCount>0
+    );
+
+    if (metricColumns==4)
+        ImGui::SameLine(
+            0.0f,
+            cardGap
+        );
+    else
+        ImGui::Spacing();
+
+    metricCard(
+        "CaseMetricMeasurements",
+        UiGlyph::Measurement,
+        "Measurements",
+        measurementsValue,
+        measurementCount>0
+            ? "Scene measurements"
+            : "No measurements added",
+        measurementCount>0
+    );
+
+    if (metricColumns>1)
+        ImGui::SameLine(
+            0.0f,
+            cardGap
+        );
+
+    metricCard(
+        "CaseMetricReadiness",
+        UiGlyph::Bars,
+        "Case readiness",
+        readinessValue,
+        readiness<100
+            ? "Complete missing case inputs"
+            : "Ready for reconstruction",
+        readiness>=75
+    );
+
+    ImGui::Spacing();
+
+    // --------------------------------------------------------
+    // MAIN DASHBOARD ROW
+    // --------------------------------------------------------
+    const float dashboardW=
+        roadsafe::ui::availableWidth();
+
+    const bool twoColumn=
+        dashboardW>=
+        860.0f;
+
+    const float sideW=
+        twoColumn
+            ? std::max(
+                300.0f,
+                dashboardW*0.32f
+            )
+            : dashboardW;
+
+    const float mainW=
+        twoColumn
+            ? dashboardW-
+                sideW-
+                cardGap
+            : dashboardW;
+
+    roadsafe::ui::beginCard(
+        "CaseInvestigationProgress",
+        ImVec2(
+            mainW,
+            236.0f
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
+    {
+        ImGui::Text(
+            "INVESTIGATION PROGRESS"
         );
 
         ImGui::SameLine(
             0.0f,
-            10.0f
+            roadsafe::ui::token::Space8
         );
 
-        ImGui::TextDisabled(
-            "LIVE CASE RECORDS"
+        roadsafe::ui::textMuted(
+            "CASE WORKFLOW"
         );
 
-        ImDrawList* dl=
-            ImGui::GetWindowDrawList();
+        ImGui::Spacing();
 
         const float innerW=
-            ImGui::GetWindowContentRegionMax().x-
-            ImGui::GetWindowContentRegionMin().x;
+            ImGui::GetContentRegionAvail().x;
 
-        const float tileGap=
-            7.0f;
+        const float stageGap=
+            roadsafe::ui::token::Space8;
 
-        const float topTileW=
+        const float stageW=
             (
                 innerW-
-                tileGap*2.0f
+                stageGap*3.0f
             )/
-            3.0f;
+            4.0f;
 
-        const float bottomTileW=
-            (
-                innerW-
-                tileGap
-            )/
-            2.0f;
-
-        const float tileH=
-            62.0f;
-
-        const float topY=
-            p.y+38.0f;
-
-        const float bottomY=
-            topY+
-            tileH+
-            tileGap;
-
-        const auto inventoryTile=
-            [&](float x,
-                float y,
-                float width,
+        const auto stage=
+            [&](const char* id,
                 UiGlyph glyph,
-                const char* label,
-                std::size_t value,
+                const char* title,
+                const char* state,
+                float progress,
+                const ImVec4& color,
                 bool active)
             {
-                const ImVec2 a(
-                    x,
-                    y
+                ImGui::PushID(
+                    id
                 );
 
-                const ImVec2 b(
-                    x+width,
-                    y+tileH
+                const ImVec2 p=
+                    ImGui::GetCursorScreenPos();
+
+                ImDrawList* dl=
+                    ImGui::GetWindowDrawList();
+
+                ImVec4 bg=
+                    palette.surface;
+
+                bg.w=
+                    1.0f;
+
+                dl->AddRectFilled(
+                    p,
+                    ImVec2(
+                        p.x+stageW,
+                        p.y+142.0f
+                    ),
+                    roadsafe::ui::rgba(
+                        bg
+                    ),
+                    roadsafe::ui::token::RadiusLg
+                );
+
+                roadsafe::ui::drawIcon(
+                    glyph,
+                    ImVec2(
+                        p.x+26.0f,
+                        p.y+26.0f
+                    ),
+                    34.0f,
+                    active
+                        ? caseIconBlue
+                        : caseIconLight
+                );
+
+                dl->AddText(
+                    ImVec2(
+                        p.x+12.0f,
+                        p.y+56.0f
+                    ),
+                    roadsafe::ui::rgba(
+                        palette.text
+                    ),
+                    title
+                );
+
+                dl->AddText(
+                    ImVec2(
+                        p.x+12.0f,
+                        p.y+80.0f
+                    ),
+                    roadsafe::ui::rgba(
+                        color
+                    ),
+                    state
+                );
+
+                const float barX=
+                    p.x+12.0f;
+
+                const float barY=
+                    p.y+112.0f;
+
+                const float barW=
+                    std::max(
+                        12.0f,
+                        stageW-24.0f
+                    );
+
+                ImVec4 track=
+                    palette.surfaceHover;
+
+                track.w=
+                    1.0f;
+
+                dl->AddRectFilled(
+                    ImVec2(
+                        barX,
+                        barY
+                    ),
+                    ImVec2(
+                        barX+barW,
+                        barY+5.0f
+                    ),
+                    roadsafe::ui::rgba(
+                        track
+                    ),
+                    2.5f
                 );
 
                 dl->AddRectFilled(
-                    a,
-                    b,
-                    IM_COL32(
-                        30,
-                        33,
-                        38,
-                        255
+                    ImVec2(
+                        barX,
+                        barY
                     ),
-                    4.0f
-                );
-
-                dl->AddRect(
-                    a,
-                    b,
-                    active
-                        ? IM_COL32(
-                            63,
-                            79,
-                            96,
-                            255
-                        )
-                        : IM_COL32(
-                            58,
-                            62,
-                            69,
-                            255
+                    ImVec2(
+                        barX+
+                        barW*
+                        std::max(
+                            0.0f,
+                            std::min(
+                                1.0f,
+                                progress
+                            )
                         ),
-                    4.0f
+                        barY+5.0f
+                    ),
+                    roadsafe::ui::rgba(
+                        color
+                    ),
+                    2.5f
                 );
 
-                drawIconBadge(
-                    glyph,
+                ImGui::Dummy(
                     ImVec2(
-                        x+8.0f,
-                        y+13.0f
-                    ),
-                    32.0f,
-                    active
+                        stageW,
+                        142.0f
+                    )
                 );
 
-                dl->AddText(
-                    ImVec2(
-                        x+50.0f,
-                        y+10.0f
-                    ),
-                    ImGui::GetColorU32(
-                        ImGuiCol_TextDisabled
-                    ),
-                    label
-                );
-
-                char countText[32]{};
-
-                std::snprintf(
-                    countText,
-                    sizeof(countText),
-                    "%zu",
-                    value
-                );
-
-                dl->AddText(
-                    ImVec2(
-                        x+50.0f,
-                        y+31.0f
-                    ),
-                    ImGui::GetColorU32(
-                        ImGuiCol_Text
-                    ),
-                    countText
-                );
-
-                const char* stateText=
-                    value>0
-                        ? "ACTIVE"
-                        : "EMPTY";
-
-                const ImVec2 stateSize=
-                    ImGui::CalcTextSize(
-                        stateText
-                    );
-
-                dl->AddText(
-                    ImVec2(
-                        b.x-
-                        stateSize.x-
-                        10.0f,
-                        y+31.0f
-                    ),
-                    value>0
-                        ? IM_COL32(
-                            95,
-                            205,
-                            115,
-                            255
-                        )
-                        : IM_COL32(
-                            137,
-                            144,
-                            154,
-                            255
-                        ),
-                    stateText
-                );
+                ImGui::PopID();
             };
 
-        inventoryTile(
-            p.x,
-            topY,
-            topTileW,
-            UiGlyph::Vehicle,
-            "VEHICLES",
-            vehicleCount,
+        const ImVec4 success=
+            palette.success;
+
+        const ImVec4 accent=
+            palette.accent;
+
+        const ImVec4 muted=
+            palette.textMuted;
+
+        stage(
+            "Scene",
+            UiGlyph::Folder,
+            "Scene setup",
+            vehicleCount>0
+                ? "READY"
+                : "WAITING",
+            vehicleCount>0
+                ? 1.0f
+                : 0.0f,
+            vehicleCount>0
+                ? success
+                : muted,
             vehicleCount>0
         );
 
-        inventoryTile(
-            p.x+
-            topTileW+
-            tileGap,
-            topY,
-            topTileW,
+        ImGui::SameLine(
+            0.0f,
+            stageGap
+        );
+
+        stage(
+            "Evidence",
             UiGlyph::Evidence,
-            "EVIDENCE",
-            evidenceCount,
+            "Evidence",
+            evidenceCount>0
+                ? "IN PROGRESS"
+                : "WAITING",
+            evidenceCount>0
+                ? 0.62f
+                : 0.0f,
+            evidenceCount>0
+                ? accent
+                : muted,
             evidenceCount>0
         );
 
-        inventoryTile(
-            p.x+
-            (topTileW+tileGap)*2.0f,
-            topY,
-            topTileW,
-            UiGlyph::Measurement,
-            "MEASUREMENTS",
-            measurementCount,
-            measurementCount>0
+        ImGui::SameLine(
+            0.0f,
+            stageGap
         );
 
-        inventoryTile(
-            p.x,
-            bottomY,
-            bottomTileW,
-            UiGlyph::People,
-            "PEOPLE",
-            personCount,
-            personCount>0
+        const bool analysisReady=
+            caseDetailsReady &&
+            evidenceCount>0 &&
+            measurementCount>0;
+
+        stage(
+            "Analysis",
+            UiGlyph::Bars,
+            "Analysis",
+            analysisReady
+                ? "READY"
+                : "WAITING",
+            analysisReady
+                ? 0.20f
+                : 0.0f,
+            analysisReady
+                ? accent
+                : muted,
+            analysisReady
         );
 
-        inventoryTile(
-            p.x+
-            bottomTileW+
-            tileGap,
-            bottomY,
-            bottomTileW,
-            UiGlyph::Witness,
-            "WITNESSES",
-            witnessCount,
-            witnessCount>0
+        ImGui::SameLine(
+            0.0f,
+            stageGap
+        );
+
+        stage(
+            "Report",
+            UiGlyph::Document,
+            "Report",
+            "DRAFT",
+            0.0f,
+            muted,
+            false
         );
     }
-    endSurface();
+    roadsafe::ui::endCard();
 
-    ImGui::SameLine(
-        0.0f,
-        dashboardGap
-    );
+    if (twoColumn)
+    {
+        ImGui::SameLine(
+            0.0f,
+            cardGap
+        );
+    }
+    else
+    {
+        ImGui::Spacing();
+    }
 
     ImGui::BeginGroup();
 
-    beginSurface(
-        "CaseNextActionDashboard",
+    roadsafe::ui::beginCard(
+        "CaseNextAction",
         ImVec2(
             sideW,
-            112.0f
+            158.0f
         ),
         true,
         ImGuiWindowFlags_NoScrollbar
     );
     {
-        const ImVec2 p=
+        const ImVec2 nextIconPos=
             ImGui::GetCursorScreenPos();
 
-        drawIconBadge(
+        roadsafe::ui::drawIcon(
             UiGlyph::Next,
-            p,
-            34.0f,
-            true
+            ImVec2(
+                nextIconPos.x+24.0f,
+                nextIconPos.y+24.0f
+            ),
+            32.0f,
+            caseIconBlue
         );
+
+        const ImVec2 p=
+            ImGui::GetCursorScreenPos();
 
         ImGui::SetCursorScreenPos(
             ImVec2(
@@ -568,12 +833,12 @@ static void drawCaseView()
 
         const char* actionText=
             !caseDetailsReady
-                ? "Complete incident date and location"
+                ? "Complete incident date and location."
                 : evidenceCount==0
-                    ? "Add case evidence"
+                    ? "Add evidence to the case."
                     : measurementCount==0
-                        ? "Add scene measurements"
-                        : "Continue reconstruction";
+                        ? "Capture scene measurements."
+                        : "Continue reconstruction in the viewport.";
 
         const char* actionButton=
             !caseDetailsReady
@@ -587,7 +852,7 @@ static void drawCaseView()
         ImGui::SetCursorScreenPos(
             ImVec2(
                 p.x,
-                p.y+46.0f
+                p.y+48.0f
             )
         );
 
@@ -599,17 +864,14 @@ static void drawCaseView()
         ImGui::SetCursorScreenPos(
             ImVec2(
                 p.x,
-                p.y+72.0f
+                p.y+82.0f
             )
         );
 
-        if (editorButton(
-            actionButton,
-            std::min(
-                156.0f,
-                sideW-22.0f
-            ),
-            true))
+        if (roadsafe::ui::button(
+                actionButton,
+                roadsafe::ui::ButtonWidth::Fill,
+                true))
         {
             if (!caseDetailsReady)
             {
@@ -632,23 +894,20 @@ static void drawCaseView()
             }
         }
     }
-    endSurface();
+    roadsafe::ui::endCard();
 
     ImGui::Spacing();
 
-    beginSurface(
-        "CasePartiesDashboard",
+    roadsafe::ui::beginCard(
+        "CasePeople",
         ImVec2(
             sideW,
-            82.0f
+            96.0f
         ),
         true,
         ImGuiWindowFlags_NoScrollbar
     );
     {
-        const ImVec2 p=
-            ImGui::GetCursorScreenPos();
-
         ImGui::Text(
             "INVOLVED PARTIES"
         );
@@ -663,42 +922,252 @@ static void drawCaseView()
             witnessCount
         );
 
+        roadsafe::ui::textMuted(
+            partiesText
+        );
+    }
+    roadsafe::ui::endCard();
+
+    ImGui::EndGroup();
+
+    ImGui::Spacing();
+
+    // --------------------------------------------------------
+    // INVENTORY + INCIDENT SUMMARY
+    // --------------------------------------------------------
+    const float lowerW=
+        roadsafe::ui::availableWidth();
+
+    const bool lowerTwoColumn=
+        lowerW>=
+        860.0f;
+
+    // Keep Next Action, Involved Parties, and Incident Summary
+    // on the exact same right-side dashboard rail.
+    const float summaryW=
+        lowerTwoColumn
+            ? sideW
+            : lowerW;
+
+    const float inventoryW=
+        lowerTwoColumn
+            ? lowerW-
+                sideW-
+                cardGap
+            : lowerW;
+
+    // ROADSAFE_CASE_CLIP_FIX_V23_1
+    const float lowerCardHeight=
+        226.0f;
+
+    roadsafe::ui::beginCard(
+        "CaseInventory",
+        ImVec2(
+            inventoryW,
+            lowerCardHeight
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
+    {
+        ImGui::Text(
+            "CASE INVENTORY"
+        );
+
+        ImGui::SameLine(
+            0.0f,
+            roadsafe::ui::token::Space8
+        );
+
+        roadsafe::ui::textMuted(
+            "LIVE RECORDS"
+        );
+
+        ImGui::Spacing();
+
+        const auto inventoryRow=
+            [&](UiGlyph glyph,
+                const char* label,
+                std::size_t count)
+            {
+                const ImVec2 p=
+                    ImGui::GetCursorScreenPos();
+
+                roadsafe::ui::drawIcon(
+                    glyph,
+                    ImVec2(
+                        p.x+20.0f,
+                        p.y+18.0f
+                    ),
+                    28.0f,
+                    count>0
+                        ? caseIconBlue
+                        : caseIconLight
+                );
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        p.x+40.0f,
+                        p.y+1.0f
+                    )
+                );
+
+                ImGui::Text(
+                    "%s",
+                    label
+                );
+
+                char countText[32]{};
+
+                std::snprintf(
+                    countText,
+                    sizeof(countText),
+                    "%zu",
+                    count
+                );
+
+                const ImVec2 countSize=
+                    ImGui::CalcTextSize(
+                        countText
+                    );
+
+                const float right=
+                    ImGui::GetWindowPos().x+
+                    ImGui::GetWindowContentRegionMax().x;
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        right-
+                        countSize.x,
+                        p.y+2.0f
+                    )
+                );
+
+                ImGui::Text(
+                    "%s",
+                    countText
+                );
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        p.x,
+                        p.y+34.0f
+                    )
+                );
+
+                ImGui::Dummy(
+                    ImVec2(
+                        1.0f,
+                        1.0f
+                    )
+                );
+            };
+
+        inventoryRow(
+            UiGlyph::Vehicle,
+            "Vehicles",
+            vehicleCount
+        );
+
+        inventoryRow(
+            UiGlyph::Evidence,
+            "Evidence",
+            evidenceCount
+        );
+
+        inventoryRow(
+            UiGlyph::Measurement,
+            "Measurements",
+            measurementCount
+        );
+
+        inventoryRow(
+            UiGlyph::People,
+            "People and witnesses",
+            personCount+witnessCount
+        );
+    }
+    roadsafe::ui::endCard();
+
+    if (lowerTwoColumn)
+    {
+        ImGui::SameLine(
+            0.0f,
+            cardGap
+        );
+    }
+    else
+    {
+        ImGui::Spacing();
+    }
+
+    roadsafe::ui::beginCard(
+        "CaseIncidentSummary",
+        ImVec2(
+            summaryW,
+            lowerCardHeight
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
+    {
+        const ImVec2 p=
+            ImGui::GetCursorScreenPos();
+
+        roadsafe::ui::drawIcon(
+            UiGlyph::Document,
+            ImVec2(
+                p.x+24.0f,
+                p.y+22.0f
+            ),
+            32.0f,
+            caseIconLight
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+46.0f,
+                p.y+1.0f
+            )
+        );
+
+        ImGui::Text(
+            "INCIDENT SUMMARY"
+        );
+
         ImGui::SetCursorScreenPos(
             ImVec2(
                 p.x,
-                p.y+29.0f
+                p.y+48.0f
             )
         );
 
-        ImGui::TextDisabled(
+        ImGui::TextWrapped(
             "%s",
-            partiesText
+            "No summary has been added to this case yet."
         );
-
-        const float partyW=
-            104.0f;
-
-        const float right=
-            ImGui::GetWindowPos().x+
-            ImGui::GetWindowContentRegionMax().x;
 
         ImGui::SetCursorScreenPos(
             ImVec2(
-                right-
-                partyW-
-                8.0f,
-                p.y+16.0f
+                p.x,
+                p.y+112.0f
             )
         );
 
-        editorButton(
-            "ADD PARTY",
-            partyW
+        roadsafe::ui::button(
+            "EDIT SUMMARY",
+            roadsafe::ui::ButtonWidth::Fill
         );
     }
-    endSurface();
+    roadsafe::ui::endCard();
 
-    ImGui::EndGroup();
+    ImGui::Dummy(
+        ImVec2(
+            1.0f,
+            roadsafe::ui::token::Space16
+        )
+    );
+
     ImGui::End();
+    ImGui::PopStyleVar();
 }
-
