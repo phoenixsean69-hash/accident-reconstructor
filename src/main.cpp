@@ -669,21 +669,21 @@ static void applySovereignTheme()
     // SOVEREIGN_REAL_DOCK_TABS_V1
 
     style.WindowRounding = 2.0f;
-    style.ChildRounding = 3.0f;
-    style.FrameRounding = 2.0f;
-    style.PopupRounding = 3.0f;
-    style.ScrollbarRounding = 2.0f;
-    style.GrabRounding = 2.0f;
-    style.TabRounding = 1.5f;
-    style.WindowBorderSize = 1.0f;
-    style.ChildBorderSize = 1.0f;
-    style.FrameBorderSize = 1.0f;
+    style.ChildRounding = 6.0f;
+    style.FrameRounding = 6.0f;
+    style.PopupRounding = 6.0f;
+    style.ScrollbarRounding = 8.0f;
+    style.GrabRounding = 5.0f;
+    style.TabRounding = 4.0f;
+    style.WindowBorderSize = 0.0f;
+    style.ChildBorderSize = 0.0f;
+    style.FrameBorderSize = 0.0f;
     style.TabBorderSize = 0.0f;
     style.WindowPadding = ImVec2(10.0f, 8.0f);
-    style.FramePadding = ImVec2(9.0f, 6.0f);
-    style.ItemSpacing = ImVec2(8.0f, 7.0f);
+    style.FramePadding = ImVec2(7.0f, 5.0f);
+    style.ItemSpacing = ImVec2(8.0f, 8.0f);
     style.ItemInnerSpacing = ImVec2(6.0f, 4.0f);
-    style.CellPadding = ImVec2(9.0f, 6.0f);
+    style.CellPadding = ImVec2(10.0f, 7.0f);
     style.ScrollbarSize = 12.0f;
 
     ImVec4* c = style.Colors;
@@ -692,21 +692,21 @@ static void applySovereignTheme()
     c[ImGuiCol_WindowBg] = colorWindow();
     c[ImGuiCol_ChildBg] = colorPanel();
     c[ImGuiCol_PopupBg] = colorPanelRaised();
-    c[ImGuiCol_Border] = colorBorder();
-    c[ImGuiCol_BorderShadow] = ImVec4(0,0,0,0);
-    c[ImGuiCol_FrameBg] = ImVec4(0.145f, 0.152f, 0.165f, 1.0f);
-    c[ImGuiCol_FrameBgHovered] = ImVec4(0.190f, 0.200f, 0.218f, 1.0f);
-    c[ImGuiCol_FrameBgActive] = ImVec4(0.225f, 0.238f, 0.258f, 1.0f);
+    c[ImGuiCol_Border] = ImVec4(0.0f,0.0f,0.0f,0.0f);
+    c[ImGuiCol_BorderShadow] = ImVec4(0.0f,0.0f,0.0f,0.12f);
+    c[ImGuiCol_FrameBg] = ImVec4(0.24f, 0.24f, 0.26f, 1.00f);
+    c[ImGuiCol_FrameBgHovered] = ImVec4(0.28f, 0.28f, 0.30f, 1.00f);
+    c[ImGuiCol_FrameBgActive] = ImVec4(0.31f, 0.31f, 0.33f, 1.00f);
     c[ImGuiCol_TitleBg] = ImVec4(0.090f, 0.095f, 0.103f, 1.0f);
     c[ImGuiCol_TitleBgActive] = ImVec4(0.125f, 0.132f, 0.145f, 1.0f);
     c[ImGuiCol_MenuBarBg] = ImVec4(0.090f, 0.095f, 0.104f, 1.0f);
-    c[ImGuiCol_Button] = ImVec4(0.145f, 0.152f, 0.165f, 1.0f);
-    c[ImGuiCol_ButtonHovered] = ImVec4(0.205f, 0.216f, 0.235f, 1.0f);
-    c[ImGuiCol_ButtonActive] = ImVec4(0.250f, 0.263f, 0.286f, 1.0f);
-    c[ImGuiCol_Header] = ImVec4(0.135f, 0.143f, 0.156f, 1.0f);
-    c[ImGuiCol_HeaderHovered] = ImVec4(0.190f, 0.202f, 0.220f, 1.0f);
-    c[ImGuiCol_HeaderActive] = ImVec4(0.220f, 0.234f, 0.255f, 1.0f);
-    c[ImGuiCol_Separator] = ImVec4(0.235f, 0.250f, 0.275f, 1.0f);
+    c[ImGuiCol_Button] = ImVec4(0.44f, 0.44f, 0.46f, 1.00f);
+    c[ImGuiCol_ButtonHovered] = ImVec4(0.50f, 0.50f, 0.53f, 1.00f);
+    c[ImGuiCol_ButtonActive] = ImVec4(0.36f, 0.51f, 0.76f, 1.00f);
+    c[ImGuiCol_Header] = ImVec4(0.18f, 0.22f, 0.30f, 0.90f);
+    c[ImGuiCol_HeaderHovered] = ImVec4(0.24f, 0.31f, 0.42f, 1.00f);
+    c[ImGuiCol_HeaderActive] = ImVec4(0.21f, 0.36f, 0.55f, 1.00f);
+    c[ImGuiCol_Separator] = ImVec4(0.28f, 0.28f, 0.31f, 1.00f);
     c[ImGuiCol_SeparatorHovered] = ImVec4(0.40f,0.42f,0.45f,1.0f);
     c[ImGuiCol_SeparatorActive] = colorAccent();
     c[ImGuiCol_CheckMark] = colorAccent();
@@ -717,15 +717,375 @@ static void applySovereignTheme()
     c[ImGuiCol_TabActive] = ImVec4(0.185f, 0.194f, 0.214f, 1.0f);
     c[ImGuiCol_TabUnfocused] = ImVec4(0.058f, 0.061f, 0.068f, 1.0f);
     c[ImGuiCol_TabUnfocusedActive] = ImVec4(0.145f, 0.151f, 0.166f, 1.0f);
-    c[ImGuiCol_TableHeaderBg] = ImVec4(0.160f, 0.170f, 0.185f, 1.0f);
+    c[ImGuiCol_TableHeaderBg] = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
     c[ImGuiCol_TableRowBgAlt] = ImVec4(0.090f, 0.095f, 0.105f, 1.0f);
     c[ImGuiCol_DockingPreview] = ImVec4(0.94f,0.64f,0.06f,0.28f);
 }
 
+// ROADSAFE_BLENDER_UI_V19
+// ROADSAFE_BLENDER_UI_V18
+// ROADSAFE_BLENDER_UI_V15
+// ROADSAFE_GOOGLE_ICON_WIRING_V14
+// ROADSAFE_GOOGLE_ICON_CATALOG_V12
 enum class UiGlyph
 {
-    Folder, Hash, Calendar, Pin, Clock, Cube, Document, Bars, Pie, Image,
-    Check, Link, Ruler, Marker, Speed, Momentum, Report, Info, Eye, Lock, Unlock, Target, More
+    Folder,
+    Hash,
+    Calendar,
+    Pin,
+    Clock,
+    Cube,
+    Document,
+    Bars,
+    Pie,
+    Image,
+    Check,
+    Link,
+    Ruler,
+    Marker,
+    Speed,
+    Momentum,
+    Report,
+    Info,
+    Eye,
+    Lock,
+    Unlock,
+    Target,
+    More,
+    Home,
+    Dashboard,
+    Menu,
+    Apps,
+    Back,
+    Forward,
+    Previous,
+    Next,
+    Up,
+    Down,
+    ExpandMore,
+    ExpandLess,
+    ChevronLeft,
+    ChevronRight,
+    FirstPage,
+    LastPage,
+    Fullscreen,
+    FullscreenExit,
+    OpenInNew,
+    Close,
+    Cancel,
+    Refresh,
+    Restart,
+    Sync,
+    Search,
+    Filter,
+    FilterOff,
+    Sort,
+    Tune,
+    Settings,
+    Preferences,
+    ViewSidebar,
+    Dock,
+    Panel,
+    SplitView,
+    Layout,
+    ResetLayout,
+    NewFile,
+    NewCase,
+    OpenFile,
+    OpenRecent,
+    Save,
+    SaveAs,
+    Import,
+    Export,
+    Download,
+    Upload,
+    Package,
+    Archive,
+    Unarchive,
+    Exit,
+    Print,
+    Share,
+    Cloud,
+    CloudUpload,
+    CloudDownload,
+    Backup,
+    Restore,
+    History,
+    Revision,
+    Add,
+    AddCircle,
+    Remove,
+    Delete,
+    DeleteSweep,
+    Edit,
+    Rename,
+    Undo,
+    Redo,
+    Cut,
+    Copy,
+    Paste,
+    Duplicate,
+    SelectAll,
+    Deselect,
+    Clear,
+    ClearAll,
+    Drag,
+    Move,
+    Rotate,
+    Scale,
+    Transform,
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
+    Snap,
+    Grid,
+    GridOff,
+    Layers,
+    Group,
+    Ungroup,
+    Scene,
+    SceneMap,
+    Viewport,
+    View2D,
+    View3D,
+    Perspective,
+    TopView,
+    FrontView,
+    RightView,
+    FitScreen,
+    FrameAll,
+    FrameSelection,
+    CenterView,
+    ZoomIn,
+    ZoomOut,
+    Pan,
+    Orbit,
+    Camera,
+    CameraFront,
+    CameraRear,
+    Screenshot,
+    Snapshot,
+    Lit,
+    Wireframe,
+    Shadows,
+    Overlay,
+    Bounds,
+    Axes,
+    ObjectNames,
+    Statistics,
+    SafeFrame,
+    Origin,
+    ResetOrigin,
+    AR,
+    ARPreview,
+    Device,
+    ConnectDevice,
+    PairDevice,
+    Bluetooth,
+    Phone,
+    Tablet,
+    Tracking,
+    Anchor,
+    AddAnchor,
+    ClearAnchors,
+    Reticle,
+    Planes,
+    Occlusion,
+    CollisionGuide,
+    SessionStart,
+    SessionStop,
+    Record,
+    StopRecord,
+    Preview,
+    Timeline,
+    Play,
+    Pause,
+    Stop,
+    SkipPrevious,
+    SkipNext,
+    FastRewind,
+    FastForward,
+    Replay,
+    PlayCircle,
+    PauseCircle,
+    StopCircle,
+    MarkerAdd,
+    MarkerClear,
+    Playhead,
+    Vehicle,
+    Car,
+    Truck,
+    Bus,
+    Taxi,
+    Motorcycle,
+    Bicycle,
+    Traffic,
+    TrafficLight,
+    Road,
+    Highway,
+    Route,
+    Direction,
+    Steering,
+    Wheel,
+    Tire,
+    Fuel,
+    Engine,
+    VehicleIdentity,
+    VehiclePhysics,
+    Mass,
+    Balance,
+    Crush,
+    Crash,
+    Impact,
+    Friction,
+    Evidence,
+    EvidenceAdd,
+    EvidenceLink,
+    EvidenceUnlink,
+    Photo,
+    PhotoCamera,
+    PhotoLibrary,
+    SkidMark,
+    Debris,
+    Glass,
+    Fluid,
+    Gouge,
+    ForensicMarker,
+    Fingerprint,
+    Source,
+    Provenance,
+    Verified,
+    Confidence,
+    Unverified,
+    Observed,
+    Measured,
+    Calculated,
+    Imported,
+    Simulated,
+    AI,
+    Witness,
+    Statement,
+    CaseValidate,
+    CaseWarning,
+    CaseError,
+    CaseSuccess,
+    Measurement,
+    Distance,
+    Angle,
+    Area,
+    Height,
+    Width,
+    Radius,
+    Coordinates,
+    GPS,
+    Compass,
+    Heading,
+    Location,
+    Datum,
+    ScaleMeasure,
+    Units,
+    Analysis,
+    Analytics,
+    Chart,
+    LineChart,
+    AreaChart,
+    PieChart,
+    Scatter,
+    SpeedAnalysis,
+    MomentumAnalysis,
+    SkidAnalysis,
+    Trajectory,
+    LineOfSight,
+    Calculate,
+    Science,
+    Experiment,
+    Module,
+    Workflow,
+    Result,
+    Results,
+    Findings,
+    Hypothesis,
+    Simulation,
+    Run,
+    RunAll,
+    Reconstruct,
+    ReportView,
+    ReportExport,
+    NodeEditor,
+    Node,
+    AddNode,
+    RunGraph,
+    Graph,
+    InputNode,
+    OutputNode,
+    LinkNode,
+    DeleteLink,
+    CenterGraph,
+    GridGraph,
+    SnapGraph,
+    SaveGraph,
+    LoadGraph,
+    Assets,
+    AssetLibrary,
+    Asset,
+    Assign,
+    Unassign,
+    Material,
+    Texture,
+    PBR,
+    Model,
+    ImportAsset,
+    RefreshAssets,
+    CopyUrl,
+    ExternalLink,
+    Category,
+    License,
+    Person,
+    People,
+    Driver,
+    Pedestrian,
+    Cyclist,
+    Officer,
+    Building,
+    Environment,
+    Terrain,
+    Tree,
+    Grass,
+    Rock,
+    Water,
+    Weather,
+    Lighting,
+    StreetFurniture,
+    StreetLight,
+    Barrier,
+    Cone,
+    Sign,
+    Success,
+    Warning,
+    Error,
+    Help,
+    HelpOutline,
+    Keyboard,
+    Shortcut,
+    Command,
+    Terminal,
+    Palette,
+    Notification,
+    Star,
+    Favorite,
+    Flag,
+    Label,
+    Tag,
+    Badge,
+    StatusOnline,
+    StatusOffline,
+    VisibilityOff,
+    LockPerson,
+    Shield,
+    Security,
+    Admin,
+    About,
+    Documentation
 };
 
 enum class StatusTone { Neutral, Accent, Success };
@@ -742,7 +1102,7 @@ static ImVec4 toneColor(StatusTone tone)
     }
 }
 
-static void drawGlyph(ImDrawList* d, UiGlyph glyph, const ImVec2& center, float size, ImU32 color)
+static void drawLegacyGlyph(ImDrawList* d, UiGlyph glyph, const ImVec2& center, float size, ImU32 color)
 {
     const float s=size, x=center.x, y=center.y, t=std::max(1.0f,size*0.085f);
 
@@ -974,6 +1334,852 @@ static void drawGlyph(ImDrawList* d, UiGlyph glyph, const ImVec2& center, float 
     }
 }
 
+// ROADSAFE_GOOGLE_MATERIAL_SYMBOLS_V1
+// Google Material Symbols Rounded replaces RoadSafe's hand-drawn glyphs
+// through the central UiGlyph path. The legacy renderer remains as a
+// runtime fallback if the external font asset cannot be loaded.
+static ImFont* gGoogleMaterialIconFont=nullptr;
+
+static const ImWchar gGoogleMaterialIconRanges[]={
+    0xE00D, 0xE00D,
+    0xE00F, 0xE00F,
+    0xE010, 0xE010,
+    0xE01F, 0xE01F,
+    0xE020, 0xE020,
+    0xE034, 0xE034,
+    0xE037, 0xE037,
+    0xE042, 0xE042,
+    0xE044, 0xE044,
+    0xE045, 0xE045,
+    0xE047, 0xE047,
+    0xE061, 0xE061,
+    0xE0B8, 0xE0B8,
+    0xE0C9, 0xE0C9,
+    0xE13D, 0xE13D,
+    0xE145, 0xE145,
+    0xE146, 0xE146,
+    0xE149, 0xE149,
+    0xE14D, 0xE14D,
+    0xE14E, 0xE14E,
+    0xE14F, 0xE14F,
+    0xE15A, 0xE15A,
+    0xE15B, 0xE15B,
+    0xE161, 0xE161,
+    0xE162, 0xE162,
+    0xE164, 0xE164,
+    0xE166, 0xE166,
+    0xE169, 0xE169,
+    0xE16C, 0xE16C,
+    0xE16F, 0xE16F,
+    0xE178, 0xE178,
+    0xE1A1, 0xE1A1,
+    0xE1A2, 0xE1A2,
+    0xE1A7, 0xE1A7,
+    0xE1A8, 0xE1A8,
+    0xE1C4, 0xE1C4,
+    0xE250, 0xE250,
+    0xE259, 0xE259,
+    0xE25A, 0xE25A,
+    0xE268, 0xE268,
+    0xE26B, 0xE26B,
+    0xE2C0, 0xE2C0,
+    0xE2C3, 0xE2C3,
+    0xE2C7, 0xE2C7,
+    0xE2C8, 0xE2C8,
+    0xE2CC, 0xE2CC,
+    0xE2E6, 0xE2E6,
+    0xE312, 0xE312,
+    0xE326, 0xE326,
+    0xE32A, 0xE32A,
+    0xE32F, 0xE32F,
+    0xE3AD, 0xE3AD,
+    0xE3B4, 0xE3B4,
+    0xE3B5, 0xE3B5,
+    0xE3BB, 0xE3BB,
+    0xE3BC, 0xE3BC,
+    0xE3C2, 0xE3C2,
+    0xE3EB, 0xE3EB,
+    0xE3EC, 0xE3EC,
+    0xE3F4, 0xE3F4,
+    0xE412, 0xE412,
+    0xE413, 0xE413,
+    0xE415, 0xE415,
+    0xE41A, 0xE41A,
+    0xE41C, 0xE41C,
+    0xE421, 0xE421,
+    0xE429, 0xE429,
+    0xE430, 0xE430,
+    0xE4FC, 0xE4FC,
+    0xE4FD, 0xE4FD,
+    0xE518, 0xE518,
+    0xE52E, 0xE52E,
+    0xE536, 0xE536,
+    0xE53B, 0xE53B,
+    0xE546, 0xE546,
+    0xE558, 0xE558,
+    0xE559, 0xE559,
+    0xE55B, 0xE55B,
+    0xE55C, 0xE55C,
+    0xE55E, 0xE55E,
+    0xE564, 0xE564,
+    0xE565, 0xE565,
+    0xE5C3, 0xE5C3,
+    0xE5C4, 0xE5C4,
+    0xE5C8, 0xE5C8,
+    0xE5CB, 0xE5CB,
+    0xE5CC, 0xE5CC,
+    0xE5CD, 0xE5CD,
+    0xE5CE, 0xE5CE,
+    0xE5CF, 0xE5CF,
+    0xE5D0, 0xE5D0,
+    0xE5D1, 0xE5D1,
+    0xE5D2, 0xE5D2,
+    0xE5D3, 0xE5D3,
+    0xE5D5, 0xE5D5,
+    0xE5D8, 0xE5D8,
+    0xE5DB, 0xE5DB,
+    0xE5DC, 0xE5DC,
+    0xE5DD, 0xE5DD,
+    0xE627, 0xE627,
+    0xE637, 0xE637,
+    0xE63E, 0xE63E,
+    0xE648, 0xE648,
+    0xE65F, 0xE65F,
+    0xE693, 0xE693,
+    0xE6E1, 0xE6E1,
+    0xE72C, 0xE72C,
+    0xE770, 0xE770,
+    0xE798, 0xE798,
+    0xE7BA, 0xE7BA,
+    0xE7F5, 0xE7F5,
+    0xE80D, 0xE80D,
+    0xE836, 0xE836,
+    0xE84D, 0xE84D,
+    0xE85B, 0xE85B,
+    0xE862, 0xE862,
+    0xE864, 0xE864,
+    0xE871, 0xE871,
+    0xE873, 0xE873,
+    0xE87A, 0xE87A,
+    0xE87B, 0xE87B,
+    0xE87E, 0xE87E,
+    0xE886, 0xE886,
+    0xE888, 0xE888,
+    0xE88E, 0xE88E,
+    0xE890, 0xE890,
+    0xE893, 0xE893,
+    0xE898, 0xE898,
+    0xE899, 0xE899,
+    0xE89C, 0xE89C,
+    0xE89E, 0xE89E,
+    0xE89F, 0xE89F,
+    0xE8AD, 0xE8AD,
+    0xE8B3, 0xE8B3,
+    0xE8B8, 0xE8B8,
+    0xE8D4, 0xE8D4,
+    0xE8E1, 0xE8E1,
+    0xE8E9, 0xE8E9,
+    0xE8F0, 0xE8F0,
+    0xE8F1, 0xE8F1,
+    0xE8F4, 0xE8F4,
+    0xE8F5, 0xE8F5,
+    0xE8FD, 0xE8FD,
+    0xE8FF, 0xE8FF,
+    0xE900, 0xE900,
+    0xE90D, 0xE90D,
+    0xE90E, 0xE90E,
+    0xE90F, 0xE90F,
+    0xE915, 0xE915,
+    0xE917, 0xE917,
+    0xE91F, 0xE91F,
+    0xE922, 0xE922,
+    0xE925, 0xE925,
+    0xE92E, 0xE92E,
+    0xE945, 0xE945,
+    0xE949, 0xE949,
+    0xE94D, 0xE94D,
+    0xE97A, 0xE97A,
+    0xE990, 0xE990,
+    0xE99B, 0xE99B,
+    0xE9A2, 0xE9A2,
+    0xE9B2, 0xE9B2,
+    0xE9BA, 0xE9BA,
+    0xE9E0, 0xE9E0,
+    0xE9E4, 0xE9E4,
+    0xE9EF, 0xE9EF,
+    0xE9F9, 0xE9F9,
+    0xEA10, 0xEA10,
+    0xEA16, 0xEA16,
+    0xEA19, 0xEA19,
+    0xEA3A, 0xEA3A,
+    0xEA3B, 0xEA3B,
+    0xEA3E, 0xEA3E,
+    0xEA40, 0xEA40,
+    0xEA49, 0xEA49,
+    0xEA4A, 0xEA4A,
+    0xEA4B, 0xEA4B,
+    0xEA5F, 0xEA5F,
+    0xEA63, 0xEA63,
+    0xEA67, 0xEA67,
+    0xEACD, 0xEACD,
+    0xEAE7, 0xEAE7,
+    0xEAF6, 0xEAF6,
+    0xEB29, 0xEB29,
+    0xEB32, 0xEB32,
+    0xEB60, 0xEB60,
+    0xEB8E, 0xEB8E,
+    0xEB91, 0xEB91,
+    0xEBAB, 0xEBAB,
+    0xEBB6, 0xEBB6,
+    0xEBBE, 0xEBBE,
+    0xEBC8, 0xEBC8,
+    0xEBCC, 0xEBCC,
+    0xEBF2, 0xEBF2,
+    0xEF3A, 0xEF3A,
+    0xEF3B, 0xEF3B,
+    0xEF3D, 0xEF3D,
+    0xEF3E, 0xEF3E,
+    0xEF42, 0xEF42,
+    0xEF4A, 0xEF4A,
+    0xEF4F, 0xEF4F,
+    0xEF56, 0xEF56,
+    0xEF71, 0xEF71,
+    0xEF76, 0xEF76,
+    0xEF7A, 0xEF7A,
+    0xEFC9, 0xEFC9,
+    0xEFD6, 0xEFD6,
+    0xEFEE, 0xEFEE,
+    0xEFF6, 0xEFF6,
+    0xEFF7, 0xEFF7,
+    0xF013, 0xF013,
+    0xF016, 0xF016,
+    0xF053, 0xF053,
+    0xF056, 0xF056,
+    0xF05E, 0xF05E,
+    0xF06C, 0xF06C,
+    0xF083, 0xF083,
+    0xF084, 0xF084,
+    0xF08C, 0xF08C,
+    0xF090, 0xF090,
+    0xF097, 0xF097,
+    0xF09A, 0xF09A,
+    0xF09B, 0xF09B,
+    0xF0BE, 0xF0BE,
+    0xF0C5, 0xF0C5,
+    0xF0C6, 0xF0C6,
+    0xF0CC, 0xF0CC,
+    0xF0CF, 0xF0CF,
+    0xF0D3, 0xF0D3,
+    0xF0DA, 0xF0DA,
+    0xF114, 0xF114,
+    0xF15C, 0xF15C,
+    0xF17D, 0xF17D,
+    0xF1C5, 0xF1C5,
+    0xF1C8, 0xF1C8,
+    0xF1CD, 0xF1CD,
+    0xF1DB, 0xF1DB,
+    0xF1DF, 0xF1DF,
+    0xF205, 0xF205,
+    0xF233, 0xF233,
+    0xF2C8, 0xF2C8,
+    0xF2C9, 0xF2C9,
+    0xF2E0, 0xF2E0,
+    0xF720, 0xF720,
+    0xF8B6, 0xF8B6,
+    0xF8F3, 0xF8F3,
+    0
+};
+
+static unsigned int googleMaterialCodepoint(
+    UiGlyph glyph)
+{
+    switch (glyph)
+    {
+        case UiGlyph::Folder: return 0xE2C7;
+        case UiGlyph::Hash: return 0xE9EF;
+        case UiGlyph::Calendar: return 0xEBCC;
+        case UiGlyph::Pin: return 0xF1DB;
+        case UiGlyph::Clock: return 0xEFD6;
+        case UiGlyph::Cube: return 0xEFC9;
+        case UiGlyph::Document: return 0xE873;
+        case UiGlyph::Bars: return 0xEF3E;
+        case UiGlyph::Pie: return 0xE917;
+        case UiGlyph::Image: return 0xE3F4;
+        case UiGlyph::Check: return 0xF0BE;
+        case UiGlyph::Link: return 0xE250;
+        case UiGlyph::Ruler: return 0xE41C;
+        case UiGlyph::Marker: return 0xE55E;
+        case UiGlyph::Speed: return 0xE9E4;
+        case UiGlyph::Momentum: return 0xE915;
+        case UiGlyph::Report: return 0xEF42;
+        case UiGlyph::Info: return 0xE88E;
+        case UiGlyph::Eye: return 0xE8F4;
+        case UiGlyph::Lock: return 0xE899;
+        case UiGlyph::Unlock: return 0xE898;
+        case UiGlyph::Target: return 0xE3B4;
+        case UiGlyph::More: return 0xE5D3;
+        case UiGlyph::Home: return 0xE9B2;
+        case UiGlyph::Dashboard: return 0xE871;
+        case UiGlyph::Menu: return 0xE5D2;
+        case UiGlyph::Apps: return 0xE5C3;
+        case UiGlyph::Back: return 0xE5C4;
+        case UiGlyph::Forward: return 0xE5C8;
+        case UiGlyph::Previous: return 0xE5CB;
+        case UiGlyph::Next: return 0xE5CC;
+        case UiGlyph::Up: return 0xE5D8;
+        case UiGlyph::Down: return 0xE5DB;
+        case UiGlyph::ExpandMore: return 0xE5CF;
+        case UiGlyph::ExpandLess: return 0xE5CE;
+        case UiGlyph::ChevronLeft: return 0xE5CB;
+        case UiGlyph::ChevronRight: return 0xE5CC;
+        case UiGlyph::FirstPage: return 0xE5DC;
+        case UiGlyph::LastPage: return 0xE5DD;
+        case UiGlyph::Fullscreen: return 0xE5D0;
+        case UiGlyph::FullscreenExit: return 0xE5D1;
+        case UiGlyph::OpenInNew: return 0xE89E;
+        case UiGlyph::Close: return 0xE5CD;
+        case UiGlyph::Cancel: return 0xE888;
+        case UiGlyph::Refresh: return 0xE5D5;
+        case UiGlyph::Restart: return 0xF053;
+        case UiGlyph::Sync: return 0xE627;
+        case UiGlyph::Search: return 0xEF7A;
+        case UiGlyph::Filter: return 0xEF4F;
+        case UiGlyph::FilterOff: return 0xEB32;
+        case UiGlyph::Sort: return 0xE164;
+        case UiGlyph::Tune: return 0xE429;
+        case UiGlyph::Settings: return 0xE8B8;
+        case UiGlyph::Preferences: return 0xF05E;
+        case UiGlyph::ViewSidebar: return 0xF114;
+        case UiGlyph::Dock: return 0xF2E0;
+        case UiGlyph::Panel: return 0xE8F1;
+        case UiGlyph::SplitView: return 0xE949;
+        case UiGlyph::Layout: return 0xE99B;
+        case UiGlyph::ResetLayout: return 0xE99B;
+        case UiGlyph::NewFile: return 0xE89C;
+        case UiGlyph::NewCase: return 0xE2CC;
+        case UiGlyph::OpenFile: return 0xE2C8;
+        case UiGlyph::OpenRecent: return 0xE8B3;
+        case UiGlyph::Save: return 0xE161;
+        case UiGlyph::SaveAs: return 0xEB60;
+        case UiGlyph::Import: return 0xF09B;
+        case UiGlyph::Export: return 0xF090;
+        case UiGlyph::Download: return 0xF090;
+        case UiGlyph::Upload: return 0xF09B;
+        case UiGlyph::Package: return 0xE1A1;
+        case UiGlyph::Archive: return 0xE149;
+        case UiGlyph::Unarchive: return 0xE169;
+        case UiGlyph::Exit: return 0xE9BA;
+        case UiGlyph::Print: return 0xE8AD;
+        case UiGlyph::Share: return 0xE80D;
+        case UiGlyph::Cloud: return 0xF15C;
+        case UiGlyph::CloudUpload: return 0xE2C3;
+        case UiGlyph::CloudDownload: return 0xE2C0;
+        case UiGlyph::Backup: return 0xE864;
+        case UiGlyph::Restore: return 0xE8B3;
+        case UiGlyph::History: return 0xE8B3;
+        case UiGlyph::Revision: return 0xF17D;
+        case UiGlyph::Add: return 0xE145;
+        case UiGlyph::AddCircle: return 0xE990;
+        case UiGlyph::Remove: return 0xE15B;
+        case UiGlyph::Delete: return 0xE92E;
+        case UiGlyph::DeleteSweep: return 0xE16C;
+        case UiGlyph::Edit: return 0xF097;
+        case UiGlyph::Rename: return 0xE9A2;
+        case UiGlyph::Undo: return 0xE166;
+        case UiGlyph::Redo: return 0xE15A;
+        case UiGlyph::Cut: return 0xE14E;
+        case UiGlyph::Copy: return 0xE14D;
+        case UiGlyph::Paste: return 0xE14F;
+        case UiGlyph::Duplicate: return 0xE3BB;
+        case UiGlyph::SelectAll: return 0xE162;
+        case UiGlyph::Deselect: return 0xEBB6;
+        case UiGlyph::Clear: return 0xE5CD;
+        case UiGlyph::ClearAll: return 0xE0B8;
+        case UiGlyph::Drag: return 0xE945;
+        case UiGlyph::Move: return 0xE89F;
+        case UiGlyph::Rotate: return 0xE41A;
+        case UiGlyph::Scale: return 0xE85B;
+        case UiGlyph::Transform: return 0xE89F;
+        case UiGlyph::AlignLeft: return 0xE00D;
+        case UiGlyph::AlignCenter: return 0xE00F;
+        case UiGlyph::AlignRight: return 0xE010;
+        case UiGlyph::Snap: return 0xF016;
+        case UiGlyph::Grid: return 0xE3EC;
+        case UiGlyph::GridOff: return 0xE3EB;
+        case UiGlyph::Layers: return 0xE53B;
+        case UiGlyph::Group: return 0xE886;
+        case UiGlyph::Ungroup: return 0xE8F0;
+        case UiGlyph::Scene: return 0xF720;
+        case UiGlyph::SceneMap: return 0xE55B;
+        case UiGlyph::Viewport: return 0xEFC9;
+        case UiGlyph::View2D: return 0xE55B;
+        case UiGlyph::View3D: return 0xEFC9;
+        case UiGlyph::Perspective: return 0xEF4A;
+        case UiGlyph::TopView: return 0xE25A;
+        case UiGlyph::FrontView: return 0xE8E9;
+        case UiGlyph::RightView: return 0xF1DF;
+        case UiGlyph::FitScreen: return 0xEA10;
+        case UiGlyph::FrameAll: return 0xE162;
+        case UiGlyph::FrameSelection: return 0xE3B4;
+        case UiGlyph::CenterView: return 0xE3B4;
+        case UiGlyph::ZoomIn: return 0xE8FF;
+        case UiGlyph::ZoomOut: return 0xE900;
+        case UiGlyph::Pan: return 0xE925;
+        case UiGlyph::Orbit: return 0xE84D;
+        case UiGlyph::Camera: return 0xE412;
+        case UiGlyph::CameraFront: return 0xF2C9;
+        case UiGlyph::CameraRear: return 0xF2C8;
+        case UiGlyph::Screenshot: return 0xF056;
+        case UiGlyph::Snapshot: return 0xE412;
+        case UiGlyph::Lit: return 0xE518;
+        case UiGlyph::Wireframe: return 0xE3EC;
+        case UiGlyph::Shadows: return 0xE430;
+        case UiGlyph::Overlay: return 0xE53B;
+        case UiGlyph::Bounds: return 0xE3C2;
+        case UiGlyph::Axes: return 0xE89F;
+        case UiGlyph::ObjectNames: return 0xE893;
+        case UiGlyph::Statistics: return 0xE4FC;
+        case UiGlyph::SafeFrame: return 0xE3BC;
+        case UiGlyph::Origin: return 0xE55C;
+        case UiGlyph::ResetOrigin: return 0xF053;
+        case UiGlyph::AR: return 0xEFC9;
+        case UiGlyph::ARPreview: return 0xF1C5;
+        case UiGlyph::Device: return 0xE326;
+        case UiGlyph::ConnectDevice: return 0xE326;
+        case UiGlyph::PairDevice: return 0xE1A8;
+        case UiGlyph::Bluetooth: return 0xE1A7;
+        case UiGlyph::Phone: return 0xE7BA;
+        case UiGlyph::Tablet: return 0xE32F;
+        case UiGlyph::Tracking: return 0xE8E1;
+        case UiGlyph::Anchor: return 0xF1CD;
+        case UiGlyph::AddAnchor: return 0xEF3A;
+        case UiGlyph::ClearAnchors: return 0xE16C;
+        case UiGlyph::Reticle: return 0xE3B5;
+        case UiGlyph::Planes: return 0xE53B;
+        case UiGlyph::Occlusion: return 0xE53B;
+        case UiGlyph::CollisionGuide: return 0xEBF2;
+        case UiGlyph::SessionStart: return 0xE1C4;
+        case UiGlyph::SessionStop: return 0xEF71;
+        case UiGlyph::Record: return 0xE061;
+        case UiGlyph::StopRecord: return 0xE047;
+        case UiGlyph::Preview: return 0xF1C5;
+        case UiGlyph::Timeline: return 0xE922;
+        case UiGlyph::Play: return 0xE037;
+        case UiGlyph::Pause: return 0xE034;
+        case UiGlyph::Stop: return 0xE047;
+        case UiGlyph::SkipPrevious: return 0xE045;
+        case UiGlyph::SkipNext: return 0xE044;
+        case UiGlyph::FastRewind: return 0xE020;
+        case UiGlyph::FastForward: return 0xE01F;
+        case UiGlyph::Replay: return 0xE042;
+        case UiGlyph::PlayCircle: return 0xE1C4;
+        case UiGlyph::PauseCircle: return 0xE1A2;
+        case UiGlyph::StopCircle: return 0xEF71;
+        case UiGlyph::MarkerAdd: return 0xEF3A;
+        case UiGlyph::MarkerClear: return 0xE16C;
+        case UiGlyph::Playhead: return 0xE259;
+        case UiGlyph::Vehicle: return 0xEFF7;
+        case UiGlyph::Car: return 0xEFF7;
+        case UiGlyph::Truck: return 0xE558;
+        case UiGlyph::Bus: return 0xEFF6;
+        case UiGlyph::Taxi: return 0xE559;
+        case UiGlyph::Motorcycle: return 0xE9F9;
+        case UiGlyph::Bicycle: return 0xEB29;
+        case UiGlyph::Traffic: return 0xE565;
+        case UiGlyph::TrafficLight: return 0xE565;
+        case UiGlyph::Road: return 0xEF3B;
+        case UiGlyph::Highway: return 0xEF3B;
+        case UiGlyph::Route: return 0xEACD;
+        case UiGlyph::Direction: return 0xE52E;
+        case UiGlyph::Steering: return 0xEBAB;
+        case UiGlyph::Wheel: return 0xEBC8;
+        case UiGlyph::Tire: return 0xEBC8;
+        case UiGlyph::Fuel: return 0xE546;
+        case UiGlyph::Engine: return 0xE8B8;
+        case UiGlyph::VehicleIdentity: return 0xEA67;
+        case UiGlyph::VehiclePhysics: return 0xEA4B;
+        case UiGlyph::Mass: return 0xE13D;
+        case UiGlyph::Balance: return 0xEAF6;
+        case UiGlyph::Crush: return 0xE94D;
+        case UiGlyph::Crash: return 0xEBF2;
+        case UiGlyph::Impact: return 0xEBF2;
+        case UiGlyph::Friction: return 0xE945;
+        case UiGlyph::Evidence: return 0xE873;
+        case UiGlyph::EvidenceAdd: return 0xE89C;
+        case UiGlyph::EvidenceLink: return 0xE178;
+        case UiGlyph::EvidenceUnlink: return 0xE16F;
+        case UiGlyph::Photo: return 0xE693;
+        case UiGlyph::PhotoCamera: return 0xE412;
+        case UiGlyph::PhotoLibrary: return 0xE413;
+        case UiGlyph::SkidMark: return 0xEBC8;
+        case UiGlyph::Debris: return 0xE268;
+        case UiGlyph::Glass: return 0xE3AD;
+        case UiGlyph::Fluid: return 0xE798;
+        case UiGlyph::Gouge: return 0xF097;
+        case UiGlyph::ForensicMarker: return 0xE55E;
+        case UiGlyph::Fingerprint: return 0xE90D;
+        case UiGlyph::Source: return 0xF1C8;
+        case UiGlyph::Provenance: return 0xEA3E;
+        case UiGlyph::Verified: return 0xEF76;
+        case UiGlyph::Confidence: return 0xF013;
+        case UiGlyph::Unverified: return 0xE8FD;
+        case UiGlyph::Observed: return 0xE8F4;
+        case UiGlyph::Measured: return 0xE41C;
+        case UiGlyph::Calculated: return 0xEA5F;
+        case UiGlyph::Imported: return 0xF09B;
+        case UiGlyph::Simulated: return 0xEA4B;
+        case UiGlyph::AI: return 0xF06C;
+        case UiGlyph::Witness: return 0xE91F;
+        case UiGlyph::Statement: return 0xE0C9;
+        case UiGlyph::CaseValidate: return 0xF0C5;
+        case UiGlyph::CaseWarning: return 0xF083;
+        case UiGlyph::CaseError: return 0xF8B6;
+        case UiGlyph::CaseSuccess: return 0xE2E6;
+        case UiGlyph::Measurement: return 0xE41C;
+        case UiGlyph::Distance: return 0xE41C;
+        case UiGlyph::Angle: return 0xEA3B;
+        case UiGlyph::Area: return 0xEA49;
+        case UiGlyph::Height: return 0xEA16;
+        case UiGlyph::Width: return 0xE8D4;
+        case UiGlyph::Radius: return 0xE836;
+        case UiGlyph::Coordinates: return 0xE55C;
+        case UiGlyph::GPS: return 0xE55C;
+        case UiGlyph::Compass: return 0xE87A;
+        case UiGlyph::Heading: return 0xE87A;
+        case UiGlyph::Location: return 0xF1DB;
+        case UiGlyph::Datum: return 0xE55C;
+        case UiGlyph::ScaleMeasure: return 0xE41C;
+        case UiGlyph::Units: return 0xEA5F;
+        case UiGlyph::Analysis: return 0xEF3E;
+        case UiGlyph::Analytics: return 0xEF3E;
+        case UiGlyph::Chart: return 0xE26B;
+        case UiGlyph::LineChart: return 0xE6E1;
+        case UiGlyph::AreaChart: return 0xE770;
+        case UiGlyph::PieChart: return 0xF0DA;
+        case UiGlyph::Scatter: return 0xE268;
+        case UiGlyph::SpeedAnalysis: return 0xE9E4;
+        case UiGlyph::MomentumAnalysis: return 0xE915;
+        case UiGlyph::SkidAnalysis: return 0xEBC8;
+        case UiGlyph::Trajectory: return 0xEACD;
+        case UiGlyph::LineOfSight: return 0xE8F4;
+        case UiGlyph::Calculate: return 0xEA5F;
+        case UiGlyph::Science: return 0xEA4B;
+        case UiGlyph::Experiment: return 0xEA3A;
+        case UiGlyph::Module: return 0xE87B;
+        case UiGlyph::Workflow: return 0xE97A;
+        case UiGlyph::Result: return 0xF0CC;
+        case UiGlyph::Results: return 0xF0CC;
+        case UiGlyph::Findings: return 0xF0C5;
+        case UiGlyph::Hypothesis: return 0xEA4A;
+        case UiGlyph::Simulation: return 0xF0CF;
+        case UiGlyph::Run: return 0xE037;
+        case UiGlyph::RunAll: return 0xE1C4;
+        case UiGlyph::Reconstruct: return 0xEA3B;
+        case UiGlyph::ReportView: return 0xEF42;
+        case UiGlyph::ReportExport: return 0xE415;
+        case UiGlyph::NodeEditor: return 0xE97A;
+        case UiGlyph::Node: return 0xE97A;
+        case UiGlyph::AddNode: return 0xE146;
+        case UiGlyph::RunGraph: return 0xE037;
+        case UiGlyph::Graph: return 0xE4FD;
+        case UiGlyph::InputNode: return 0xE890;
+        case UiGlyph::OutputNode: return 0xEBBE;
+        case UiGlyph::LinkNode: return 0xE250;
+        case UiGlyph::DeleteLink: return 0xE16F;
+        case UiGlyph::CenterGraph: return 0xE3B4;
+        case UiGlyph::GridGraph: return 0xE3EC;
+        case UiGlyph::SnapGraph: return 0xF016;
+        case UiGlyph::SaveGraph: return 0xE161;
+        case UiGlyph::LoadGraph: return 0xE2C8;
+        case UiGlyph::Assets: return 0xE1A1;
+        case UiGlyph::AssetLibrary: return 0xE8F0;
+        case UiGlyph::Asset: return 0xF720;
+        case UiGlyph::Assign: return 0xE862;
+        case UiGlyph::Unassign: return 0xE16F;
+        case UiGlyph::Material: return 0xE421;
+        case UiGlyph::Texture: return 0xE421;
+        case UiGlyph::PBR: return 0xE65F;
+        case UiGlyph::Model: return 0xF720;
+        case UiGlyph::ImportAsset: return 0xF09B;
+        case UiGlyph::RefreshAssets: return 0xE5D5;
+        case UiGlyph::CopyUrl: return 0xE14D;
+        case UiGlyph::ExternalLink: return 0xE89E;
+        case UiGlyph::Category: return 0xE72C;
+        case UiGlyph::License: return 0xE90E;
+        case UiGlyph::Person: return 0xF0D3;
+        case UiGlyph::People: return 0xF233;
+        case UiGlyph::Driver: return 0xE637;
+        case UiGlyph::Pedestrian: return 0xE536;
+        case UiGlyph::Cyclist: return 0xEB29;
+        case UiGlyph::Officer: return 0xEF56;
+        case UiGlyph::Building: return 0xEA40;
+        case UiGlyph::Environment: return 0xE564;
+        case UiGlyph::Terrain: return 0xE564;
+        case UiGlyph::Tree: return 0xEA63;
+        case UiGlyph::Grass: return 0xF205;
+        case UiGlyph::Rock: return 0xE564;
+        case UiGlyph::Water: return 0xF084;
+        case UiGlyph::Weather: return 0xF15C;
+        case UiGlyph::Lighting: return 0xE518;
+        case UiGlyph::StreetFurniture: return 0xEFEE;
+        case UiGlyph::StreetLight: return 0xE90F;
+        case UiGlyph::Barrier: return 0xF08C;
+        case UiGlyph::Cone: return 0xE565;
+        case UiGlyph::Sign: return 0xEB91;
+        case UiGlyph::Success: return 0xF0BE;
+        case UiGlyph::Warning: return 0xF083;
+        case UiGlyph::Error: return 0xF8B6;
+        case UiGlyph::Help: return 0xE8FD;
+        case UiGlyph::HelpOutline: return 0xE8FD;
+        case UiGlyph::Keyboard: return 0xE312;
+        case UiGlyph::Shortcut: return 0xEAE7;
+        case UiGlyph::Command: return 0xEB8E;
+        case UiGlyph::Terminal: return 0xEB8E;
+        case UiGlyph::Palette: return 0xEF7A;
+        case UiGlyph::Notification: return 0xE7F5;
+        case UiGlyph::Star: return 0xF09A;
+        case UiGlyph::Favorite: return 0xE87E;
+        case UiGlyph::Flag: return 0xF0C6;
+        case UiGlyph::Label: return 0xE893;
+        case UiGlyph::Tag: return 0xE9EF;
+        case UiGlyph::Badge: return 0xEA67;
+        case UiGlyph::StatusOnline: return 0xE63E;
+        case UiGlyph::StatusOffline: return 0xE648;
+        case UiGlyph::VisibilityOff: return 0xE8F5;
+        case UiGlyph::LockPerson: return 0xF8F3;
+        case UiGlyph::Shield: return 0xE9E0;
+        case UiGlyph::Security: return 0xE32A;
+        case UiGlyph::Admin: return 0xEF3D;
+        case UiGlyph::About: return 0xE88E;
+        case UiGlyph::Documentation: return 0xEA19;
+        default:
+            return 0;
+    }
+}
+static int googleMaterialUtf8(
+    unsigned int codepoint,
+    char output[5])
+{
+    if (codepoint<=0x7Fu)
+    {
+        output[0]=
+            static_cast<char>(
+                codepoint
+            );
+        output[1]='\0';
+        return 1;
+    }
+
+    if (codepoint<=0x7FFu)
+    {
+        output[0]=
+            static_cast<char>(
+                0xC0u |
+                (codepoint>>6)
+            );
+
+        output[1]=
+            static_cast<char>(
+                0x80u |
+                (codepoint&0x3Fu)
+            );
+
+        output[2]='\0';
+        return 2;
+    }
+
+    if (codepoint<=0xFFFFu)
+    {
+        output[0]=
+            static_cast<char>(
+                0xE0u |
+                (codepoint>>12)
+            );
+
+        output[1]=
+            static_cast<char>(
+                0x80u |
+                (
+                    (codepoint>>6)&
+                    0x3Fu
+                )
+            );
+
+        output[2]=
+            static_cast<char>(
+                0x80u |
+                (codepoint&0x3Fu)
+            );
+
+        output[3]='\0';
+        return 3;
+    }
+
+    output[0]=
+        static_cast<char>(
+            0xF0u |
+            (codepoint>>18)
+        );
+
+    output[1]=
+        static_cast<char>(
+            0x80u |
+            (
+                (codepoint>>12)&
+                0x3Fu
+            )
+        );
+
+    output[2]=
+        static_cast<char>(
+            0x80u |
+            (
+                (codepoint>>6)&
+                0x3Fu
+            )
+        );
+
+    output[3]=
+        static_cast<char>(
+            0x80u |
+            (codepoint&0x3Fu)
+        );
+
+    output[4]='\0';
+    return 4;
+}
+
+static void drawGlyph(
+    ImDrawList* drawList,
+    UiGlyph glyph,
+    const ImVec2& center,
+    float size,
+    ImU32 color)
+{
+    // ROADSAFE_GLOBAL_ICON_SCALE_V15
+    size *= 1.28f;
+
+    if (!gGoogleMaterialIconFont)
+    {
+        drawLegacyGlyph(
+            drawList,
+            glyph,
+            center,
+            size,
+            color
+        );
+        return;
+    }
+
+    const unsigned int codepoint=
+        googleMaterialCodepoint(
+            glyph
+        );
+
+    if (codepoint==0)
+    {
+        drawLegacyGlyph(
+            drawList,
+            glyph,
+            center,
+            size,
+            color
+        );
+        return;
+    }
+
+    char utf8[5]{};
+
+    const int byteCount=
+        googleMaterialUtf8(
+            codepoint,
+            utf8
+        );
+
+    if (byteCount<=0)
+    {
+        drawLegacyGlyph(
+            drawList,
+            glyph,
+            center,
+            size,
+            color
+        );
+        return;
+    }
+
+    const float iconFontSize=
+        std::max(
+            12.0f,
+            size*1.12f
+        );
+
+    const ImVec2 textSize=
+        gGoogleMaterialIconFont->
+            CalcTextSizeA(
+                iconFontSize,
+                1.0e9f,
+                0.0f,
+                utf8,
+                utf8+byteCount
+            );
+
+    const ImVec2 textPosition(
+        center.x-
+        textSize.x*0.5f,
+        center.y-
+        textSize.y*0.5f-
+        0.5f
+    );
+
+    drawList->AddText(
+        gGoogleMaterialIconFont,
+        iconFontSize,
+        textPosition,
+        color,
+        utf8,
+        utf8+byteCount
+    );
+}
+
+// ROADSAFE_GOOGLE_MATERIAL_SYMBOLS_INIT_V3
+static void initializeGoogleMaterialIcons()
+{
+    if (gGoogleMaterialIconFont)
+        return;
+
+    ImGuiIO& googleIconIo=
+        ImGui::GetIO();
+
+    const std::filesystem::path iconFontPath=
+        assetPath("fonts/MaterialSymbolsRounded.ttf");
+
+    ImFontConfig googleIconConfig;
+    googleIconConfig.OversampleH=2;
+    googleIconConfig.OversampleV=2;
+    googleIconConfig.PixelSnapH=true;
+
+    gGoogleMaterialIconFont=
+        googleIconIo.Fonts->AddFontFromFileTTF(
+            iconFontPath.string().c_str(),
+            24.0f,
+            &googleIconConfig,
+            gGoogleMaterialIconRanges
+        );
+
+    if (!gGoogleMaterialIconFont)
+    {
+        std::printf(
+            "[WARN] Google Material Symbols font unavailable; using RoadSafe legacy icons.\n"
+        );
+    }
+    else
+    {
+        std::printf(
+            "[OK] Google Material Symbols Rounded loaded.\n"
+        );
+    }
+}
 static void drawIconBadge(UiGlyph glyph, const ImVec2& pos, float boxSize, bool accent)
 {
     ImDrawList* d=ImGui::GetWindowDrawList();
@@ -981,10 +2187,162 @@ static void drawIconBadge(UiGlyph glyph, const ImVec2& pos, float boxSize, bool 
     const ImU32 border=toU32(accent?ImVec4(0.45f,0.31f,0.06f,1.0f):colorBorder());
     const ImU32 fg=toU32(accent?colorAccent():colorText());
     d->AddRectFilled(pos,ImVec2(pos.x+boxSize,pos.y+boxSize),bg,3.0f);
-    d->AddRect(pos,ImVec2(pos.x+boxSize,pos.y+boxSize),border,3.0f,0,1.0f);
     drawGlyph(d,glyph,ImVec2(pos.x+boxSize*.5f,pos.y+boxSize*.5f),boxSize*.52f,fg);
 }
 
+// ROADSAFE_GOOGLE_ICON_HELPERS_V15
+static constexpr float kRoadSafeMenuGlyphSize=18.5f;
+
+static void drawRoadSafeMenuGlyph(
+    UiGlyph glyph,
+    bool enabled,
+    bool selected)
+{
+    const ImVec2 itemMin=
+        ImGui::GetItemRectMin();
+
+    const ImVec2 itemMax=
+        ImGui::GetItemRectMax();
+
+    if (itemMax.x<=itemMin.x ||
+        itemMax.y<=itemMin.y)
+    {
+        return;
+    }
+
+    drawGlyph(
+        ImGui::GetWindowDrawList(),
+        glyph,
+        ImVec2(
+            itemMin.x+14.0f,
+            (itemMin.y+itemMax.y)*0.5f
+        ),
+        kRoadSafeMenuGlyphSize,
+        toU32(
+            !enabled
+                ? colorMuted()
+                : (
+                    selected
+                        ? colorAccent()
+                        : colorText()
+                  )
+        )
+    );
+}
+
+static bool roadSafeMenuItem(
+    const char* label,
+    UiGlyph glyph,
+    const char* shortcut=nullptr,
+    bool selected=false,
+    bool enabled=true)
+{
+    std::string paddedLabel="    ";
+    paddedLabel+=
+        label
+            ? label
+            : "";
+
+    const bool pressed=
+        ImGui::MenuItem(
+            paddedLabel.c_str(),
+            shortcut,
+            selected,
+            enabled
+        );
+
+    drawRoadSafeMenuGlyph(
+        glyph,
+        enabled,
+        selected
+    );
+
+    return pressed;
+}
+
+static bool roadSafeMenuItemToggle(
+    const char* label,
+    UiGlyph glyph,
+    const char* shortcut,
+    bool* selected,
+    bool enabled=true)
+{
+    std::string paddedLabel="    ";
+    paddedLabel+=
+        label
+            ? label
+            : "";
+
+    const bool pressed=
+        ImGui::MenuItem(
+            paddedLabel.c_str(),
+            shortcut,
+            selected,
+            enabled
+        );
+
+    drawRoadSafeMenuGlyph(
+        glyph,
+        enabled,
+        selected
+            ? *selected
+            : false
+    );
+
+    return pressed;
+}
+
+// ROADSAFE_EVIDENCE_SEMANTIC_GLYPH_V15
+static UiGlyph roadSafeEvidenceGlyph(
+    const roadsafe::EvidenceRecord& evidence)
+{
+    const std::string& type=
+        evidence.type;
+
+    const auto contains=
+        [&type](const char* a,const char* b=nullptr)
+        {
+            return
+                type.find(a)!=std::string::npos ||
+                (
+                    b &&
+                    type.find(b)!=std::string::npos
+                );
+        };
+
+    if (contains("Skid","skid") ||
+        contains("Tire","tire") ||
+        contains("Tyre","tyre"))
+    {
+        return UiGlyph::SkidMark;
+    }
+
+    if (contains("Debris","debris"))
+        return UiGlyph::Debris;
+
+    if (contains("Marker","marker"))
+        return UiGlyph::ForensicMarker;
+
+    if (contains("Photo","photo") ||
+        contains("Image","image"))
+    {
+        return UiGlyph::Photo;
+    }
+
+    if (contains("Glass","glass"))
+        return UiGlyph::Glass;
+
+    if (contains("Fluid","fluid"))
+        return UiGlyph::Fluid;
+
+    if (contains("Gouge","gouge") ||
+        contains("Scrape","scrape"))
+    {
+        return UiGlyph::Gouge;
+    }
+
+    return UiGlyph::Evidence;
+}
 static void beginSurface(
     const char* id,
     const ImVec2& size,
@@ -1067,73 +2425,79 @@ static ButtonVisualSpec getButtonVisualSpec(const char* label)
 
     const std::string key(label);
 
-    // --------------------------------------------------------
-    // Compact icon-only filter / category buttons
-    // --------------------------------------------------------
-    if (key=="ALL")
-        return {true,UiGlyph::Bars,true,"ALL","All"};
-    if (key=="PHOTOS")
-        return {true,UiGlyph::Image,true,"PHOTOS","Photos"};
-    if (key=="SKID MARKS")
-        return {true,UiGlyph::Ruler,true,"SKID MARKS","Skid marks"};
-    if (key=="DEBRIS")
-        return {true,UiGlyph::Document,true,"DEBRIS","Debris"};
-    if (key=="MEASUREMENTS")
-        return {true,UiGlyph::Ruler,true,"MEASUREMENTS","Measurements"};
-    if (key=="MARKERS")
-        return {true,UiGlyph::Marker,true,"MARKERS","Markers"};
-
-    // --------------------------------------------------------
-    // Icon + text buttons across the app
-    // --------------------------------------------------------
-    if (key=="ADD EVIDENCE")
-        return {true,UiGlyph::Document,false,"ADD EVIDENCE","Add evidence"};
-    if (key=="IMPORT PHOTOS")
-        return {true,UiGlyph::Image,false,"IMPORT PHOTOS","Import photos"};
-    if (key=="OPEN VIEWPORT")
-        return {true,UiGlyph::Cube,false,"OPEN VIEWPORT","Open viewport"};
-    if (key=="EDIT SUMMARY")
-        return {true,UiGlyph::Document,false,"EDIT SUMMARY","Edit summary"};
-    if (key=="START ANALYSIS")
-        return {true,UiGlyph::Bars,false,"START ANALYSIS","Start analysis"};
-    if (key=="EXPORT CASE")
-        return {true,UiGlyph::Report,false,"EXPORT CASE","Export case"};
-    if (key=="ADD PARTY")
-        return {true,UiGlyph::Info,false,"ADD PARTY","Add party"};
-    if (key=="VIEW REPORTS")
-        return {true,UiGlyph::Report,false,"VIEW REPORTS","View reports"};
-    if (key=="LINK EVIDENCE")
-        return {true,UiGlyph::Link,false,"LINK EVIDENCE","Link evidence"};
-    if (key=="RUN ALL ANALYSES")
-        return {true,UiGlyph::Bars,false,"RUN ALL ANALYSES","Run all analyses"};
-    if (key=="START SKID ANALYSIS")
-        return {true,UiGlyph::Ruler,false,"START SKID ANALYSIS","Start skid analysis"};
-    if (key=="PLACE ANCHOR")
-        return {true,UiGlyph::Marker,false,"PLACE ANCHOR","Place anchor"};
-    if (key=="CONNECT DEVICE")
-        return {true,UiGlyph::Link,false,"CONNECT DEVICE","Connect device"};
-    if (key=="PAIR DEVICE")
-        return {true,UiGlyph::Link,false,"PAIR DEVICE","Pair device"};
-    if (key=="RECORD")
-        return {true,UiGlyph::Clock,false,"RECORD","Record"};
-    if (key=="FRAME SELECT")
-        return {true,UiGlyph::Target,false,"FRAME SELECT","Frame selection"};
-    if (key=="FRAME ALL")
-        return {true,UiGlyph::Target,false,"FRAME ALL","Frame all"};
-    if (key=="OVERLAYS")
-        return {true,UiGlyph::Bars,false,"OVERLAYS","Overlays"};
-    if (key=="OVERLAYS v")
-        return {true,UiGlyph::Bars,false,"OVERLAYS v","Overlays"};
-    if (key=="RESET ORIGIN")
-        return {true,UiGlyph::Marker,false,"RESET ORIGIN","Reset origin"};
-
-    // ROADSAFE_PROPERTIES_ASSET_ACCESS_V1
-    if (key=="ASSETS")
-        return {true,UiGlyph::Folder,false,"ASSETS","Open Asset Library"};
-    if (key=="BROWSE ASSET LIBRARY")
-        return {true,UiGlyph::Folder,false,"BROWSE ASSET LIBRARY","Browse installed 3D assets"};
-    if (key=="CLEAR ASSET")
-        return {true,UiGlyph::More,false,"CLEAR ASSET","Clear the selected entity's model assignment"};
+    if (key=="ALL") return {true,UiGlyph::Filter,true,"ALL","All"};
+    if (key=="PHOTOS") return {true,UiGlyph::PhotoLibrary,true,"PHOTOS","Photos"};
+    if (key=="SKID MARKS") return {true,UiGlyph::SkidMark,true,"SKID MARKS","Skid Marks"};
+    if (key=="DEBRIS") return {true,UiGlyph::Debris,true,"DEBRIS","Debris"};
+    if (key=="MEASUREMENTS") return {true,UiGlyph::Measurement,true,"MEASUREMENTS","Measurements"};
+    if (key=="MARKERS") return {true,UiGlyph::Marker,true,"MARKERS","Markers"};
+    if (key=="ADD EVIDENCE") return {true,UiGlyph::EvidenceAdd,true,"ADD EVIDENCE","Add Evidence"};
+    if (key=="IMPORT PHOTOS") return {true,UiGlyph::PhotoCamera,false,"IMPORT PHOTOS","Import Photos"};
+    if (key=="OPEN VIEWPORT") return {true,UiGlyph::Viewport,false,"OPEN VIEWPORT","Open Viewport"};
+    if (key=="EDIT SUMMARY") return {true,UiGlyph::Edit,false,"EDIT SUMMARY","Edit Summary"};
+    if (key=="START ANALYSIS") return {true,UiGlyph::Analysis,false,"START ANALYSIS","Start Analysis"};
+    if (key=="EXPORT CASE") return {true,UiGlyph::ReportExport,false,"EXPORT CASE","Export Case"};
+    if (key=="ADD PARTY") return {true,UiGlyph::Person,false,"ADD PARTY","Add Party"};
+    if (key=="VIEW REPORTS") return {true,UiGlyph::ReportView,false,"VIEW REPORTS","View Reports"};
+    if (key=="LINK EVIDENCE") return {true,UiGlyph::EvidenceLink,false,"LINK EVIDENCE","Link Evidence"};
+    if (key=="OPEN EVIDENCE") return {true,UiGlyph::Evidence,false,"OPEN EVIDENCE","Open Evidence"};
+    if (key=="RUN ALL ANALYSES") return {true,UiGlyph::RunAll,false,"RUN ALL ANALYSES","Run All Analyses"};
+    if (key=="START SKID ANALYSIS") return {true,UiGlyph::SkidAnalysis,false,"START SKID ANALYSIS","Start Skid Analysis"};
+    if (key=="ANALYSIS GUIDE") return {true,UiGlyph::Documentation,true,"ANALYSIS GUIDE","Analysis Guide"};
+    if (key=="PREV") return {true,UiGlyph::Previous,false,"PREV","Prev"};
+    if (key=="NEXT") return {true,UiGlyph::Next,false,"NEXT","Next"};
+    if (key=="PIPELINE") return {true,UiGlyph::Workflow,true,"PIPELINE","Pipeline"};
+    if (key=="DRAFT") return {true,UiGlyph::Edit,false,"DRAFT","Draft"};
+    if (key=="2D PLAN") return {true,UiGlyph::View2D,false,"2D PLAN","2D Plan"};
+    if (key=="3D SCENE") return {true,UiGlyph::View3D,false,"3D SCENE","3D Scene"};
+    if (key=="AR PREVIEW") return {true,UiGlyph::ARPreview,false,"AR PREVIEW","Ar Preview"};
+    if (key=="EDITOR PREVIEW") return {true,UiGlyph::Preview,false,"EDITOR PREVIEW","Editor Preview"};
+    if (key=="EXIT PREVIEW") return {true,UiGlyph::Close,false,"EXIT PREVIEW","Exit Preview"};
+    if (key=="CONNECT DEVICE") return {true,UiGlyph::ConnectDevice,false,"CONNECT DEVICE","Connect Device"};
+    if (key=="PAIR DEVICE") return {true,UiGlyph::PairDevice,false,"PAIR DEVICE","Pair Device"};
+    if (key=="PLACE ANCHOR") return {true,UiGlyph::AddAnchor,false,"PLACE ANCHOR","Place Anchor"};
+    if (key=="MORE  v") return {true,UiGlyph::More,false,"MORE  v","More  V"};
+    if (key=="MORE v") return {true,UiGlyph::More,false,"MORE v","More V"};
+    if (key=="FULL SCREEN") return {true,UiGlyph::Fullscreen,false,"FULL SCREEN","Full Screen"};
+    if (key=="EXIT FULL SCREEN") return {true,UiGlyph::FullscreenExit,false,"EXIT FULL SCREEN","Exit Full Screen"};
+    if (key=="FRAME SELECT") return {true,UiGlyph::FrameSelection,false,"FRAME SELECT","Frame Select"};
+    if (key=="FRAME ALL") return {true,UiGlyph::FrameAll,false,"FRAME ALL","Frame All"};
+    if (key=="OVERLAYS") return {true,UiGlyph::Overlay,false,"OVERLAYS","Overlays"};
+    if (key=="OVERLAYS v") return {true,UiGlyph::Overlay,false,"OVERLAYS v","Overlays V"};
+    if (key=="OVERLAYS  v") return {true,UiGlyph::Overlay,false,"OVERLAYS  v","Overlays  V"};
+    if (key=="RESET ORIGIN") return {true,UiGlyph::ResetOrigin,false,"RESET ORIGIN","Reset Origin"};
+    if (key=="RECORD") return {true,UiGlyph::Record,false,"RECORD","Record"};
+    if (key=="STOP RECORD") return {true,UiGlyph::StopRecord,false,"STOP RECORD","Stop Record"};
+    if (key=="CLEAR") return {true,UiGlyph::ClearAll,false,"CLEAR","Clear"};
+    if (key=="ASSETS") return {true,UiGlyph::AssetLibrary,false,"ASSETS","Assets"};
+    if (key=="BROWSE ASSET LIBRARY") return {true,UiGlyph::AssetLibrary,true,"BROWSE ASSET LIBRARY","Browse Asset Library"};
+    if (key=="CLEAR ASSET") return {true,UiGlyph::Unassign,false,"CLEAR ASSET","Clear Asset"};
+    if (key=="UNDO") return {true,UiGlyph::Undo,false,"UNDO","Undo"};
+    if (key=="REDO") return {true,UiGlyph::Redo,false,"REDO","Redo"};
+    if (key=="RUN GRAPH") return {true,UiGlyph::RunGraph,false,"RUN GRAPH","Run Graph"};
+    if (key=="DELETE LINK") return {true,UiGlyph::DeleteLink,false,"DELETE LINK","Delete Link"};
+    if (key=="SET CASE DETAILS") return {true,UiGlyph::Edit,true,"SET CASE DETAILS","Set Case Details"};
+    if (key=="CASE DETAILS") return {true,UiGlyph::Edit,true,"CASE DETAILS","Case Details"};
+    if (key=="ADD MEASUREMENTS") return {true,UiGlyph::Measurement,false,"ADD MEASUREMENTS","Add Measurements"};
+    if (key=="REVIEW MODULES") return {true,UiGlyph::Module,false,"REVIEW MODULES","Review Modules"};
+    if (key=="FIT") return {true,UiGlyph::FitScreen,false,"FIT","Fit"};
+    if (key=="ZOOM IN") return {true,UiGlyph::ZoomIn,false,"ZOOM IN","Zoom In"};
+    if (key=="ZOOM OUT") return {true,UiGlyph::ZoomOut,false,"ZOOM OUT","Zoom Out"};
+    if (key=="ADD") return {true,UiGlyph::Add,false,"ADD","Add"};
+    if (key=="FILE") return {true,UiGlyph::Folder,false,"FILE","File"};
+    if (key=="ADD NODE") return {true,UiGlyph::AddNode,false,"ADD NODE","Add Node"};
+    if (key=="COPY") return {true,UiGlyph::Copy,false,"COPY","Copy"};
+    if (key=="DUPLICATE") return {true,UiGlyph::Duplicate,false,"DUPLICATE","Duplicate"};
+    if (key=="PASTE") return {true,UiGlyph::Paste,false,"PASTE","Paste"};
+    if (key=="DELETE") return {true,UiGlyph::Delete,false,"DELETE","Delete"};
+    if (key=="CENTER") return {true,UiGlyph::CenterView,false,"CENTER","Center"};
+    if (key=="PLAY") return {true,UiGlyph::Play,false,"PLAY","Play"};
+    if (key=="PAUSE") return {true,UiGlyph::Pause,false,"PAUSE","Pause"};
+    if (key=="STOP") return {true,UiGlyph::Stop,false,"STOP","Stop"};
+    if (key=="FIRST") return {true,UiGlyph::FirstPage,false,"FIRST","First"};
+    if (key=="LAST") return {true,UiGlyph::LastPage,false,"LAST","Last"};
+    if (key=="STEP BACK") return {true,UiGlyph::SkipPrevious,false,"STEP BACK","Step Back"};
+    if (key=="STEP NEXT") return {true,UiGlyph::SkipNext,false,"STEP NEXT","Step Next"};
 
     return spec;
 }
@@ -1227,7 +2591,7 @@ static bool editorButton(
             ? 42.0f
             : normalContentWidth+
                 style.FramePadding.x*2.0f+
-                22.0f;
+                30.0f;
 
     if (tabVisual)
     {
@@ -1250,12 +2614,10 @@ static bool editorButton(
             : autoWidth;
 
     const float finalWidth=
+        // ROADSAFE_NO_TEXT_CLIP_V19
         std::max(
             1.0f,
-            std::min(
-                requestedWidth,
-                availableWidth
-            )
+            requestedWidth
         );
 
     const bool compactIconOnly=
@@ -1603,20 +2965,32 @@ static bool editorButton(
             }
         }
 
+        // ROADSAFE_BORDERLESS_BUTTON_V18
+        drawList->AddRectFilled(
+            ImVec2(
+                pos.x,
+                pos.y+2.0f
+            ),
+            ImVec2(
+                maxPos.x,
+                maxPos.y+2.0f
+            ),
+            ImGui::ColorConvertFloat4ToU32(
+                ImVec4(
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    enabled ? 0.24f : 0.12f
+                )
+            ),
+            5.0f
+        );
+
         drawList->AddRectFilled(
             pos,
             maxPos,
             ImGui::ColorConvertFloat4ToU32(bg),
-            4.0f
-        );
-
-        drawList->AddRect(
-            pos,
-            maxPos,
-            ImGui::ColorConvertFloat4ToU32(border),
-            4.0f,
-            0,
-            1.0f
+            5.0f
         );
     }
 
@@ -1632,9 +3006,17 @@ static bool editorButton(
         true
     );
 
+    // ROADSAFE_BUTTON_ICON_LEFT_V18
     float cursorX=
-        pos.x+
-        (size.x-renderedContentWidth)*0.5f;
+        (
+            spec.hasIcon &&
+            !compactIconOnly &&
+            visibleLabel[0] &&
+            !tabVisual
+        )
+            ? pos.x+12.0f
+            : pos.x+
+                (size.x-renderedContentWidth)*0.5f;
 
     const float centerY=
         pos.y+size.y*0.5f;
@@ -2113,7 +3495,7 @@ static void drawCaseView()
     drawRoadSafePipelineBar();
     ImGui::Spacing();
 
-    beginSurface("CaseHeader",ImVec2(0.0f,70.0f),false,ImGuiWindowFlags_NoScrollbar);
+    beginSurface("CaseHeader",ImVec2(0.0f,62.0f),false,ImGuiWindowFlags_NoScrollbar);
     const ImVec2 h=ImGui::GetCursorScreenPos();
     drawIconBadge(UiGlyph::Folder,h,40.0f,true);
 
@@ -2121,7 +3503,7 @@ static void drawCaseView()
     ImGui::Text("CASE OVERVIEW");
 
     ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+24.0f));
-    ImGui::TextDisabled("Build the reconstruction from one place. Review scene, evidence and analysis status.");
+    ImGui::TextDisabled("CASE COMMAND CENTER");
     const float draftWidth=108.0f;
     ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-draftWidth-12.0f,h.y+5.0f));
     editorButton("DRAFT",draftWidth,true);
@@ -2131,37 +3513,205 @@ static void drawCaseView()
     const float w=ImGui::GetContentRegionAvail().x;
     const float gap=7.0f;
     const float mw=std::max(150.0f,(w-gap*3.0f)/4.0f);
-    drawMetricTile("CaseId",UiGlyph::Hash,"CASE ID",roadsafe::textOr(gRoadSafeCase.identity.caseNumber,"UNASSIGNED"),"",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseDate",UiGlyph::Calendar,"INCIDENT DATE",roadsafe::textOr(gRoadSafeCase.identity.accidentDateTime,"NOT SET"),"",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseLocation",UiGlyph::Pin,"LOCATION",roadsafe::textOr(gRoadSafeCase.identity.location,"NOT SET"),"",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseUpdated",UiGlyph::Clock,"LAST UPDATED","JUST NOW","",mw);
+    drawMetricTile("CaseId",UiGlyph::Hash,"CASE ID",roadsafe::textOr(gRoadSafeCase.identity.caseNumber,"UNASSIGNED"),"",mw,64.0f);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseDate",UiGlyph::Calendar,"DATE",roadsafe::textOr(gRoadSafeCase.identity.accidentDateTime,"NOT SET"),"",mw,64.0f);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseLocation",UiGlyph::Pin,"LOCATION",roadsafe::textOr(gRoadSafeCase.identity.location,"NOT SET"),"",mw,64.0f);
+    ImGui::SameLine(0.0f,gap); drawMetricTile("CaseUpdated",UiGlyph::Clock,"UPDATED","JUST NOW","",mw,64.0f);
     ImGui::Spacing();
 
-    ImGui::Text("CASE PROGRESS");
+    ImGui::Text("CASE PIPELINE");
     ImGui::Separator();
 
-    const auto progressCard=[](const char* id, UiGlyph glyph, const char* title, const char* status, StatusTone tone, float progress, const char* caption, float width)
+    beginSurface(
+        "CasePipelineCompact",
+        ImVec2(0.0f,88.0f),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
     {
-        beginSurface(id,ImVec2(width,112.0f),true,ImGuiWindowFlags_NoScrollbar);
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        drawIconBadge(glyph,p,34.0f,tone==StatusTone::Accent);
-        ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y)); ImGui::Text("%s",title);
-        ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+23.0f)); drawStatus(status,tone);
-        ImGui::SetCursorPosY(70.0f);
-        ImGui::PushStyleColor(ImGuiCol_PlotHistogram,tone==StatusTone::Success?colorSuccess():colorAccent());
-        ImGui::ProgressBar(progress,ImVec2(-1.0f,7.0f),"");
-        ImGui::PopStyleColor();
-        ImGui::TextDisabled("%s",caption);
-        endSurface();
-    };
+        const ImVec2 p=
+            ImGui::GetCursorScreenPos();
 
-    progressCard("SceneSetup",UiGlyph::Cube,"SCENE SETUP","READY",StatusTone::Success,1.0f,"100% complete",mw);
-    ImGui::SameLine(0.0f,gap); progressCard("EvidenceReview",UiGlyph::Document,"EVIDENCE REVIEW","NOT STARTED",StatusTone::Neutral,0.0f,"0% complete",mw);
-    ImGui::SameLine(0.0f,gap); progressCard("AnalysisState",UiGlyph::Bars,"ANALYSIS","NOT STARTED",StatusTone::Neutral,0.0f,"0% complete",mw);
-    ImGui::SameLine(0.0f,gap); progressCard("OverallState",UiGlyph::Pie,"OVERALL PROGRESS","IN PROGRESS",StatusTone::Accent,0.18f,"18% complete",mw);
+        const float innerW=
+            ImGui::GetWindowContentRegionMax().x-
+            ImGui::GetWindowContentRegionMin().x;
+
+        const float stageGap=7.0f;
+        const float stageW=
+            std::max(
+                130.0f,
+                (innerW-stageGap*3.0f)/4.0f
+            );
+
+        ImDrawList* dl=
+            ImGui::GetWindowDrawList();
+
+        const auto stage=
+            [&](int index,
+                UiGlyph glyph,
+                const char* title,
+                const char* state,
+                float progress,
+                ImU32 stateColor)
+            {
+                const float x=
+                    p.x+
+                    index*(stageW+stageGap);
+
+                drawIconBadge(
+                    glyph,
+                    ImVec2(x,p.y+1.0f),
+                    32.0f,
+                    index<=1
+                );
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        x+42.0f,
+                        p.y+1.0f
+                    )
+                );
+
+                ImGui::Text(
+                    "%s",
+                    title
+                );
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        x+42.0f,
+                        p.y+24.0f
+                    )
+                );
+
+                ImGui::TextColored(
+                    ImGui::ColorConvertU32ToFloat4(
+                        stateColor
+                    ),
+                    "%s",
+                    state
+                );
+
+                const float barY=
+                    p.y+58.0f;
+
+                dl->AddRectFilled(
+                    ImVec2(x,barY),
+                    ImVec2(
+                        x+stageW-5.0f,
+                        barY+4.0f
+                    ),
+                    IM_COL32(
+                        55,
+                        59,
+                        66,
+                        255
+                    ),
+                    2.0f
+                );
+
+                dl->AddRectFilled(
+                    ImVec2(x,barY),
+                    ImVec2(
+                        x+
+                        (stageW-5.0f)*
+                        std::max(
+                            0.0f,
+                            std::min(
+                                1.0f,
+                                progress
+                            )
+                        ),
+                        barY+4.0f
+                    ),
+                    stateColor,
+                    2.0f
+                );
+
+                if (index<3)
+                {
+                    const float connectorX=
+                        x+stageW-1.0f;
+
+                    dl->AddLine(
+                        ImVec2(
+                            connectorX,
+                            p.y+17.0f
+                        ),
+                        ImVec2(
+                            connectorX+stageGap-2.0f,
+                            p.y+17.0f
+                        ),
+                        IM_COL32(
+                            75,
+                            81,
+                            90,
+                            255
+                        ),
+                        1.0f
+                    );
+                }
+            };
+
+        stage(
+            0,
+            UiGlyph::Folder,
+            "SCENE SETUP",
+            "READY",
+            1.0f,
+            IM_COL32(
+                92,
+                205,
+                112,
+                255
+            )
+        );
+
+        stage(
+            1,
+            UiGlyph::Evidence,
+            "EVIDENCE",
+            "IN PROGRESS",
+            0.32f,
+            IM_COL32(
+                37,
+                132,
+                229,
+                255
+            )
+        );
+
+        stage(
+            2,
+            UiGlyph::Bars,
+            "ANALYSIS",
+            "WAITING",
+            0.0f,
+            IM_COL32(
+                142,
+                149,
+                160,
+                255
+            )
+        );
+
+        stage(
+            3,
+            UiGlyph::Document,
+            "REPORT",
+            "DRAFT",
+            0.0f,
+            IM_COL32(
+                142,
+                149,
+                160,
+                255
+            )
+        );
+    }
+    endSurface();
     ImGui::Spacing();
-
-    beginSurface("IncidentSummary",ImVec2(0.0f,82.0f),false,ImGuiWindowFlags_NoScrollbar);
+    beginSurface("IncidentSummary",ImVec2(0.0f,70.0f),false,ImGuiWindowFlags_NoScrollbar);
     {
         const ImVec2 p=ImGui::GetCursorScreenPos();
         const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
@@ -2173,7 +3723,7 @@ static void drawCaseView()
 
         ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+29.0f));
         ImGui::TextDisabled(
-            "No incident summary has been entered. Add essential facts, scene location and reconstruction notes.");
+            "No summary yet.");
 
         const float editW=132.0f;
         ImGui::SetCursorScreenPos(ImVec2(right-editW-12.0f,p.y+13.0f));
@@ -2182,222 +3732,459 @@ static void drawCaseView()
     endSurface();
     ImGui::Spacing();
 
-    beginSurface("CaseContent",ImVec2(0.0f,206.0f),false,ImGuiWindowFlags_NoScrollbar);
+    const float dashboardW=
+        ImGui::GetContentRegionAvail().x;
+
+    const float dashboardGap=
+        8.0f;
+
+    const float sideW=
+        std::max(
+            330.0f,
+            dashboardW*0.31f
+        );
+
+    const float inventoryW=
+        std::max(
+            540.0f,
+            dashboardW-
+            sideW-
+            dashboardGap
+        );
+
+    const std::size_t vehicleCount=
+        roadSafeActiveVehicleCount();
+
+    const std::size_t evidenceCount=
+        roadSafeActiveEvidenceCount();
+
+    const std::size_t measurementCount=
+        roadSafeActiveMeasurementCount();
+
+    const std::size_t personCount=
+        gRoadSafeCase.persons.size();
+
+    const std::size_t witnessCount=
+        gRoadSafeCase.witnesses.size();
+
+    const bool caseDetailsReady=
+        !gRoadSafeCase.identity.accidentDateTime.empty() &&
+        !gRoadSafeCase.identity.location.empty();
+
+    beginSurface(
+        "CaseInventoryDashboard",
+        ImVec2(
+            inventoryW,
+            202.0f
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
     {
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        ImDrawList* dl=ImGui::GetWindowDrawList();
-        const float left=p.x;
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-12.0f;
+        const ImVec2 p=
+            ImGui::GetCursorScreenPos();
 
-        drawIconBadge(UiGlyph::Document,p,34.0f,false);
+        ImGui::Text(
+            "CASE INVENTORY"
+        );
 
-        ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+2.0f));
-        ImGui::Text("CASE CONTENT");
+        ImGui::SameLine(
+            0.0f,
+            10.0f
+        );
 
-        const float titleW=ImGui::CalcTextSize("CASE CONTENT").x;
-        const float dividerX=p.x+58.0f+titleW;
-        dl->AddLine(
-            ImVec2(dividerX,p.y+2.0f),
-            ImVec2(dividerX,p.y+24.0f),
-            toU32(colorBorder()),
-            1.0f);
+        ImGui::TextDisabled(
+            "LIVE CASE RECORDS"
+        );
 
-        ImGui::SetCursorScreenPos(ImVec2(dividerX+16.0f,p.y+3.0f));
-        ImGui::TextDisabled("Items included in this case.");
+        ImDrawList* dl=
+            ImGui::GetWindowDrawList();
 
-        ImGui::SetCursorScreenPos(ImVec2(left,p.y+45.0f));
+        const float innerW=
+            ImGui::GetWindowContentRegionMax().x-
+            ImGui::GetWindowContentRegionMin().x;
 
-        if (ImGui::BeginTable(
-            "CaseTablePremium",
-            4,
-            ImGuiTableFlags_RowBg |
-            ImGuiTableFlags_BordersInnerH |
-            ImGuiTableFlags_BordersInnerV |
-            ImGuiTableFlags_SizingStretchProp))
+        const float tileGap=
+            7.0f;
+
+        const float topTileW=
+            (
+                innerW-
+                tileGap*2.0f
+            )/
+            3.0f;
+
+        const float bottomTileW=
+            (
+                innerW-
+                tileGap
+            )/
+            2.0f;
+
+        const float tileH=
+            62.0f;
+
+        const float topY=
+            p.y+38.0f;
+
+        const float bottomY=
+            topY+
+            tileH+
+            tileGap;
+
+        const auto inventoryTile=
+            [&](float x,
+                float y,
+                float width,
+                UiGlyph glyph,
+                const char* label,
+                std::size_t value,
+                bool active)
+            {
+                const ImVec2 a(
+                    x,
+                    y
+                );
+
+                const ImVec2 b(
+                    x+width,
+                    y+tileH
+                );
+
+                dl->AddRectFilled(
+                    a,
+                    b,
+                    IM_COL32(
+                        30,
+                        33,
+                        38,
+                        255
+                    ),
+                    4.0f
+                );
+
+                dl->AddRect(
+                    a,
+                    b,
+                    active
+                        ? IM_COL32(
+                            63,
+                            79,
+                            96,
+                            255
+                        )
+                        : IM_COL32(
+                            58,
+                            62,
+                            69,
+                            255
+                        ),
+                    4.0f
+                );
+
+                drawIconBadge(
+                    glyph,
+                    ImVec2(
+                        x+8.0f,
+                        y+13.0f
+                    ),
+                    32.0f,
+                    active
+                );
+
+                dl->AddText(
+                    ImVec2(
+                        x+50.0f,
+                        y+10.0f
+                    ),
+                    ImGui::GetColorU32(
+                        ImGuiCol_TextDisabled
+                    ),
+                    label
+                );
+
+                char countText[32]{};
+
+                std::snprintf(
+                    countText,
+                    sizeof(countText),
+                    "%zu",
+                    value
+                );
+
+                dl->AddText(
+                    ImVec2(
+                        x+50.0f,
+                        y+31.0f
+                    ),
+                    ImGui::GetColorU32(
+                        ImGuiCol_Text
+                    ),
+                    countText
+                );
+
+                const char* stateText=
+                    value>0
+                        ? "ACTIVE"
+                        : "EMPTY";
+
+                const ImVec2 stateSize=
+                    ImGui::CalcTextSize(
+                        stateText
+                    );
+
+                dl->AddText(
+                    ImVec2(
+                        b.x-
+                        stateSize.x-
+                        10.0f,
+                        y+31.0f
+                    ),
+                    value>0
+                        ? IM_COL32(
+                            95,
+                            205,
+                            115,
+                            255
+                        )
+                        : IM_COL32(
+                            137,
+                            144,
+                            154,
+                            255
+                        ),
+                    stateText
+                );
+            };
+
+        inventoryTile(
+            p.x,
+            topY,
+            topTileW,
+            UiGlyph::Vehicle,
+            "VEHICLES",
+            vehicleCount,
+            vehicleCount>0
+        );
+
+        inventoryTile(
+            p.x+
+            topTileW+
+            tileGap,
+            topY,
+            topTileW,
+            UiGlyph::Evidence,
+            "EVIDENCE",
+            evidenceCount,
+            evidenceCount>0
+        );
+
+        inventoryTile(
+            p.x+
+            (topTileW+tileGap)*2.0f,
+            topY,
+            topTileW,
+            UiGlyph::Measurement,
+            "MEASUREMENTS",
+            measurementCount,
+            measurementCount>0
+        );
+
+        inventoryTile(
+            p.x,
+            bottomY,
+            bottomTileW,
+            UiGlyph::People,
+            "PEOPLE",
+            personCount,
+            personCount>0
+        );
+
+        inventoryTile(
+            p.x+
+            bottomTileW+
+            tileGap,
+            bottomY,
+            bottomTileW,
+            UiGlyph::Witness,
+            "WITNESSES",
+            witnessCount,
+            witnessCount>0
+        );
+    }
+    endSurface();
+
+    ImGui::SameLine(
+        0.0f,
+        dashboardGap
+    );
+
+    ImGui::BeginGroup();
+
+    beginSurface(
+        "CaseNextActionDashboard",
+        ImVec2(
+            sideW,
+            112.0f
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
+    {
+        const ImVec2 p=
+            ImGui::GetCursorScreenPos();
+
+        drawIconBadge(
+            UiGlyph::Next,
+            p,
+            34.0f,
+            true
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x+46.0f,
+                p.y+1.0f
+            )
+        );
+
+        ImGui::Text(
+            "NEXT ACTION"
+        );
+
+        const char* actionText=
+            !caseDetailsReady
+                ? "Complete incident date and location"
+                : evidenceCount==0
+                    ? "Add case evidence"
+                    : measurementCount==0
+                        ? "Add scene measurements"
+                        : "Continue reconstruction";
+
+        const char* actionButton=
+            !caseDetailsReady
+                ? "CASE DETAILS"
+                : evidenceCount==0
+                    ? "OPEN EVIDENCE"
+                    : measurementCount==0
+                        ? "MEASUREMENTS"
+                        : "OPEN VIEWPORT";
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x,
+                p.y+46.0f
+            )
+        );
+
+        ImGui::TextWrapped(
+            "%s",
+            actionText
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x,
+                p.y+72.0f
+            )
+        );
+
+        if (editorButton(
+            actionButton,
+            std::min(
+                156.0f,
+                sideW-22.0f
+            ),
+            true))
         {
-            ImGui::TableSetupColumn("CATEGORY",ImGuiTableColumnFlags_WidthStretch,0.57f);
-            ImGui::TableSetupColumn("COUNT",ImGuiTableColumnFlags_WidthStretch,0.14f);
-            ImGui::TableSetupColumn("STATUS",ImGuiTableColumnFlags_WidthStretch,0.24f);
-            ImGui::TableSetupColumn("##OPEN",ImGuiTableColumnFlags_WidthFixed,34.0f);
-            ImGui::TableHeadersRow();
-
-            struct PremiumCaseRow
+            if (!caseDetailsReady)
             {
-                UiGlyph glyph;
-                const char* category;
-                const char* count;
-                const char* status;
-                StatusTone tone;
-            };
-
-            char vehicleCountText[16]{};
-            char evidenceCountText[16]{};
-            char measurementCountText[16]{};
-
-            std::snprintf(
-                vehicleCountText,
-                sizeof(vehicleCountText),
-                "%zu",
-                roadSafeActiveVehicleCount()
-            );
-
-            std::snprintf(
-                evidenceCountText,
-                sizeof(evidenceCountText),
-                "%zu",
-                roadSafeActiveEvidenceCount()
-            );
-
-            std::snprintf(
-                measurementCountText,
-                sizeof(measurementCountText),
-                "%zu",
-                roadSafeActiveMeasurementCount()
-            );
-
-            const bool hasVehicles=
-                roadSafeActiveVehicleCount()>0;
-
-            const bool hasEvidence=
-                roadSafeActiveEvidenceCount()>0;
-
-            const bool hasMeasurements=
-                roadSafeActiveMeasurementCount()>0;
-
-            const PremiumCaseRow rows[]={
-                {
-                    UiGlyph::Cube,
-                    "Vehicles",
-                    vehicleCountText,
-                    hasVehicles ? "READY" : "EMPTY",
-                    hasVehicles
-                        ? StatusTone::Success
-                        : StatusTone::Neutral
-                },
-                {
-                    UiGlyph::Document,
-                    "Evidence",
-                    evidenceCountText,
-                    hasEvidence ? "READY" : "EMPTY",
-                    hasEvidence
-                        ? StatusTone::Success
-                        : StatusTone::Neutral
-                },
-                {
-                    UiGlyph::Ruler,
-                    "Measurements",
-                    measurementCountText,
-                    hasMeasurements ? "READY" : "EMPTY",
-                    hasMeasurements
-                        ? StatusTone::Success
-                        : StatusTone::Neutral
-                }
-            };
-
-            for (const PremiumCaseRow& row:rows)
-            {
-                ImGui::TableNextRow(ImGuiTableRowFlags_None,39.0f);
-
-                ImGui::TableSetColumnIndex(0);
-                {
-                    const ImVec2 rp=ImGui::GetCursorScreenPos();
-                    drawIconBadge(row.glyph,ImVec2(rp.x,rp.y+3.0f),28.0f,false);
-                    ImGui::SetCursorScreenPos(ImVec2(rp.x+40.0f,rp.y+8.0f));
-                    ImGui::Text("%s",row.category);
-                }
-
-                ImGui::TableSetColumnIndex(1);
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
-                ImGui::Text("%s",row.count);
-
-                ImGui::TableSetColumnIndex(2);
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
-                drawStatus(row.status,row.tone);
-
-                ImGui::TableSetColumnIndex(3);
-                ImGui::SetCursorPosY(ImGui::GetCursorPosY()+7.0f);
-                ImGui::TextDisabled(">");
+                ImGui::SetWindowFocus(
+                    "Case View"
+                );
             }
-
-            ImGui::EndTable();
+            else if (evidenceCount==0 ||
+                     measurementCount==0)
+            {
+                ImGui::SetWindowFocus(
+                    "Evidence"
+                );
+            }
+            else
+            {
+                ImGui::SetWindowFocus(
+                    "Viewport"
+                );
+            }
         }
     }
     endSurface();
+
     ImGui::Spacing();
 
-    beginSurface("CaseActions",ImVec2(0.0f,78.0f),false,ImGuiWindowFlags_NoScrollbar);
+    beginSurface(
+        "CasePartiesDashboard",
+        ImVec2(
+            sideW,
+            82.0f
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
     {
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        ImDrawList* dl=ImGui::GetWindowDrawList();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
+        const ImVec2 p=
+            ImGui::GetCursorScreenPos();
 
-        drawIconBadge(UiGlyph::Bars,p,38.0f,false);
+        ImGui::Text(
+            "INVOLVED PARTIES"
+        );
 
-        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+2.0f));
-        ImGui::Text("NEXT ACTIONS");
+        char partiesText[96]{};
 
-        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+28.0f));
-        ImGui::TextDisabled("Continue building the case with the available tools.");
+        std::snprintf(
+            partiesText,
+            sizeof(partiesText),
+            "%zu people   /   %zu witnesses",
+            personCount,
+            witnessCount
+        );
 
-        const float dividerX=p.x+355.0f;
-        dl->AddLine(
-            ImVec2(dividerX,p.y+3.0f),
-            ImVec2(dividerX,p.y+43.0f),
-            toU32(colorBorder()),
-            1.0f);
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                p.x,
+                p.y+29.0f
+            )
+        );
 
-        const float openW=150.0f;
-        const float evidenceW=140.0f;
-        const float analysisW=150.0f;
-        const float exportW=132.0f;
-        const float buttonGap=7.0f;
-        const float groupW=openW+evidenceW+analysisW+exportW+(buttonGap*3.0f);
+        ImGui::TextDisabled(
+            "%s",
+            partiesText
+        );
 
-        float groupX=right-groupW-12.0f;
-        groupX=std::max(groupX,dividerX+18.0f);
+        const float partyW=
+            104.0f;
 
-        ImGui::SetCursorScreenPos(ImVec2(groupX,p.y+11.0f));
-        editorButton("OPEN VIEWPORT",openW,true);
+        const float right=
+            ImGui::GetWindowPos().x+
+            ImGui::GetWindowContentRegionMax().x;
 
-        ImGui::SameLine(0.0f,buttonGap);
-        editorButton("ADD EVIDENCE",evidenceW);
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                right-
+                partyW-
+                8.0f,
+                p.y+16.0f
+            )
+        );
 
-        ImGui::SameLine(0.0f,buttonGap);
-        editorButton("START ANALYSIS",analysisW);
-
-        ImGui::SameLine(0.0f,buttonGap);
-        editorButton("EXPORT CASE",exportW);
-    }
-    endSurface();
-    ImGui::Spacing();
-
-    beginSurface("CaseParties",ImVec2(0.0f,72.0f),false,ImGuiWindowFlags_NoScrollbar);
-    {
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        ImDrawList* dl=ImGui::GetWindowDrawList();
-        const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
-
-        drawIconBadge(UiGlyph::Info,p,38.0f,false);
-
-        ImGui::SetCursorScreenPos(ImVec2(p.x+50.0f,p.y+2.0f));
-        ImGui::Text("INVOLVED PARTIES");
-
-        const float dividerX=p.x+205.0f;
-        dl->AddLine(
-            ImVec2(dividerX,p.y+2.0f),
-            ImVec2(dividerX,p.y+40.0f),
-            toU32(colorBorder()),
-            1.0f);
-
-        ImGui::SetCursorScreenPos(ImVec2(dividerX+16.0f,p.y+12.0f));
-        ImGui::TextDisabled("No parties have been added.");
-
-        const float partyW=112.0f;
-        ImGui::SetCursorScreenPos(ImVec2(right-partyW-12.0f,p.y+9.0f));
-        editorButton("ADD PARTY",partyW);
+        editorButton(
+            "ADD PARTY",
+            partyW
+        );
     }
     endSurface();
 
+    ImGui::EndGroup();
     ImGui::End();
 }
 
@@ -2413,108 +4200,905 @@ static void sectionLabel(const char* title, const char* subtitle=nullptr)
 }
 static void drawEvidenceView()
 {
+    static int selectedEvidenceIndex=-1;
+
     ImGui::Begin("Evidence");
 
-    beginSurface("EvidenceHeader",ImVec2(0.0f,70.0f),false,ImGuiWindowFlags_NoScrollbar);
-    const ImVec2 h=ImGui::GetCursorScreenPos();
-    drawIconBadge(UiGlyph::Image,h,40.0f,true);
+    const std::size_t evidenceCount=
+        roadSafeActiveEvidenceCount();
 
-    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+1.0f));
-    ImGui::Text("EVIDENCE WORKSPACE");
+    std::size_t documentedCount=0;
 
-    ImGui::SetCursorScreenPos(ImVec2(h.x+52.0f,h.y+24.0f));
-    ImGui::TextDisabled("Manage and review photographs, skid marks, debris, scene markers and measurements.");
-    const float importW=124.0f, addW=132.0f;
-    ImGui::SetCursorScreenPos(ImVec2(ImGui::GetWindowPos().x+ImGui::GetWindowSize().x-importW-addW-24.0f,h.y+5.0f));
-    editorButton("ADD EVIDENCE",addW,true); ImGui::SameLine(); editorButton("IMPORT PHOTOS",importW);
+    for (const auto& evidence:
+         gRoadSafeCase.evidence)
+    {
+        if (!evidence.active)
+            continue;
+
+        if (!evidence.description.empty() &&
+            !evidence.collectionStatus.empty())
+        {
+            ++documentedCount;
+        }
+    }
+
+    std::vector<bool> evidenceLinked(
+        gRoadSafeCase.evidence.size(),
+        false
+    );
+
+    for (const auto& entity:
+         gRoadSafeCase.sceneEntities)
+    {
+        if (!entity.active ||
+            entity.kind!=
+                roadsafe::SceneEntityKind::Evidence ||
+            entity.recordIndex<0)
+        {
+            continue;
+        }
+
+        const std::size_t recordIndex=
+            static_cast<std::size_t>(
+                entity.recordIndex
+            );
+
+        if (recordIndex>=
+            gRoadSafeCase.evidence.size())
+        {
+            continue;
+        }
+
+        if (!gRoadSafeCase.evidence[
+                recordIndex
+            ].active)
+        {
+            continue;
+        }
+
+        evidenceLinked[
+            recordIndex
+        ]=true;
+    }
+
+    const std::size_t linkedCount=
+        static_cast<std::size_t>(
+            std::count(
+                evidenceLinked.begin(),
+                evidenceLinked.end(),
+                true
+            )
+        );
+
+    if (selectedEvidenceIndex<0 ||
+        static_cast<std::size_t>(
+            selectedEvidenceIndex
+        )>=gRoadSafeCase.evidence.size() ||
+        !gRoadSafeCase.evidence[
+            static_cast<std::size_t>(
+                selectedEvidenceIndex
+            )
+        ].active)
+    {
+        selectedEvidenceIndex=-1;
+
+        for (std::size_t i=0;
+             i<gRoadSafeCase.evidence.size();
+             ++i)
+        {
+            if (gRoadSafeCase.evidence[i].active)
+            {
+                selectedEvidenceIndex=
+                    static_cast<int>(i);
+                break;
+            }
+        }
+    }
+
+    const roadsafe::EvidenceRecord* latestEvidence=
+        nullptr;
+
+    for (auto it=
+            gRoadSafeCase.evidence.rbegin();
+         it!=gRoadSafeCase.evidence.rend();
+         ++it)
+    {
+        if (it->active)
+        {
+            latestEvidence=
+                &(*it);
+            break;
+        }
+    }
+
+    char evidenceCountText[32]{};
+    char documentedText[32]{};
+    char linkedText[32]{};
+
+    std::snprintf(
+        evidenceCountText,
+        sizeof(evidenceCountText),
+        "%zu",
+        evidenceCount
+    );
+
+    std::snprintf(
+        documentedText,
+        sizeof(documentedText),
+        "%zu",
+        documentedCount
+    );
+
+    std::snprintf(
+        linkedText,
+        sizeof(linkedText),
+        "%zu",
+        linkedCount
+    );
+
+    const char* latestText=
+        latestEvidence
+            ? (
+                !latestEvidence->description.empty()
+                    ? latestEvidence->description.c_str()
+                    : latestEvidence->id.c_str()
+              )
+            : "NONE";
+
+    beginSurface(
+        "EvidenceHeader",
+        ImVec2(
+            0.0f,
+            62.0f
+        ),
+        false,
+        ImGuiWindowFlags_NoScrollbar
+    );
+    {
+        const ImVec2 h=
+            ImGui::GetCursorScreenPos();
+
+        const float right=
+            ImGui::GetWindowPos().x+
+            ImGui::GetWindowContentRegionMax().x;
+
+        drawIconBadge(
+            UiGlyph::Image,
+            h,
+            40.0f,
+            true
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                h.x+52.0f,
+                h.y+1.0f
+            )
+        );
+
+        ImGui::Text(
+            "EVIDENCE WORKSPACE"
+        );
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                h.x+52.0f,
+                h.y+24.0f
+            )
+        );
+
+        ImGui::TextDisabled(
+            "INTAKE  /  REVIEW  /  SCENE LINKAGE"
+        );
+
+        const float importW=
+            124.0f;
+
+        const float addW=
+            132.0f;
+
+        ImGui::SetCursorScreenPos(
+            ImVec2(
+                right-
+                importW-
+                addW-
+                10.0f,
+                h.y+5.0f
+            )
+        );
+
+        editorButton(
+            "ADD EVIDENCE",
+            addW,
+            true
+        );
+
+        ImGui::SameLine();
+
+        editorButton(
+            "IMPORT PHOTOS",
+            importW
+        );
+    }
     endSurface();
+
     ImGui::Spacing();
 
-    beginSurface("EvidenceFilters",ImVec2(0.0f,42.0f),false,ImGuiWindowFlags_NoScrollbar);
-    editorButton("ALL",70.0f,true); ImGui::SameLine(); editorButton("PHOTOS",82.0f); ImGui::SameLine(); editorButton("SKID MARKS",106.0f);
-    ImGui::SameLine(); editorButton("DEBRIS",82.0f); ImGui::SameLine(); editorButton("MEASUREMENTS",118.0f); ImGui::SameLine(); editorButton("MARKERS",88.0f);
-    const float searchW=220.0f, rightEdge=ImGui::GetWindowWidth()-searchW-14.0f;
-    if (rightEdge>ImGui::GetCursorPosX()+12.0f)
+    beginSurface(
+        "EvidenceFilters",
+        ImVec2(
+            0.0f,
+            42.0f
+        ),
+        false,
+        ImGuiWindowFlags_NoScrollbar
+    );
+
+    editorButton(
+        "ALL",
+        70.0f,
+        true
+    );
+
+    ImGui::SameLine();
+    editorButton(
+        "PHOTOS",
+        82.0f
+    );
+
+    ImGui::SameLine();
+    editorButton(
+        "SKID MARKS",
+        106.0f
+    );
+
+    ImGui::SameLine();
+    editorButton(
+        "DEBRIS",
+        82.0f
+    );
+
+    ImGui::SameLine();
+    editorButton(
+        "MEASUREMENTS",
+        118.0f
+    );
+
+    ImGui::SameLine();
+    editorButton(
+        "MARKERS",
+        88.0f
+    );
+
+    const float searchW=
+        220.0f;
+
+    const float rightEdge=
+        ImGui::GetWindowWidth()-
+        searchW-
+        14.0f;
+
+    if (rightEdge>
+        ImGui::GetCursorPosX()+
+        12.0f)
     {
-        ImGui::SameLine(); ImGui::SetCursorPosX(rightEdge);
+        ImGui::SameLine();
+
+        ImGui::SetCursorPosX(
+            rightEdge
+        );
+
         static char search[128]="";
-        ImGui::SetNextItemWidth(searchW);
-        ImGui::InputTextWithHint("##EvidenceSearch","Search evidence...",search,sizeof(search));
+
+        ImGui::SetNextItemWidth(
+            searchW
+        );
+
+        ImGui::InputTextWithHint(
+            "##EvidenceSearch",
+            "Search evidence...",
+            search,
+            sizeof(search)
+        );
     }
+
     endSurface();
+
     ImGui::Spacing();
 
-    const float w=ImGui::GetContentRegionAvail().x, gap=7.0f, mw=std::max(150.0f,(w-gap*3.0f)/4.0f);
-    drawMetricTile("EvidenceTotal",UiGlyph::Document,"TOTAL EVIDENCE","0 items","",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceReviewed",UiGlyph::Check,"REVIEWED","0 items","0%",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceLinked",UiGlyph::Link,"LINKED TO SCENE","0 items","0%",mw);
-    ImGui::SameLine(0.0f,gap); drawMetricTile("EvidenceLast",UiGlyph::Clock,"LAST ADDED","NONE","No evidence yet",mw);
+    const float width=
+        ImGui::GetContentRegionAvail().x;
+
+    const float metricGap=
+        7.0f;
+
+    const float metricW=
+        std::max(
+            150.0f,
+            (
+                width-
+                metricGap*3.0f
+            )/
+            4.0f
+        );
+
+    drawMetricTile(
+        "EvidenceTotal",
+        UiGlyph::Evidence,
+        "EVIDENCE",
+        evidenceCountText,
+        "",
+        metricW,
+        62.0f
+    );
+
+    ImGui::SameLine(
+        0.0f,
+        metricGap
+    );
+
+    drawMetricTile(
+        "EvidenceDocumented",
+        UiGlyph::Verified,
+        "DOCUMENTED",
+        documentedText,
+        "",
+        metricW,
+        62.0f
+    );
+
+    ImGui::SameLine(
+        0.0f,
+        metricGap
+    );
+
+    drawMetricTile(
+        "EvidenceLinked",
+        UiGlyph::EvidenceLink,
+        "SCENE LINKS",
+        linkedText,
+        "",
+        metricW,
+        62.0f
+    );
+
+    ImGui::SameLine(
+        0.0f,
+        metricGap
+    );
+
+    drawMetricTile(
+        "EvidenceLatest",
+        UiGlyph::Clock,
+        "LATEST",
+        latestText,
+        "",
+        metricW,
+        62.0f
+    );
+
     ImGui::Spacing();
 
-    ImGui::Text("EVIDENCE LIBRARY");
-    ImGui::Separator();
-    beginSurface("EvidenceLibrary",ImVec2(0.0f,198.0f),false,ImGuiWindowFlags_NoScrollbar);
-    const ImVec2 wp=ImGui::GetWindowPos(), ws=ImGui::GetWindowSize(), center(wp.x+ws.x*.5f,wp.y+55.0f);
-    drawGlyph(ImGui::GetWindowDrawList(),UiGlyph::Image,center,54.0f,toU32(colorMuted()));
-    ImGui::SetCursorPosY(92.0f);
-    const char* title="No evidence added yet";
-    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-ImGui::CalcTextSize(title).x)*.5f)); ImGui::Text("%s",title);
-    const char* note="Add photos, skid marks, debris fields, markers or measurements to build the case evidence library.";
-    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-ImGui::CalcTextSize(note).x)*.5f)); ImGui::TextDisabled("%s",note);
-    const float groupW=132.0f+7.0f+124.0f;
-    ImGui::SetCursorPosX(std::max(12.0f,(ws.x-groupW)*.5f)); editorButton("ADD EVIDENCE",132.0f,true); ImGui::SameLine(); editorButton("IMPORT PHOTOS",124.0f);
-    endSurface();
-    ImGui::Spacing();
+    const float workspaceW=
+        ImGui::GetContentRegionAvail().x;
 
-    ImGui::Text("EVIDENCE CATEGORIES");
-    ImGui::Separator();
-    const float cw=std::max(126.0f,(w-gap*4.0f)/5.0f);
-    struct Cat { const char* id; UiGlyph glyph; const char* name; const char* note; };
-    const Cat cats[]={
-        {"Photos",UiGlyph::Image,"Photographs","Scene photos and documentation"},
-        {"Skids",UiGlyph::Ruler,"Skid Marks","Tire marks and friction evidence"},
-        {"Debris",UiGlyph::Document,"Debris Fields","Vehicle debris and fragments"},
-        {"Markers",UiGlyph::Marker,"Scene Markers","Reference points and markers"},
-        {"Measures",UiGlyph::Ruler,"Measurements","Distances, angles and dimensions"}
-    };
-    for (int i=0;i<5;++i)
+    const float panelGap=
+        8.0f;
+
+    const float inspectorW=
+        std::max(
+            320.0f,
+            workspaceW*0.31f
+        );
+
+    const float libraryW=
+        std::max(
+            520.0f,
+            workspaceW-
+            inspectorW-
+            panelGap
+        );
+
+    const float workspaceH=
+        std::max(
+            330.0f,
+            ImGui::GetContentRegionAvail().y-
+            8.0f
+        );
+
+    beginSurface(
+        "EvidenceLibraryLive",
+        ImVec2(
+            libraryW,
+            workspaceH
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
     {
-        if (i) ImGui::SameLine(0.0f,gap);
-        beginSurface(cats[i].id,ImVec2(cw,102.0f),true,ImGuiWindowFlags_NoScrollbar);
-        const ImVec2 p=ImGui::GetCursorScreenPos();
-        drawIconBadge(cats[i].glyph,p,32.0f,true);
-        ImGui::SetCursorScreenPos(ImVec2(p.x+43.0f,p.y));
-        ImGui::Text("%s",cats[i].name);
+        ImGui::Text(
+            "EVIDENCE LIBRARY"
+        );
 
-        ImGui::SetCursorScreenPos(ImVec2(p.x+43.0f,p.y+22.0f));
-        ImGui::TextDisabled("0 items");
+        ImGui::SameLine(
+            0.0f,
+            10.0f
+        );
 
-        ImGui::SetCursorPosY(67.0f);
-        ImGui::PushTextWrapPos(ImGui::GetCursorPosX()+cw-22.0f);
-        ImGui::TextDisabled("%s",cats[i].note);
-        ImGui::PopTextWrapPos();
-        endSurface();
+        ImGui::TextDisabled(
+            "%zu RECORDS",
+            evidenceCount
+        );
+
+        ImGui::Separator();
+
+        if (evidenceCount==0)
+        {
+            const ImVec2 wp=
+                ImGui::GetWindowPos();
+
+            const ImVec2 ws=
+                ImGui::GetWindowSize();
+
+            const ImVec2 center(
+                wp.x+
+                ws.x*0.5f,
+                wp.y+
+                112.0f
+            );
+
+            drawGlyph(
+                ImGui::GetWindowDrawList(),
+                UiGlyph::Image,
+                center,
+                50.0f,
+                toU32(
+                    colorMuted()
+                )
+            );
+
+            ImGui::SetCursorPosY(
+                137.0f
+            );
+
+            const char* title=
+                "NO EVIDENCE YET";
+
+            ImGui::SetCursorPosX(
+                std::max(
+                    12.0f,
+                    (
+                        ws.x-
+                        ImGui::CalcTextSize(
+                            title
+                        ).x
+                    )*
+                    0.5f
+                )
+            );
+
+            ImGui::Text(
+                "%s",
+                title
+            );
+
+            const char* note=
+                "Add or import evidence to begin.";
+
+            ImGui::SetCursorPosX(
+                std::max(
+                    12.0f,
+                    (
+                        ws.x-
+                        ImGui::CalcTextSize(
+                            note
+                        ).x
+                    )*
+                    0.5f
+                )
+            );
+
+            ImGui::TextDisabled(
+                "%s",
+                note
+            );
+        }
+        else
+        {
+            ImGui::BeginChild(
+                "##EvidenceRecordList",
+                ImVec2(
+                    0.0f,
+                    -1.0f
+                ),
+                false
+            );
+
+            for (std::size_t i=0;
+                 i<gRoadSafeCase.evidence.size();
+                 ++i)
+            {
+                const auto& evidence=
+                    gRoadSafeCase.evidence[i];
+
+                if (!evidence.active)
+                    continue;
+
+                ImGui::PushID(
+                    static_cast<int>(i)
+                );
+
+                const bool selected=
+                    selectedEvidenceIndex==
+                    static_cast<int>(i);
+
+                const ImVec2 rowP=
+                    ImGui::GetCursorScreenPos();
+
+                const float rowW=
+                    ImGui::GetContentRegionAvail().x;
+
+                const float rowH=
+                    58.0f;
+
+                ImGui::InvisibleButton(
+                    "##EvidenceRecord",
+                    ImVec2(
+                        rowW,
+                        rowH
+                    )
+                );
+
+                if (ImGui::IsItemClicked())
+                {
+                    selectedEvidenceIndex=
+                        static_cast<int>(i);
+                }
+
+                ImDrawList* dl=
+                    ImGui::GetWindowDrawList();
+
+                if (selected)
+                {
+                    dl->AddRectFilled(
+                        rowP,
+                        ImVec2(
+                            rowP.x+rowW,
+                            rowP.y+rowH
+                        ),
+                        IM_COL32(
+                            36,
+                            45,
+                            57,
+                            255
+                        ),
+                        4.0f
+                    );
+
+                    dl->AddRect(
+                        rowP,
+                        ImVec2(
+                            rowP.x+rowW,
+                            rowP.y+rowH
+                        ),
+                        IM_COL32(
+                            53,
+                            126,
+                            206,
+                            255
+                        ),
+                        4.0f
+                    );
+                }
+                else
+                {
+                    dl->AddLine(
+                        ImVec2(
+                            rowP.x,
+                            rowP.y+
+                            rowH-
+                            1.0f
+                        ),
+                        ImVec2(
+                            rowP.x+
+                            rowW,
+                            rowP.y+
+                            rowH-
+                            1.0f
+                        ),
+                        IM_COL32(
+                            56,
+                            60,
+                            66,
+                            255
+                        )
+                    );
+                }
+
+                drawIconBadge(
+                    roadSafeEvidenceGlyph(evidence),
+                    ImVec2(
+                        rowP.x+8.0f,
+                        rowP.y+12.0f
+                    ),
+                    32.0f,
+                    selected
+                );
+
+                const char* rowTitle=
+                    !evidence.description.empty()
+                        ? evidence.description.c_str()
+                        : (
+                            !evidence.id.empty()
+                                ? evidence.id.c_str()
+                                : "Evidence"
+                          );
+
+                dl->AddText(
+                    ImVec2(
+                        rowP.x+50.0f,
+                        rowP.y+9.0f
+                    ),
+                    ImGui::GetColorU32(
+                        ImGuiCol_Text
+                    ),
+                    rowTitle
+                );
+
+                std::string rowMeta=
+                    evidence.type.empty()
+                        ? "Evidence"
+                        : evidence.type;
+
+                if (!evidence.collectionStatus.empty())
+                {
+                    rowMeta+=
+                        "  /  "+
+                        evidence.collectionStatus;
+                }
+
+                dl->AddText(
+                    ImVec2(
+                        rowP.x+50.0f,
+                        rowP.y+31.0f
+                    ),
+                    ImGui::GetColorU32(
+                        ImGuiCol_TextDisabled
+                    ),
+                    rowMeta.c_str()
+                );
+
+                if (i<evidenceLinked.size() &&
+                    evidenceLinked[i])
+                {
+                    const char* sceneText=
+                        "SCENE";
+
+                    const ImVec2 sceneSize=
+                        ImGui::CalcTextSize(
+                            sceneText
+                        );
+
+                    dl->AddText(
+                        ImVec2(
+                            rowP.x+
+                            rowW-
+                            sceneSize.x-
+                            12.0f,
+                            rowP.y+
+                            20.0f
+                        ),
+                        IM_COL32(
+                            91,
+                            203,
+                            111,
+                            255
+                        ),
+                        sceneText
+                    );
+                }
+
+                ImGui::PopID();
+            }
+
+            ImGui::EndChild();
+        }
     }
-    ImGui::Spacing();
+    endSurface();
 
-    beginSurface("EvidenceInspector",ImVec2(0.0f,82.0f),false,ImGuiWindowFlags_NoScrollbar);
-    const ImVec2 p=ImGui::GetCursorScreenPos();
-    drawIconBadge(UiGlyph::Info,p,34.0f,false);
+    ImGui::SameLine(
+        0.0f,
+        panelGap
+    );
 
-    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y));
-    ImGui::TextDisabled("EVIDENCE INSPECTOR");
+    beginSurface(
+        "EvidenceInspectorLive",
+        ImVec2(
+            inspectorW,
+            workspaceH
+        ),
+        true,
+        ImGuiWindowFlags_NoScrollbar
+    );
+    {
+        ImGui::TextDisabled(
+            "EVIDENCE INSPECTOR"
+        );
 
-    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+21.0f));
-    ImGui::Text("SELECT AN ITEM TO INSPECT");
+        ImGui::Separator();
 
-    ImGui::SetCursorScreenPos(ImVec2(p.x+46.0f,p.y+43.0f));
-    ImGui::TextDisabled("Choose an evidence item to view details, metadata and scene links.");
+        if (selectedEvidenceIndex<0)
+        {
+            ImGui::Spacing();
 
+            ImGui::Text(
+                "SELECT AN ITEM"
+            );
+
+            ImGui::TextDisabled(
+                "Choose an evidence record to inspect."
+            );
+        }
+        else
+        {
+            const std::size_t selectedIndex=
+                static_cast<std::size_t>(
+                    selectedEvidenceIndex
+                );
+
+            const auto& evidence=
+                gRoadSafeCase.evidence[
+                    selectedIndex
+                ];
+
+            const char* inspectorTitle=
+                !evidence.description.empty()
+                    ? evidence.description.c_str()
+                    : (
+                        !evidence.id.empty()
+                            ? evidence.id.c_str()
+                            : "Evidence"
+                      );
+
+            ImGui::Spacing();
+
+            ImGui::TextWrapped(
+                "%s",
+                inspectorTitle
+            );
+
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+
+            const auto field=
+                [](const char* label,
+                   const char* value)
+                {
+                    ImGui::TextDisabled(
+                        "%s",
+                        label
+                    );
+
+                    ImGui::TextWrapped(
+                        "%s",
+                        (
+                            value &&
+                            value[0]!='\0'
+                        )
+                            ? value
+                            : "—"
+                    );
+
+                    ImGui::Spacing();
+                };
+
+            field(
+                "TYPE",
+                evidence.type.c_str()
+            );
+
+            field(
+                "ID",
+                evidence.id.c_str()
+            );
+
+            field(
+                "COLLECTION",
+                evidence.collectionStatus.c_str()
+            );
+
+            field(
+                "PROVENANCE",
+                roadsafe::provenanceName(
+                    evidence.lineage.provenance
+                )
+            );
+
+            field(
+                "CONFIDENCE",
+                roadsafe::confidenceName(
+                    evidence.lineage.confidence
+                )
+            );
+
+            field(
+                "SOURCE",
+                evidence.lineage.sourceId.c_str()
+            );
+
+            field(
+                "SCENE LINK",
+                (
+                    selectedIndex<
+                        evidenceLinked.size() &&
+                    evidenceLinked[
+                        selectedIndex
+                    ]
+                )
+                    ? "LINKED"
+                    : "NOT LINKED"
+            );
+
+            if (evidence.lengthMeters>0.0f)
+            {
+                ImGui::TextDisabled(
+                    "LENGTH"
+                );
+
+                ImGui::Text(
+                    "%.2f m",
+                    evidence.lengthMeters
+                );
+
+                ImGui::Spacing();
+            }
+
+            if (evidence.widthMeters>0.0f)
+            {
+                ImGui::TextDisabled(
+                    "WIDTH"
+                );
+
+                ImGui::Text(
+                    "%.2f m",
+                    evidence.widthMeters
+                );
+
+                ImGui::Spacing();
+            }
+
+            if (evidence.fieldRadiusMeters>0.0f)
+            {
+                ImGui::TextDisabled(
+                    "FIELD RADIUS"
+                );
+
+                ImGui::Text(
+                    "%.2f m",
+                    evidence.fieldRadiusMeters
+                );
+
+                ImGui::Spacing();
+            }
+
+            if (evidence.estimatedPieceCount>0)
+            {
+                ImGui::TextDisabled(
+                    "PIECE COUNT"
+                );
+
+                ImGui::Text(
+                    "%d",
+                    evidence.estimatedPieceCount
+                );
+            }
+        }
+    }
     endSurface();
 
     ImGui::End();
 }
-
 static void drawAnalysisView()
 {
     static bool selectOverviewOnFirstFrame = true;
@@ -2525,7 +5109,7 @@ static void drawAnalysisView()
     // FIXED WORKSPACE HEADER
     // ========================================================
 
-    beginSurface("AnalysisHeader",ImVec2(0.0f,76.0f),false,ImGuiWindowFlags_NoScrollbar);
+    beginSurface("AnalysisHeader",ImVec2(0.0f,62.0f),false,ImGuiWindowFlags_NoScrollbar);
     {
         const ImVec2 p=ImGui::GetCursorScreenPos();
         const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
@@ -2537,7 +5121,7 @@ static void drawAnalysisView()
 
         ImGui::SetCursorScreenPos(ImVec2(p.x+54.0f,p.y+29.0f));
         ImGui::TextDisabled(
-            "Run reconstruction methods, review prerequisites, follow workflow and inspect results."
+            "READINESS  /  METHODS  /  RESULTS"
         );
 
         const float guideW=138.0f;
@@ -2571,101 +5155,448 @@ static void drawAnalysisView()
         {
             ImGui::Spacing();
 
-            ImGui::Text("CASE READINESS");
-            ImGui::SameLine(0.0f,10.0f);
-            ImGui::TextDisabled("A compact view of what is ready and what still blocks analysis.");
-            ImGui::Separator();
+            const bool caseLocated=
+                !gRoadSafeCase.identity.location.empty();
 
-            const float contentW=ImGui::GetContentRegionAvail().x;
-            const float gap=8.0f;
-            const float cardW=std::max(260.0f,(contentW-gap)/2.0f);
+            const bool caseDated=
+                !gRoadSafeCase.identity.accidentDateTime.empty();
 
-            drawMetricTile(
-                "OverviewReady",
-                UiGlyph::Check,
-                "ANALYSIS READINESS",
-                "NOT READY",
-                "Required evidence is still missing",
-                cardW,
-                92.0f,
-                true
-            );
+            const bool vehiclesReady=
+                roadSafeActiveVehicleCount()>0;
 
-            ImGui::SameLine(0.0f,gap);
+            const bool evidenceReady=
+                roadSafeActiveEvidenceCount()>0;
 
-            drawMetricTile(
-                "OverviewEvidence",
-                UiGlyph::Document,
-                "EVIDENCE LINKED",
-                "0 OF 2",
-                "No measurements linked",
-                cardW,
-                92.0f
-            );
+            const bool measurementsReady=
+                roadSafeActiveMeasurementCount()>0;
 
-            ImGui::Spacing();
+            const int readinessChecks=
+                (caseLocated && caseDated ? 1 : 0)+
+                (vehiclesReady ? 1 : 0)+
+                (evidenceReady ? 1 : 0)+
+                (measurementsReady ? 1 : 0);
 
-            drawMetricTile(
-                "OverviewCase",
-                UiGlyph::Folder,
-                "CASE STATE",
-                "UNASSIGNED",
-                "Set incident date and location",
-                cardW,
-                92.0f
-            );
+            const float readiness=
+                static_cast<float>(
+                    readinessChecks
+                )/
+                4.0f;
 
-            ImGui::SameLine(0.0f,gap);
-
-            drawMetricTile(
-                "OverviewUpdated",
-                UiGlyph::Clock,
-                "LAST UPDATED",
-                "JUST NOW",
-                "No analysis has been run",
-                cardW,
-                92.0f
-            );
-
-            ImGui::Spacing();
-
-            beginSurface("OverviewNextStep",ImVec2(0.0f,118.0f),false,ImGuiWindowFlags_NoScrollbar);
-            {
-                const ImVec2 p=ImGui::GetCursorScreenPos();
-                const float right=ImGui::GetWindowPos().x+ImGui::GetWindowContentRegionMax().x;
-
-                drawIconBadge(UiGlyph::Info,p,40.0f,false);
-
-                ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+1.0f));
-                ImGui::Text("NEXT REQUIRED STEP");
-
-                ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+27.0f));
-                ImGui::TextDisabled(
-                    "Link evidence and measurements before running speed or momentum analysis."
+            const int readinessPercent=
+                static_cast<int>(
+                    readiness*
+                    100.0f+
+                    0.5f
                 );
 
-                ImGui::SetCursorScreenPos(ImVec2(p.x+52.0f,p.y+59.0f));
-                drawStatus("BLOCKED BY MISSING EVIDENCE",StatusTone::Accent);
+            const float contentW=
+                ImGui::GetContentRegionAvail().x;
 
-                const float linkW=144.0f;
-                const float openW=154.0f;
-                const float groupW=linkW+8.0f+openW;
+            const float gap=
+                8.0f;
 
-                ImGui::SetCursorScreenPos(ImVec2(right-groupW-12.0f,p.y+42.0f));
-                editorButton("LINK EVIDENCE",linkW,true);
+            const float leftW=
+                std::max(
+                    360.0f,
+                    contentW*0.58f
+                );
 
-                ImGui::SameLine(0.0f,8.0f);
-                editorButton("OPEN EVIDENCE",openW);
+            const float rightW=
+                std::max(
+                    280.0f,
+                    contentW-leftW-gap
+                );
+
+            beginSurface(
+                "OverviewReadinessVisual",
+                ImVec2(
+                    leftW,
+                    190.0f
+                ),
+                true,
+                ImGuiWindowFlags_NoScrollbar
+            );
+            {
+                const ImVec2 p=
+                    ImGui::GetCursorScreenPos();
+
+                ImGui::Text(
+                    "ANALYSIS READINESS"
+                );
+
+                ImGui::TextDisabled(
+                    "PREREQUISITES"
+                );
+
+                ImDrawList* dl=
+                    ImGui::GetWindowDrawList();
+
+                const ImVec2 center(
+                    p.x+82.0f,
+                    p.y+103.0f
+                );
+
+                const float radius=
+                    48.0f;
+
+                dl->AddCircle(
+                    center,
+                    radius,
+                    IM_COL32(
+                        54,
+                        59,
+                        67,
+                        255
+                    ),
+                    64,
+                    8.0f
+                );
+
+                if (readiness>0.0f)
+                {
+                    dl->PathArcTo(
+                        center,
+                        radius,
+                        -1.57079632679f,
+                        -1.57079632679f+
+                        6.28318530718f*
+                        readiness,
+                        48
+                    );
+
+                    dl->PathStroke(
+                        IM_COL32(
+                            43,
+                            142,
+                            238,
+                            255
+                        ),
+                        0,
+                        8.0f
+                    );
+                }
+
+                char percentText[32]{};
+
+                std::snprintf(
+                    percentText,
+                    sizeof(percentText),
+                    "%d%%",
+                    readinessPercent
+                );
+
+                const ImVec2 percentSize=
+                    ImGui::CalcTextSize(
+                        percentText
+                    );
+
+                dl->AddText(
+                    ImVec2(
+                        center.x-
+                        percentSize.x*0.5f,
+                        center.y-
+                        percentSize.y*0.5f
+                    ),
+                    IM_COL32(
+                        242,
+                        245,
+                        250,
+                        255
+                    ),
+                    percentText
+                );
+
+                const float checklistX=
+                    p.x+160.0f;
+
+                const auto readinessRow=
+                    [&](float y,
+                        const char* label,
+                        bool ready)
+                    {
+                        dl->AddCircleFilled(
+                            ImVec2(
+                                checklistX+5.0f,
+                                y+7.0f
+                            ),
+                            4.0f,
+                            ready
+                                ? IM_COL32(
+                                    91,
+                                    203,
+                                    111,
+                                    255
+                                )
+                                : IM_COL32(
+                                    196,
+                                    145,
+                                    39,
+                                    255
+                                )
+                        );
+
+                        dl->AddText(
+                            ImVec2(
+                                checklistX+18.0f,
+                                y
+                            ),
+                            ready
+                                ? IM_COL32(
+                                    220,
+                                    226,
+                                    235,
+                                    255
+                                )
+                                : IM_COL32(
+                                    158,
+                                    165,
+                                    176,
+                                    255
+                                ),
+                            label
+                        );
+                    };
+
+                readinessRow(
+                    p.y+50.0f,
+                    "Case location + date",
+                    caseLocated && caseDated
+                );
+
+                readinessRow(
+                    p.y+77.0f,
+                    "Vehicles assigned",
+                    vehiclesReady
+                );
+
+                readinessRow(
+                    p.y+104.0f,
+                    "Evidence available",
+                    evidenceReady
+                );
+
+                readinessRow(
+                    p.y+131.0f,
+                    "Measurements available",
+                    measurementsReady
+                );
             }
             endSurface();
 
+            ImGui::SameLine(
+                0.0f,
+                gap
+            );
+
+            beginSurface(
+                "OverviewNextStepVisual",
+                ImVec2(
+                    rightW,
+                    190.0f
+                ),
+                true,
+                ImGuiWindowFlags_NoScrollbar
+            );
+            {
+                const ImVec2 p=
+                    ImGui::GetCursorScreenPos();
+
+                drawIconBadge(
+                    UiGlyph::Info,
+                    p,
+                    36.0f,
+                    true
+                );
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        p.x+48.0f,
+                        p.y+1.0f
+                    )
+                );
+
+                ImGui::Text(
+                    "NEXT STEP"
+                );
+
+                const char* nextStep=
+                    !(caseLocated && caseDated)
+                        ? "Set incident date and location"
+                        : !evidenceReady
+                            ? "Add or link evidence"
+                            : !measurementsReady
+                                ? "Add scene measurements"
+                                : "Review analysis modules";
+
+                const char* blocker=
+                    readiness>=1.0f
+                        ? "READY TO PROCEED"
+                        : "PREREQUISITE OPEN";
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        p.x,
+                        p.y+60.0f
+                    )
+                );
+
+                ImGui::TextWrapped(
+                    "%s",
+                    nextStep
+                );
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        p.x,
+                        p.y+103.0f
+                    )
+                );
+
+                ImGui::TextColored(
+                    readiness>=1.0f
+                        ? ImVec4(
+                            0.36f,
+                            0.80f,
+                            0.44f,
+                            1.0f
+                        )
+                        : ImVec4(
+                            0.98f,
+                            0.68f,
+                            0.08f,
+                            1.0f
+                        ),
+                    "%s",
+                    blocker
+                );
+
+                ImGui::SetCursorScreenPos(
+                    ImVec2(
+                        p.x,
+                        p.y+137.0f
+                    )
+                );
+
+                const char* nextActionLabel=
+                    !(caseLocated && caseDated)
+                        ? "SET CASE DETAILS"
+                        : !evidenceReady
+                            ? "OPEN EVIDENCE"
+                            : !measurementsReady
+                                ? "ADD MEASUREMENTS"
+                                : "REVIEW MODULES";
+
+                if (editorButton(
+                    nextActionLabel,
+                    std::min(
+                        166.0f,
+                        rightW-24.0f
+                    ),
+                    true))
+                {
+                    if (!(caseLocated && caseDated))
+                    {
+                        ImGui::SetWindowFocus(
+                            "Case View"
+                        );
+                    }
+                    else if (!evidenceReady ||
+                             !measurementsReady)
+                    {
+                        ImGui::SetWindowFocus(
+                            "Evidence"
+                        );
+                    }
+                    else
+                    {
+                        ImGui::SetWindowFocus(
+                            "Analysis"
+                        );
+                    }
+                }
+            }
+            endSurface();
+
+            ImGui::Spacing();
+
+            const float moduleGap=
+                7.0f;
+
+            const float moduleW=
+                std::max(
+                    135.0f,
+                    (
+                        ImGui::GetContentRegionAvail().x-
+                        moduleGap*3.0f
+                    )/
+                    4.0f
+                );
+
+            drawMetricTile(
+                "AnalysisQuickSpeed",
+                UiGlyph::SpeedAnalysis,
+                "SPEED",
+                measurementsReady
+                    ? "AVAILABLE"
+                    : "LOCKED",
+                "",
+                moduleW,
+                66.0f
+            );
+
+            ImGui::SameLine(
+                0.0f,
+                moduleGap
+            );
+
+            drawMetricTile(
+                "AnalysisQuickImpact",
+                UiGlyph::Impact,
+                "IMPACT",
+                evidenceReady
+                    ? "AVAILABLE"
+                    : "LOCKED",
+                "",
+                moduleW,
+                66.0f
+            );
+
+            ImGui::SameLine(
+                0.0f,
+                moduleGap
+            );
+
+            drawMetricTile(
+                "AnalysisQuickTrajectory",
+                UiGlyph::Trajectory,
+                "TRAJECTORY",
+                measurementsReady
+                    ? "AVAILABLE"
+                    : "LOCKED",
+                "",
+                moduleW,
+                66.0f
+            );
+
+            ImGui::SameLine(
+                0.0f,
+                moduleGap
+            );
+
+            drawMetricTile(
+                "AnalysisQuickSight",
+                UiGlyph::LineOfSight,
+                "LINE OF SIGHT",
+                caseLocated
+                    ? "AVAILABLE"
+                    : "LOCKED",
+                "",
+                moduleW,
+                66.0f
+            );
+
             ImGui::EndTabItem();
         }
-
-        // ====================================================
-        // TAB 2: MODULES
-        // ====================================================
-
         if (ImGui::BeginTabItem("Modules"))
         {
             ImGui::Spacing();
@@ -3922,61 +6853,25 @@ ImGui::EndChild();
             if (ImGui::BeginMenu(
                 "Overlays"))
             {
-                ImGui::MenuItem(
-                    "Grid",
-                    nullptr,
-                    &showGrid
-                );
+                roadSafeMenuItemToggle("Grid",UiGlyph::Grid,nullptr,&showGrid);
 
-                ImGui::MenuItem(
-                    "Axes",
-                    nullptr,
-                    &showAxes
-                );
+                roadSafeMenuItemToggle("Axes",UiGlyph::Axes,nullptr,&showAxes);
 
-                ImGui::MenuItem(
-                    "Bounds",
-                    nullptr,
-                    &showBounds
-                );
+                roadSafeMenuItemToggle("Bounds",UiGlyph::Bounds,nullptr,&showBounds);
 
-                ImGui::MenuItem(
-                    "Measurements",
-                    nullptr,
-                    &showMeasurements
-                );
+                roadSafeMenuItemToggle("Measurements",UiGlyph::Measurement,nullptr,&showMeasurements);
 
-                ImGui::MenuItem(
-                    "Object Names",
-                    nullptr,
-                    &showNames
-                );
+                roadSafeMenuItemToggle("Object Names",UiGlyph::ObjectNames,nullptr,&showNames);
 
-                ImGui::MenuItem(
-                    "Statistics",
-                    nullptr,
-                    &showStats
-                );
+                roadSafeMenuItemToggle("Statistics",UiGlyph::Statistics,nullptr,&showStats);
 
-                ImGui::MenuItem(
-                    "Safe Frame",
-                    nullptr,
-                    &showSafeFrame
-                );
+                roadSafeMenuItemToggle("Safe Frame",UiGlyph::SafeFrame,nullptr,&showSafeFrame);
 
                 ImGui::Separator();
 
-                ImGui::MenuItem(
-                    "AR Anchors",
-                    nullptr,
-                    &arShowAnchors
-                );
+                roadSafeMenuItemToggle("AR Anchors",UiGlyph::Anchor,nullptr,&arShowAnchors);
 
-                ImGui::MenuItem(
-                    "Collision Guide",
-                    nullptr,
-                    &arShowCollisionGuide
-                );
+                roadSafeMenuItemToggle("Collision Guide",UiGlyph::CollisionGuide,nullptr,&arShowCollisionGuide);
 
                 ImGui::EndMenu();
             }
@@ -4032,12 +6927,12 @@ ImGui::EndChild();
 
         ImGui::SameLine(0.0f,10.0f);
 
-        if (ImGui::Button("FIT",ImVec2(52.0f,28.0f)))
+        if (editorButton("FIT",52.0f))
             viewportZoom=1.0f;
 
         ImGui::SameLine(0.0f,6.0f);
 
-        if (ImGui::Button("-",ImVec2(30.0f,28.0f)))
+        if (editorButton("ZOOM OUT",30.0f))
             viewportZoom=std::max(0.25f,viewportZoom-0.10f);
 
         ImGui::SameLine(0.0f,4.0f);
@@ -4053,7 +6948,7 @@ ImGui::EndChild();
 
         ImGui::SameLine(0.0f,4.0f);
 
-        if (ImGui::Button("+",ImVec2(30.0f,28.0f)))
+        if (editorButton("ZOOM IN",30.0f))
             viewportZoom=std::min(3.0f,viewportZoom+0.10f);
 
         ImGui::SameLine(0.0f,12.0f);
@@ -4109,7 +7004,7 @@ ImGui::EndChild();
 
         ImGui::SameLine(0.0f,12.0f);
 
-        if (ImGui::Button("RESET ORIGIN",ImVec2(112.0f,28.0f)))
+        if (editorButton("RESET ORIGIN",112.0f))
         {
             // AR origin reset hook.
         }
@@ -4174,17 +7069,9 @@ ImGui::EndChild();
         ImGui::TextDisabled("VIEWPORT OVERLAYS");
         ImGui::Separator();
 
-        ImGui::MenuItem(
-            "Grid",
-            nullptr,
-            &showGrid
-        );
+        roadSafeMenuItemToggle("Grid",UiGlyph::Grid,nullptr,&showGrid);
 
-        ImGui::MenuItem(
-            "Axes",
-            nullptr,
-            &showAxes
-        );
+        roadSafeMenuItemToggle("Axes",UiGlyph::Axes,nullptr,&showAxes);
 
         ImGui::MenuItem(
             "Object Bounds",
@@ -4192,45 +7079,21 @@ ImGui::EndChild();
             &showBounds
         );
 
-        ImGui::MenuItem(
-            "Measurements",
-            nullptr,
-            &showMeasurements
-        );
+        roadSafeMenuItemToggle("Measurements",UiGlyph::Measurement,nullptr,&showMeasurements);
 
-        ImGui::MenuItem(
-            "Object Names",
-            nullptr,
-            &showNames
-        );
+        roadSafeMenuItemToggle("Object Names",UiGlyph::ObjectNames,nullptr,&showNames);
 
-        ImGui::MenuItem(
-            "Statistics",
-            nullptr,
-            &showStats
-        );
+        roadSafeMenuItemToggle("Statistics",UiGlyph::Statistics,nullptr,&showStats);
 
-        ImGui::MenuItem(
-            "Safe Frame",
-            nullptr,
-            &showSafeFrame
-        );
+        roadSafeMenuItemToggle("Safe Frame",UiGlyph::SafeFrame,nullptr,&showSafeFrame);
 
         if (viewportMode==2)
         {
             ImGui::Separator();
 
-            ImGui::MenuItem(
-                "AR Anchors",
-                nullptr,
-                &arShowAnchors
-            );
+            roadSafeMenuItemToggle("AR Anchors",UiGlyph::Anchor,nullptr,&arShowAnchors);
 
-            ImGui::MenuItem(
-                "Collision Guide",
-                nullptr,
-                &arShowCollisionGuide
-            );
+            roadSafeMenuItemToggle("Collision Guide",UiGlyph::CollisionGuide,nullptr,&arShowCollisionGuide);
         }
 
         ImGui::EndPopup();
@@ -5610,67 +8473,43 @@ ImGui::EndChild();
 
         ImGui::Separator();
 
-        ImGui::MenuItem(
-            "Grid",
-            nullptr,
-            &showGrid
-        );
+        roadSafeMenuItemToggle("Grid",UiGlyph::Grid,nullptr,&showGrid);
 
-        ImGui::MenuItem(
-            "Axes",
-            nullptr,
-            &showAxes
-        );
+        roadSafeMenuItemToggle("Axes",UiGlyph::Axes,nullptr,&showAxes);
 
-        ImGui::MenuItem(
-            "Bounds",
-            nullptr,
-            &showBounds
-        );
+        roadSafeMenuItemToggle("Bounds",UiGlyph::Bounds,nullptr,&showBounds);
 
-        ImGui::MenuItem(
-            "Measurements",
-            nullptr,
-            &showMeasurements
-        );
+        roadSafeMenuItemToggle("Measurements",UiGlyph::Measurement,nullptr,&showMeasurements);
 
         ImGui::Separator();
 
         if (viewportMode==0)
         {
-            if (ImGui::MenuItem("Top"))
+            if (roadSafeMenuItem("Top", UiGlyph::TopView))
                 orthoView=0;
 
-            if (ImGui::MenuItem("Front"))
+            if (roadSafeMenuItem("Front", UiGlyph::FrontView))
                 orthoView=1;
 
-            if (ImGui::MenuItem("Right"))
+            if (roadSafeMenuItem("Right", UiGlyph::RightView))
                 orthoView=2;
         }
         else if (viewportMode==1)
         {
-            if (ImGui::MenuItem("Lit"))
+            if (roadSafeMenuItem("Lit", UiGlyph::Lit))
                 renderMode=0;
 
-            if (ImGui::MenuItem("Wireframe"))
+            if (roadSafeMenuItem("Wireframe", UiGlyph::Wireframe))
                 renderMode=1;
 
-            if (ImGui::MenuItem("Analysis"))
+            if (roadSafeMenuItem("Analysis", UiGlyph::Analysis))
                 renderMode=2;
         }
         else
         {
-            ImGui::MenuItem(
-                "AR Anchors",
-                nullptr,
-                &arShowAnchors
-            );
+            roadSafeMenuItemToggle("AR Anchors",UiGlyph::Anchor,nullptr,&arShowAnchors);
 
-            ImGui::MenuItem(
-                "Collision Guide",
-                nullptr,
-                &arShowCollisionGuide
-            );
+            roadSafeMenuItemToggle("Collision Guide",UiGlyph::CollisionGuide,nullptr,&arShowCollisionGuide);
         }
 
         ImGui::EndPopup();
@@ -6427,6 +9266,7 @@ static void drawDeepPropertiesInspectorBody()
             ? roadSafeSceneEntity(entity)
             : nullptr;
 
+    // ROADSAFE_PROPERTIES_HEADER_BLENDER_V18
     auto section=
         [](const char* label)
     {
@@ -6434,17 +9274,30 @@ static void drawDeepPropertiesInspectorBody()
 
         ImGui::PushStyleColor(
             ImGuiCol_Header,
-            ImVec4(0.12f,0.13f,0.145f,1.0f)
+            ImVec4(0.16f,0.17f,0.19f,1.0f)
         );
 
         ImGui::PushStyleColor(
             ImGuiCol_HeaderHovered,
-            ImVec4(0.16f,0.17f,0.19f,1.0f)
+            ImVec4(0.21f,0.22f,0.25f,1.0f)
         );
+
+        ImGui::PushStyleColor(
+            ImGuiCol_HeaderActive,
+            ImVec4(0.23f,0.24f,0.27f,1.0f)
+        );
+
+        const std::string sectionName=
+            label
+                ? label
+                : "";
+
+        std::string displayLabel="     ";
+        displayLabel+=sectionName;
 
         const bool open=
             ImGui::CollapsingHeader(
-                label,
+                displayLabel.c_str(),
                 ImGuiTreeNodeFlags_DefaultOpen
             );
 
@@ -6457,41 +9310,38 @@ static void drawDeepPropertiesInspectorBody()
         UiGlyph glyph=
             UiGlyph::Info;
 
-        const std::string sectionName=
-            label ? label : "";
-
         if (sectionName=="TRANSFORM")
-            glyph=UiGlyph::Cube;
+            glyph=UiGlyph::Transform;
         else if (sectionName=="VEHICLE IDENTITY")
-            glyph=UiGlyph::Hash;
+            glyph=UiGlyph::VehicleIdentity;
         else if (sectionName=="VEHICLE PHYSICS")
-            glyph=UiGlyph::Speed;
+            glyph=UiGlyph::VehiclePhysics;
         else if (sectionName=="INITIAL STATE")
-            glyph=UiGlyph::Clock;
+            glyph=UiGlyph::Speed;
         else if (sectionName=="TIRES / ROAD")
-            glyph=UiGlyph::Ruler;
+            glyph=UiGlyph::Tire;
         else if (sectionName=="COLLISION")
-            glyph=UiGlyph::Momentum;
+            glyph=UiGlyph::Crash;
         else if (sectionName=="FORENSIC LINEAGE")
-            glyph=UiGlyph::Link;
+            glyph=UiGlyph::Provenance;
         else if (sectionName=="EVIDENCE METADATA")
-            glyph=UiGlyph::Document;
+            glyph=UiGlyph::Evidence;
         else if (sectionName=="SKID / TIRE MARK")
-            glyph=UiGlyph::Ruler;
+            glyph=UiGlyph::SkidMark;
         else if (sectionName=="SCENE MARKER")
-            glyph=UiGlyph::Marker;
+            glyph=UiGlyph::ForensicMarker;
         else if (sectionName=="DEBRIS FIELD")
-            glyph=UiGlyph::Document;
+            glyph=UiGlyph::Debris;
         else if (sectionName=="MEASUREMENT SETTINGS")
-            glyph=UiGlyph::Ruler;
+            glyph=UiGlyph::Measurement;
         else if (sectionName=="3D ASSET / PBR")
-            glyph=UiGlyph::Cube;
+            glyph=UiGlyph::Asset;
         else if (sectionName=="VISIBILITY")
             glyph=UiGlyph::Eye;
         else if (sectionName=="METADATA")
-            glyph=UiGlyph::Info;
+            glyph=UiGlyph::Fingerprint;
         else if (sectionName=="SCENE SETTINGS")
-            glyph=UiGlyph::Bars;
+            glyph=UiGlyph::Settings;
 
         if (headerMax.x-headerMin.x>70.0f)
         {
@@ -6499,10 +9349,10 @@ static void drawDeepPropertiesInspectorBody()
                 ImGui::GetWindowDrawList(),
                 glyph,
                 ImVec2(
-                    headerMax.x-18.0f,
+                    headerMin.x+31.0f,
                     (headerMin.y+headerMax.y)*0.5f
                 ),
-                16.0f,
+                17.0f,
                 toU32(
                     open
                         ? colorText()
@@ -6511,12 +9361,12 @@ static void drawDeepPropertiesInspectorBody()
             );
         }
 
-        ImGui::PopStyleColor(2);
+        ImGui::PopStyleColor(3);
         return open;
     };
-
     // Keep enough room for the property label on the right.
     // Narrow inspectors no longer sacrifice labels to oversized editors.
+    // ROADSAFE_PROPERTIES_WIDTH_V18
     const auto editorWidth=[]()
     {
         const float available=
@@ -6527,20 +9377,19 @@ static void drawDeepPropertiesInspectorBody()
 
         const float labelReserve=
             std::min(
-                190.0f,
+                150.0f,
                 std::max(
-                    138.0f,
-                    available*0.48f
+                    120.0f,
+                    available*0.38f
                 )
             );
 
         return
             std::max(
-                108.0f,
+                178.0f,
                 available-labelReserve
             );
     };
-
     if (entity==0)
     {
         if (section("SCENE SETTINGS"))
@@ -8235,15 +11084,6 @@ static bool shellIconButton(
             toU32(colorAccentMuted()),
             3.0f
         );
-
-        dl->AddRect(
-            p,
-            ImVec2(p.x+size.x,p.y+size.y),
-            toU32(colorAccent()),
-            3.0f,
-            0,
-            1.0f
-        );
     }
     else if (hovered)
     {
@@ -8281,6 +11121,7 @@ static bool shellIconButton(
     return clicked && enabled;
 }
 
+// ROADSAFE_TOOLBAR_TWO_ROW_HEIGHT_V19
 static void drawEditorToolbar()
 {
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,ImVec2(9.0f,5.0f));
@@ -8288,7 +11129,7 @@ static void drawEditorToolbar()
 
     beginSurface(
         "GlobalEditorToolbar",
-        ImVec2(0.0f,48.0f),
+        ImVec2(0.0f,82.0f),
         false,
         ImGuiWindowFlags_NoScrollbar
     );
@@ -8296,21 +11137,21 @@ static void drawEditorToolbar()
     // Case/document controls.
     shellIconButton(
         "ToolbarNew",
-        UiGlyph::Document,
+        UiGlyph::NewCase,
         "New Case  (Ctrl+N)"
     );
 
     ImGui::SameLine();
     shellIconButton(
         "ToolbarOpen",
-        UiGlyph::Folder,
+        UiGlyph::OpenFile,
         "Open Case  (Ctrl+O)"
     );
 
     ImGui::SameLine();
     shellIconButton(
         "ToolbarSave",
-        UiGlyph::Document,
+        UiGlyph::Save,
         "Save Case  (Ctrl+S)"
     );
 
@@ -8331,7 +11172,7 @@ static void drawEditorToolbar()
 
     // Add dropdown.
     ImGui::SameLine();
-    if (ImGui::Button("ADD  +",ImVec2(78.0f,0.0f)))
+    if (editorButton("ADD",78.0f))
         ImGui::OpenPopup("##AddToolbarPopup");
 
     if (ImGui::BeginPopup("##AddToolbarPopup"))
@@ -8339,22 +11180,22 @@ static void drawEditorToolbar()
         ImGui::TextDisabled("ADD TO SCENE");
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Vehicle"))
+        if (roadSafeMenuItem("Vehicle", UiGlyph::Vehicle))
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::AddVehicle
             );
 
-        if (ImGui::MenuItem("Evidence"))
+        if (roadSafeMenuItem("Evidence", UiGlyph::Evidence))
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::AddEvidence
             );
 
-        if (ImGui::MenuItem("Measurement"))
+        if (roadSafeMenuItem("Measurement", UiGlyph::Measurement))
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::AddMeasurement
             );
 
-        if (ImGui::MenuItem("Scene Marker"))
+        if (roadSafeMenuItem("Scene Marker", UiGlyph::ForensicMarker))
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::AddMarker
             );
@@ -8485,15 +11326,6 @@ static bool outlinerMiniIconButton(
             toU32(active ? colorPanelRaised() : colorPanel()),
             4.0f
         );
-
-        dl->AddRect(
-            p,
-            ImVec2(p.x+size.x,p.y+size.y),
-            toU32(hovered ? colorBorder() : colorPanelRaised()),
-            4.0f,
-            0,
-            1.0f
-        );
     }
 
     float glyphSize=20.0f;
@@ -8603,9 +11435,9 @@ static void outlinerLeafRow(
         ImGui::TextDisabled("%s",label);
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Rename","F2"))
+        if (roadSafeMenuItem("Rename",UiGlyph::Rename,"F2"))
             beginSovereignEntityRename(entityId);
-        if (ImGui::MenuItem("Duplicate","Ctrl+D"))
+        if (roadSafeMenuItem("Duplicate",UiGlyph::Duplicate,"Ctrl+D"))
         {
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::Duplicate,
@@ -8613,13 +11445,13 @@ static void outlinerLeafRow(
             );
         }
 
-        if (ImGui::MenuItem("Focus in Viewport","F"))
+        if (roadSafeMenuItem("Focus in Viewport",UiGlyph::FrameSelection,"F"))
             setSharedEntitySelection(entityId,"Outliner");
 
         ImGui::Separator();
         ImGui::BeginDisabled(*locked);
 
-        if (ImGui::MenuItem("Delete","Del"))
+        if (roadSafeMenuItem("Delete",UiGlyph::Delete,"Del"))
         {
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::Delete,
@@ -8716,9 +11548,9 @@ static void outlinerLeafRow(
         ImGui::TextDisabled("%s",label);
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Rename","F2"))
+        if (roadSafeMenuItem("Rename",UiGlyph::Rename,"F2"))
             beginSovereignEntityRename(entityId);
-        if (ImGui::MenuItem("Duplicate","Ctrl+D"))
+        if (roadSafeMenuItem("Duplicate",UiGlyph::Duplicate,"Ctrl+D"))
         {
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::Duplicate,
@@ -8726,20 +11558,22 @@ static void outlinerLeafRow(
             );
         }
 
-        if (ImGui::MenuItem("Focus in Viewport","F"))
+        if (roadSafeMenuItem("Focus in Viewport",UiGlyph::FrameSelection,"F"))
             setSharedEntitySelection(entityId,"Outliner");
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem(
-            *visible ? "Hide" : "Show"))
+        if (roadSafeMenuItem(
+            *visible ? "Hide" : "Show",
+            *visible ? UiGlyph::VisibilityOff : UiGlyph::Eye))
         {
             *visible=!*visible;
         gRoadSafeCase.touch();
         }
 
-        if (ImGui::MenuItem(
-            *locked ? "Unlock" : "Lock"))
+        if (roadSafeMenuItem(
+            *locked ? "Unlock" : "Lock",
+            *locked ? UiGlyph::Unlock : UiGlyph::Lock))
         {
             *locked=!*locked;
         gRoadSafeCase.touch();
@@ -8748,7 +11582,7 @@ static void outlinerLeafRow(
         ImGui::Separator();
         ImGui::BeginDisabled(*locked);
 
-        if (ImGui::MenuItem("Delete","Del"))
+        if (roadSafeMenuItem("Delete",UiGlyph::Delete,"Del"))
         {
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::Delete,
@@ -8870,22 +11704,22 @@ static void drawOutliner()
         ImGui::TextDisabled("ADD OBJECT");
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Vehicle"))
+        if (roadSafeMenuItem("Vehicle", UiGlyph::Vehicle))
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::AddVehicle
             );
 
-        if (ImGui::MenuItem("Evidence"))
+        if (roadSafeMenuItem("Evidence", UiGlyph::Evidence))
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::AddEvidence
             );
 
-        if (ImGui::MenuItem("Measurement"))
+        if (roadSafeMenuItem("Measurement", UiGlyph::Measurement))
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::AddMeasurement
             );
 
-        if (ImGui::MenuItem("Scene Marker"))
+        if (roadSafeMenuItem("Scene Marker", UiGlyph::ForensicMarker))
             queueRoadSafeSceneAction(
                 RoadSafePendingSceneAction::AddMarker
             );
@@ -9195,19 +12029,19 @@ static void drawProperties()
         switch (propertyEntity->kind)
         {
             case roadsafe::SceneEntityKind::Vehicle:
-                propertyHeaderGlyph=UiGlyph::Cube;
+                propertyHeaderGlyph=UiGlyph::Vehicle;
                 break;
 
             case roadsafe::SceneEntityKind::Evidence:
-                propertyHeaderGlyph=UiGlyph::Document;
+                propertyHeaderGlyph=UiGlyph::Evidence;
                 break;
 
             case roadsafe::SceneEntityKind::Measurement:
-                propertyHeaderGlyph=UiGlyph::Ruler;
+                propertyHeaderGlyph=UiGlyph::Measurement;
                 break;
 
             case roadsafe::SceneEntityKind::Environment:
-                propertyHeaderGlyph=UiGlyph::Marker;
+                propertyHeaderGlyph=UiGlyph::Environment;
                 break;
         }
     }
@@ -11161,9 +13995,7 @@ endEditorContextHeader();
         ImVec2(8.0f,5.0f)
     );
 
-    if (ImGui::Button(
-        "FILE  v",
-        ImVec2(74.0f,30.0f)))
+    if (editorButton("FILE",88.0f))
     {
         ImGui::OpenPopup(
             "##NodeGraphFilePopup"
@@ -11210,9 +14042,7 @@ endEditorContextHeader();
 
     ImGui::SameLine(0.0f,6.0f);
 
-    if (ImGui::Button(
-        "ADD NODE  +",
-        ImVec2(104.0f,30.0f)))
+    if (editorButton("ADD NODE",112.0f))
     {
         ImGui::OpenPopup(
             "##NodeAddPopup"
@@ -11311,9 +14141,7 @@ endEditorContextHeader();
         undoStack.empty()
     );
 
-    if (ImGui::Button(
-        "UNDO",
-        ImVec2(62.0f,30.0f)))
+    if (editorButton("UNDO",84.0f))
     {
         doUndo();
     }
@@ -11326,9 +14154,7 @@ endEditorContextHeader();
         redoStack.empty()
     );
 
-    if (ImGui::Button(
-        "REDO",
-        ImVec2(62.0f,30.0f)))
+    if (editorButton("REDO",84.0f))
     {
         doRedo();
     }
@@ -11341,18 +14167,14 @@ endEditorContextHeader();
         selectedNodes.empty()
     );
 
-    if (ImGui::Button(
-        "COPY",
-        ImVec2(62.0f,30.0f)))
+    if (editorButton("COPY",84.0f))
     {
         copySelection();
     }
 
     ImGui::SameLine(0.0f,5.0f);
 
-    if (ImGui::Button(
-        "DUPLICATE",
-        ImVec2(94.0f,30.0f)))
+    if (editorButton("DUPLICATE",116.0f))
     {
         duplicateSelection();
     }
@@ -11361,9 +14183,7 @@ endEditorContextHeader();
 
     ImGui::SameLine(0.0f,5.0f);
 
-    if (ImGui::Button(
-        "PASTE",
-        ImVec2(66.0f,30.0f)))
+    if (editorButton("PASTE",86.0f))
     {
         pasteSelection();
     }
@@ -11375,9 +14195,7 @@ endEditorContextHeader();
         selectedLinks.empty()
     );
 
-    if (ImGui::Button(
-        "DELETE",
-        ImVec2(72.0f,30.0f)))
+    if (editorButton("DELETE",94.0f))
     {
         deleteSelection();
     }
@@ -11421,9 +14239,7 @@ endEditorContextHeader();
 
     ImGui::SameLine(0.0f,10.0f);
 
-    if (ImGui::Button(
-        "CENTER",
-        ImVec2(72.0f,28.0f)))
+    if (editorButton("CENTER",96.0f))
     {
         pan=ImVec2(0.0f,0.0f);
         zoom=1.0f;
@@ -13016,17 +15832,9 @@ endEditorContextHeader();
             zoom=1.0f;
         }
 
-        ImGui::MenuItem(
-            "Grid",
-            nullptr,
-            &showGrid
-        );
+        roadSafeMenuItemToggle("Grid",UiGlyph::Grid,nullptr,&showGrid);
 
-        ImGui::MenuItem(
-            "Snap to Grid",
-            nullptr,
-            &snapToGrid
-        );
+        roadSafeMenuItemToggle("Snap to Grid",UiGlyph::SnapGraph,nullptr,&snapToGrid);
 
         ImGui::EndPopup();
     }
@@ -13861,7 +16669,7 @@ static void drawTimeline()
         ImVec2(10.0f,5.0f)
     );
 
-    if (ImGui::Button("|<",ImVec2(38.0f,30.0f)))
+    if (editorButton("FIRST",38.0f))
     {
         currentFrame=0;
         selectedFrame=currentFrame;
@@ -13870,7 +16678,7 @@ static void drawTimeline()
 
     ImGui::SameLine(0.0f,5.0f);
 
-    if (ImGui::Button("<",ImVec2(34.0f,30.0f)))
+    if (editorButton("STEP BACK",34.0f))
     {
         currentFrame=
             std::max(
@@ -13918,7 +16726,7 @@ static void drawTimeline()
 
     ImGui::SameLine(0.0f,7.0f);
 
-    if (ImGui::Button(">",ImVec2(34.0f,30.0f)))
+    if (editorButton("STEP NEXT",34.0f))
     {
         currentFrame=
             std::min(
@@ -13932,7 +16740,7 @@ static void drawTimeline()
 
     ImGui::SameLine(0.0f,5.0f);
 
-    if (ImGui::Button(">|",ImVec2(38.0f,30.0f)))
+    if (editorButton("LAST",38.0f))
     {
         currentFrame=totalFrames;
         selectedFrame=currentFrame;
@@ -14888,8 +17696,8 @@ static void drawMainMenuBar()
     // FILE
     if (ImGui::BeginMenu("File"))
     {
-        ImGui::MenuItem("New Case","Ctrl+N");
-        ImGui::MenuItem("Open Case...","Ctrl+O");
+        roadSafeMenuItem("New Case",UiGlyph::NewCase,"Ctrl+N");
+        roadSafeMenuItem("Open Case...",UiGlyph::OpenFile,"Ctrl+O");
 
         if (ImGui::BeginMenu("Open Recent"))
         {
@@ -14898,30 +17706,30 @@ static void drawMainMenuBar()
         }
 
         ImGui::Separator();
-        ImGui::MenuItem("Save","Ctrl+S");
-        ImGui::MenuItem("Save As...","Ctrl+Shift+S");
+        roadSafeMenuItem("Save",UiGlyph::Save,"Ctrl+S");
+        roadSafeMenuItem("Save As...",UiGlyph::SaveAs,"Ctrl+Shift+S");
 
         ImGui::Separator();
 
         if (ImGui::BeginMenu("Import"))
         {
-            ImGui::MenuItem("Evidence...");
-            ImGui::MenuItem("Scene Data...");
-            ImGui::MenuItem("Vehicle Data...");
+            roadSafeMenuItem("Evidence...", UiGlyph::Evidence);
+            roadSafeMenuItem("Scene Data...", UiGlyph::Scene);
+            roadSafeMenuItem("Vehicle Data...", UiGlyph::Vehicle);
             ImGui::EndMenu();
         }
 
         if (ImGui::BeginMenu("Export"))
         {
-            ImGui::MenuItem("Case Package...");
-            ImGui::MenuItem("Report...");
-            ImGui::MenuItem("Scene Snapshot...");
+            roadSafeMenuItem("Case Package...", UiGlyph::Package);
+            roadSafeMenuItem("Report...", UiGlyph::ReportExport);
+            roadSafeMenuItem("Scene Snapshot...", UiGlyph::Snapshot);
             ImGui::EndMenu();
         }
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Exit","Alt+F4"))
+        if (roadSafeMenuItem("Exit",UiGlyph::Exit,"Alt+F4"))
             gEditorShell.requestExit=true;
 
         ImGui::EndMenu();
@@ -14930,63 +17738,47 @@ static void drawMainMenuBar()
     // EDIT
     if (ImGui::BeginMenu("Edit"))
     {
-        ImGui::MenuItem("Undo","Ctrl+Z");
-        ImGui::MenuItem("Redo","Ctrl+Y",false,false);
+        roadSafeMenuItem("Undo",UiGlyph::Undo,"Ctrl+Z");
+        roadSafeMenuItem("Redo",UiGlyph::Redo,"Ctrl+Y",false,false);
 
         ImGui::Separator();
-        ImGui::MenuItem("Cut","Ctrl+X");
-        ImGui::MenuItem("Copy","Ctrl+C");
-        ImGui::MenuItem("Paste","Ctrl+V");
+        roadSafeMenuItem("Cut",UiGlyph::Cut,"Ctrl+X");
+        roadSafeMenuItem("Copy",UiGlyph::Copy,"Ctrl+C");
+        roadSafeMenuItem("Paste",UiGlyph::Paste,"Ctrl+V");
 
         ImGui::Separator();
-        ImGui::MenuItem("Duplicate","Ctrl+D");
-        ImGui::MenuItem("Delete","Del");
+        roadSafeMenuItem("Duplicate",UiGlyph::Duplicate,"Ctrl+D");
+        roadSafeMenuItem("Delete",UiGlyph::Delete,"Del");
 
         ImGui::Separator();
-        ImGui::MenuItem("Preferences...");
+        roadSafeMenuItem("Preferences...", UiGlyph::Preferences);
         ImGui::EndMenu();
     }
 
     // VIEW
     if (ImGui::BeginMenu("View"))
     {
-        ImGui::MenuItem(
-            "Scene Outliner",
-            "Ctrl+Shift+O",
-            &gEditorShell.showOutliner
-        );
+        roadSafeMenuItemToggle("Scene Outliner",UiGlyph::ViewSidebar,"Ctrl+Shift+O",&gEditorShell.showOutliner);
 
-        ImGui::MenuItem(
-            "Properties",
-            "Ctrl+Shift+I",
-            &gEditorShell.showProperties
-        );
+        roadSafeMenuItemToggle("Properties",UiGlyph::Tune,"Ctrl+Shift+I",&gEditorShell.showProperties);
 
-        ImGui::MenuItem(
-            "Timeline",
-            "Ctrl+Shift+T",
-            &gEditorShell.showTimeline
-        );
+        roadSafeMenuItemToggle("Timeline",UiGlyph::Timeline,"Ctrl+Shift+T",&gEditorShell.showTimeline);
 
-        ImGui::MenuItem(
-            "Node Editor",
-            "Ctrl+Shift+N",
-            &gEditorShell.showNodeEditor
-        );
+        roadSafeMenuItemToggle("Node Editor",UiGlyph::NodeEditor,"Ctrl+Shift+N",&gEditorShell.showNodeEditor);
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Reset Workspace Layout","Ctrl+Shift+R"))
+        if (roadSafeMenuItem("Reset Workspace Layout",UiGlyph::ResetLayout,"Ctrl+Shift+R"))
             gEditorShell.resetLayoutRequested=true;
 
         ImGui::Separator();
 
         if (ImGui::BeginMenu("Viewport"))
         {
-            ImGui::MenuItem("Perspective");
-            ImGui::MenuItem("Top");
-            ImGui::MenuItem("Front");
-            ImGui::MenuItem("Right");
+            roadSafeMenuItem("Perspective", UiGlyph::Perspective);
+            roadSafeMenuItem("Top", UiGlyph::TopView);
+            roadSafeMenuItem("Front", UiGlyph::FrontView);
+            roadSafeMenuItem("Right", UiGlyph::RightView);
             ImGui::Separator();
             ImGui::MenuItem("Frame Selection","F");
             ImGui::MenuItem("Frame All","Home");
@@ -15001,24 +17793,20 @@ static void drawMainMenuBar()
     {
         if (ImGui::BeginMenu("Add"))
         {
-            ImGui::MenuItem("Vehicle");
-            ImGui::MenuItem("Evidence");
-            ImGui::MenuItem("Measurement");
-            ImGui::MenuItem("Scene Marker");
+            roadSafeMenuItem("Vehicle", UiGlyph::Vehicle);
+            roadSafeMenuItem("Evidence", UiGlyph::Evidence);
+            roadSafeMenuItem("Measurement", UiGlyph::Measurement);
+            roadSafeMenuItem("Scene Marker", UiGlyph::ForensicMarker);
             ImGui::EndMenu();
         }
 
         ImGui::Separator();
-        ImGui::MenuItem("Focus Selection","F");
-        ImGui::MenuItem("Select All","Ctrl+A");
-        ImGui::MenuItem("Deselect All","Alt+A");
+        roadSafeMenuItem("Focus Selection",UiGlyph::FrameSelection,"F");
+        roadSafeMenuItem("Select All",UiGlyph::SelectAll,"Ctrl+A");
+        roadSafeMenuItem("Deselect All",UiGlyph::Deselect,"Alt+A");
 
         ImGui::Separator();
-        ImGui::MenuItem(
-            "Snapping",
-            "Shift+Tab",
-            &gEditorShell.snapEnabled
-        );
+        roadSafeMenuItemToggle("Snapping",UiGlyph::Snap,"Shift+Tab",&gEditorShell.snapEnabled);
 
         ImGui::EndMenu();
     }
@@ -15028,23 +17816,23 @@ static void drawMainMenuBar()
     {
         if (ImGui::BeginMenu("Analysis"))
         {
-            ImGui::MenuItem("Skid Analysis");
-            ImGui::MenuItem("Momentum Analysis");
-            ImGui::MenuItem("Speed Analysis");
+            roadSafeMenuItem("Skid Analysis", UiGlyph::SkidAnalysis);
+            roadSafeMenuItem("Momentum Analysis", UiGlyph::MomentumAnalysis);
+            roadSafeMenuItem("Speed Analysis", UiGlyph::SpeedAnalysis);
             ImGui::EndMenu();
         }
 
         if (ImGui::BeginMenu("Measurement"))
         {
-            ImGui::MenuItem("Distance Tool");
-            ImGui::MenuItem("Angle Tool");
-            ImGui::MenuItem("Reference Marker");
+            roadSafeMenuItem("Distance Tool", UiGlyph::Distance);
+            roadSafeMenuItem("Angle Tool", UiGlyph::Angle);
+            roadSafeMenuItem("Reference Marker", UiGlyph::ForensicMarker);
             ImGui::EndMenu();
         }
 
         ImGui::Separator();
-        ImGui::MenuItem("Validate Case");
-        ImGui::MenuItem("Command Palette...","Ctrl+Shift+P");
+        roadSafeMenuItem("Validate Case", UiGlyph::CaseValidate);
+        roadSafeMenuItem("Command Palette...",UiGlyph::Palette,"Ctrl+Shift+P");
 
         ImGui::EndMenu();
     }
@@ -15052,11 +17840,11 @@ static void drawMainMenuBar()
     // HELP
     if (ImGui::BeginMenu("Help"))
     {
-        ImGui::MenuItem("Documentation");
-        if (ImGui::MenuItem("Keyboard Shortcuts","F1"))
+        roadSafeMenuItem("Documentation", UiGlyph::Documentation);
+        if (roadSafeMenuItem("Keyboard Shortcuts",UiGlyph::Keyboard,"F1"))
             gEditorShell.showShortcutReference=true;
         ImGui::Separator();
-        ImGui::MenuItem("About RoadSafe AR");
+        roadSafeMenuItem("About RoadSafe AR", UiGlyph::About);
         ImGui::EndMenu();
     }
 
@@ -17238,6 +20026,7 @@ int main()
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    initializeGoogleMaterialIcons();
     ImGuiIO& io=ImGui::GetIO();
     io.IniFilename=nullptr;
     io.ConfigFlags|=ImGuiConfigFlags_NavEnableKeyboard;
