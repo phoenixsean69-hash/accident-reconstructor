@@ -1,0 +1,407 @@
+﻿#pragma once
+
+// ROADSAFE_CORE_MODEL_V1
+// Central forensic case model for RoadSafe AR.
+// Visualization and simulation remain downstream of evidence and analysis.
+
+#include <array>
+#include <cstdint>
+#include <cstdio>
+#include <string>
+#include <vector>
+
+namespace roadsafe
+{
+
+enum class Provenance
+{
+    Unspecified=0,
+    Observed,
+    Measured,
+    Imported,
+    WitnessReported,
+    Calculated,
+    AIDerived,
+    InvestigatorAssumption,
+    Simulated
+};
+
+enum class Confidence
+{
+    Unverified=0,
+    Low,
+    Moderate,
+    High,
+    Verified
+};
+
+inline const char* provenanceName(Provenance value)
+{
+    switch (value)
+    {
+        case Provenance::Observed:
+            return "Observed";
+        case Provenance::Measured:
+            return "Measured";
+        case Provenance::Imported:
+            return "Imported";
+        case Provenance::WitnessReported:
+            return "Witness Reported";
+        case Provenance::Calculated:
+            return "Calculated";
+        case Provenance::AIDerived:
+            return "AI Derived";
+        case Provenance::InvestigatorAssumption:
+            return "Investigator Assumption";
+        case Provenance::Simulated:
+            return "Simulated";
+        default:
+            return "Unspecified";
+    }
+}
+
+inline const char* confidenceName(Confidence value)
+{
+    switch (value)
+    {
+        case Confidence::Verified:
+            return "Verified";
+        case Confidence::High:
+            return "High";
+        case Confidence::Moderate:
+            return "Moderate";
+        case Confidence::Low:
+            return "Low";
+        default:
+            return "Unverified";
+    }
+}
+
+struct Vec3
+{
+    double x=0.0;
+    double y=0.0;
+    double z=0.0;
+};
+
+struct ProvenanceStamp
+{
+    Provenance provenance=Provenance::Unspecified;
+    Confidence confidence=Confidence::Unverified;
+    std::string sourceId;
+    std::string note;
+};
+
+struct SourceArchiveRecord
+{
+    std::string id;
+    std::string source;
+    std::string capturedAt;
+    std::string sha256;
+    std::uint64_t sizeBytes=0;
+    std::string mimeType;
+    std::string storageReference;
+};
+
+struct CaseIdentity
+{
+    std::string caseNumber;
+    std::string title;
+    std::string accidentDateTime;
+    std::string location;
+    std::string junctionOrRoad;
+    std::string investigatingOfficer;
+    std::string policeStation;
+    std::string description;
+};
+
+struct SceneDatum
+{
+    bool confirmed=false;
+    double latitude=0.0;
+    double longitude=0.0;
+    double altitudeMeters=0.0;
+    std::string description;
+    ProvenanceStamp lineage;
+};
+
+struct SceneIntake
+{
+    std::string sceneLocation;
+    std::string dateTime;
+    std::string weather;
+    std::string lighting;
+    std::string roadCondition;
+    std::string trafficControl;
+    std::string roadGeometry;
+    std::string scenePreservation;
+    SceneDatum datum;
+    std::string geometryPackageId;
+    std::string notes;
+};
+
+struct EvidenceRecord
+{
+    std::string id;
+    std::string type;
+    std::string description;
+    Vec3 position;
+    bool hasPosition=false;
+    std::string collectionStatus;
+    std::string spatialInformation;
+    ProvenanceStamp lineage;
+};
+
+struct MeasurementRecord
+{
+    std::string id;
+    std::string type;
+    double value=0.0;
+    std::string unit;
+    std::string method;
+    std::string sourceDescription;
+    ProvenanceStamp lineage;
+};
+
+struct VehicleRecord
+{
+    std::string id;
+    std::string registration;
+    std::string make;
+    std::string model;
+    std::string vehicleType;
+    Vec3 scenePosition;
+    double sceneHeadingDegrees=0.0;
+    std::string mechanicalFindings;
+    std::string damageSummary;
+    std::vector<std::string> damagePhotoIds;
+    std::vector<std::string> traceEvidenceIds;
+    ProvenanceStamp lineage;
+};
+
+struct PersonRecord
+{
+    std::string id;
+    std::string name;
+    std::string role;
+    std::string vehicleId;
+    bool registeredOwner=false;
+    bool confirmedDriver=false;
+    std::string notes;
+    ProvenanceStamp lineage;
+};
+
+struct WitnessRecord
+{
+    std::string id;
+    std::string name;
+    std::string observationLocation;
+    std::string viewingConditions;
+    double approximateDistanceMeters=0.0;
+    std::string directionOfTravel;
+    std::string lanePosition;
+    std::string trafficControlState;
+    std::string brakingOrEvasion;
+    std::string speedImpression;
+    std::string collisionArea;
+    std::string postImpactMovement;
+    std::string statementSummary;
+    ProvenanceStamp lineage{
+        Provenance::WitnessReported,
+        Confidence::Unverified,
+        {},
+        {}
+    };
+};
+
+struct AnalysisFinding
+{
+    std::string id;
+    std::string finding;
+    std::string method;
+    Confidence confidence=Confidence::Unverified;
+    std::string limitations;
+    std::string followUpAction;
+    Provenance provenance=Provenance::Calculated;
+
+    std::vector<std::string> evidenceIds;
+    std::vector<std::string> measurementIds;
+    std::vector<std::string> vehicleIds;
+    std::vector<std::string> personIds;
+    std::vector<std::string> witnessIds;
+};
+
+struct HypothesisRecord
+{
+    std::string id;
+    std::string title;
+    std::string crashExplanation;
+    std::string status;
+    Confidence confidence=Confidence::Unverified;
+
+    std::vector<std::string> supportingEvidenceIds;
+    std::vector<std::string> conflictingEvidenceIds;
+    std::vector<std::string> supportingFindingIds;
+    std::vector<std::string> conflictingFindingIds;
+    std::vector<std::string> measurementIds;
+    std::vector<std::string> vehicleIds;
+    std::vector<std::string> personIds;
+    std::vector<std::string> witnessIds;
+
+    std::vector<std::string> assumptions;
+    std::vector<std::string> missingEvidence;
+    std::string proposedImpactRegion;
+    std::vector<std::string> eventSequence;
+    std::string notes;
+};
+
+struct SimulationVehicleState
+{
+    std::string vehicleId;
+    double massKg=0.0;
+    double initialSpeedMetersPerSecond=0.0;
+    Vec3 position;
+    double headingDegrees=0.0;
+    double collisionRadiusMeters=0.0;
+    double braking=0.0;
+};
+
+struct SimulationParameters
+{
+    std::vector<SimulationVehicleState> vehicles;
+    double friction=0.70;
+    double reactionTimeSeconds=0.0;
+    double restitution=0.20;
+    double gravityMetersPerSecondSquared=9.80665;
+    double timeStepSeconds=0.01;
+    double durationSeconds=10.0;
+};
+
+struct SimulationFrame
+{
+    double timeSeconds=0.0;
+    std::vector<Vec3> positions;
+    std::vector<double> speedsMetersPerSecond;
+};
+
+struct SimulationRecord
+{
+    std::string id;
+    std::string hypothesisId;
+    SimulationParameters parameters;
+    std::vector<SimulationFrame> frames;
+    std::vector<std::string> contacts;
+    std::string impactInformation;
+    std::vector<std::string> warnings;
+
+    ProvenanceStamp lineage{
+        Provenance::Simulated,
+        Confidence::Unverified,
+        {},
+        "Simulation output is not evidence."
+    };
+};
+
+struct ReconstructionRecord
+{
+    std::string activeHypothesisId;
+    std::string activeSimulationId;
+    bool has2D=false;
+    bool has3D=false;
+    bool hasAR=false;
+    std::string notes;
+};
+
+struct ReviewedFinding
+{
+    std::string id;
+    std::string statement;
+    Confidence confidence=Confidence::Unverified;
+    Provenance provenance=Provenance::Calculated;
+    bool reviewed=false;
+    std::vector<std::string> supportingRecordIds;
+    std::string limitations;
+};
+
+struct ReportRecord
+{
+    std::string conclusions;
+    std::string limitations;
+    std::string unresolvedQuestions;
+    std::string reconstructionLineage;
+    std::string investigatorDeclaration;
+    bool finalized=false;
+};
+
+struct FootageRecord
+{
+    std::string id;
+    std::string title;
+    std::string mediaPath;
+    std::string capturedAt;
+    std::string cameraDescription;
+    ProvenanceStamp lineage{
+        Provenance::Imported,
+        Confidence::Unverified,
+        {},
+        {}
+    };
+};
+
+struct RoadSafeCase
+{
+    CaseIdentity identity;
+    SceneIntake scene;
+
+    std::vector<SourceArchiveRecord> sourceArchive;
+    std::vector<EvidenceRecord> evidence;
+    std::vector<MeasurementRecord> measurements;
+    std::vector<VehicleRecord> vehicles;
+    std::vector<PersonRecord> persons;
+    std::vector<WitnessRecord> witnesses;
+    std::vector<AnalysisFinding> analysis;
+    std::vector<HypothesisRecord> hypotheses;
+    std::vector<SimulationRecord> simulations;
+    ReconstructionRecord reconstruction;
+    std::vector<ReviewedFinding> findings;
+    ReportRecord report;
+    std::vector<FootageRecord> footage;
+
+    std::uint64_t revision=0;
+    std::uint64_t nextSequence=1;
+
+    void touch()
+    {
+        ++revision;
+    }
+
+    std::string allocateId(const char* prefix)
+    {
+        char buffer[64]{};
+
+        std::snprintf(
+            buffer,
+            sizeof(buffer),
+            "%s-%04llu",
+            prefix && prefix[0] ? prefix : "RS",
+            static_cast<unsigned long long>(
+                nextSequence++
+            )
+        );
+
+        touch();
+        return buffer;
+    }
+};
+
+inline const char* textOr(
+    const std::string& value,
+    const char* fallback)
+{
+    return
+        value.empty()
+            ? fallback
+            : value.c_str();
+}
+
+} // namespace roadsafe

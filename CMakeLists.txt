@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.28)
-project(AccidentReconstructor CXX C)
+﻿cmake_minimum_required(VERSION 3.28)
+project(RoadSafeAR CXX C)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# ── Dear ImGui ─────────────────────────────────
+# â”€â”€ Dear ImGui â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Use the docking branch because the application uses ImGuiConfigFlags_DockingEnable.
 include(FetchContent)
 FetchContent_Declare(
@@ -16,6 +16,22 @@ FetchContent_Declare(
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
 )
 FetchContent_MakeAvailable(imgui)
+# ROADSAFE_TINYGLTF_DEPENDENCY_V1
+# Pinned stable TinyGLTF v2 loader for free/licensed GLB/glTF assets.
+set(TINYGLTF_HEADER_ONLY ON CACHE BOOL "" FORCE)
+set(TINYGLTF_INSTALL OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_BUILD_LOADER_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_BUILD_GL_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_BUILD_VALIDATOR_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(TINYGLTF_BUILD_BUILDER_EXAMPLE OFF CACHE BOOL "" FORCE)
+
+FetchContent_Declare(
+    tinygltf
+    GIT_REPOSITORY https://github.com/syoyo/tinygltf.git
+    GIT_TAG v2.8.18
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(tinygltf)
 
 add_library(imgui STATIC
     ${imgui_SOURCE_DIR}/imgui.cpp
@@ -32,7 +48,7 @@ target_include_directories(imgui PUBLIC
 )
 target_compile_definitions(imgui PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
-# ── GLFW ─────────────────────────────────────
+# â”€â”€ GLFW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/third_party/glfw/CMakeLists.txt)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
     set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -45,24 +61,39 @@ endif()
 # The ImGui GLFW backend needs GLFW's public headers while it is compiled.
 target_link_libraries(imgui PRIVATE glfw)
 
-# ── Source files ─────────────────────────────
+# â”€â”€ Source files â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 add_executable(sfe
     src/main.cpp
+    src/roadsafe/roadsafe_renderer.cpp
+    src/roadsafe/roadsafe_asset_library.cpp
     src/glad/glad.c
 )
 
-# ── Include directories ──────────────────────
+# RoadSafe AR product identity.
+# Keep the stable internal target name "sfe" so existing build
+# scripts keep working, but emit RoadSafeAR.exe to users.
+set_target_properties(
+    sfe
+    PROPERTIES
+    OUTPUT_NAME "RoadSafeAR"
+)
+# â”€â”€ Include directories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 target_include_directories(sfe PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${tinygltf_SOURCE_DIR}
 )
 
-# ── Link libraries ───────────────────────────
+target_compile_definitions(sfe PRIVATE
+    SFE_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"
+)
+
+# â”€â”€ Link libraries â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 target_link_libraries(sfe PRIVATE glfw)
 target_link_libraries(sfe PRIVATE imgui)
 
 # Windows: OpenGL + GDI32
 if(WIN32)
-    target_link_libraries(sfe PRIVATE opengl32 gdi32)
+    target_link_libraries(sfe PRIVATE opengl32 gdi32 dwmapi)
 endif()
 
 # Linux: OpenGL + dl
@@ -74,3 +105,7 @@ endif()
 set_target_properties(sfe PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
+
+
+
+
